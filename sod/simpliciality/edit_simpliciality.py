@@ -26,7 +26,6 @@ def edit_simpliciality(H, min_size=2, exclude_min_size=True):
         The edit simpliciality
     """
     edges = H.edges.filterby("size", min_size, "geq").members()
-
     t = Trie()
     t.build_trie(edges)
 
