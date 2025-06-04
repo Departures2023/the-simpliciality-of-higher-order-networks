@@ -72,58 +72,7 @@ def rewire_Alg1(H, min_size=2, max_size=None):
     print(success_delete)
     return H
 
-# def non_simplex_maximal_edges(H, min_size=2, exclude_min_size=True):
-#     """
-#     Returns a list of maximal hyperedges that are not simplices.
-#     """
-#     t = Trie()
-#     t.build_trie(H.edges.members())
-#     edges = (
-#         H.edges.maximal().filterby("size", min_size + exclude_min_size, "geq").members()
-#     )
-#     #non_simplex_edges = []
-#     two_nodes_edges = []
-#     for e in edges:
-#         set_missing = missing_subfaces(H, e, min_size)
-#         #num_missing = len(set_missing)
-#         two_nodes_edges.append(x for x in set_missing if x == 2)
-#         if two_nodes_edges>1:  # only considering simplices that are missing more than one subface
-#             non_simplex_edges = e
-#             break    
-#     return non_simplex_edges, two_nodes_edges
 
-###############################################################################
-# def non_simplex_maximal_edges(H, min_size=2, exclude_min_size=True):
-#     """
-#     Returns a list of maximal hyperedges that are not simplices.
-#     """
-
-#     edges = H.edges.filterby("size", min_size, "geq").members()
-#     max_edges = (
-#         H.edges.maximal().filterby("size", min_size + exclude_min_size, "geq").members()
-#     )
-
-#     t = Trie()
-#     t.build_trie(edges)
-
-#     edge_index = 0
-#     set_missing = set()
-#     for e in max_edges:
-#         set_missing.update(missing_subfaces(t, e, min_size=min_size))
-#         if len(set_missing) != 0:
-#             break
-#         edge_index += 1
-#     edges_remove = set()
-#     edges_remove.update(x for x in powerset(max_edges[edge_index], min_size) if x not in set_missing)
-#     H.add_edge(list(set_missing)[0], id="rewired_edge")
-    
-#     remove_id = 0
-#     for id, edge in H.edges.members(dtype=dict).items():
-#         if (edge == edges_remove):
-#             remove_id = id
-#     H.remove_edge(remove_id)
-#     return H
-####################################################################################################################
 
 
 # def important_nodes(H, min_size=2, edges=None, nodes=None):
