@@ -1,5 +1,7 @@
 import numpy as np
 import xgi
+
+from ..simpliciality import edit_simpliciality, face_edit_simpliciality, simplicial_fraction
 from ..trie import Trie
 from .utilities import missing_subfaces, powerset
 
@@ -8,6 +10,8 @@ def rewire_Alg1(H, min_size=2, max_size=None):
     """
     Returns a list of maximal hyperedges that are not simplices.
     """
+    es_init = edit_simpliciality(H, min_size=min_size)
+    fes_init = face_edit_simpliciality(H, min_size=min_size)
     # Filter edges bigger than min_size
     edges = H.edges.filterby("size", min_size, "geq").members()
     # Filter maximal edges bigger than min_size
@@ -52,6 +56,8 @@ def rewire_Alg1(H, min_size=2, max_size=None):
     count = 0
     success_add = []
     success_delete = []
+    delta_es = []
+    delta_fes = []
     for i in range(max_to_rewire):
         tmp_remove = set(edges_remove.pop())
         tmp_add = set(set_missing.pop())
@@ -67,9 +73,17 @@ def rewire_Alg1(H, min_size=2, max_size=None):
                     count += 1
                     success_add.append(tmp_add)
                     success_delete.append(tmp_remove)
+                    es_tmp = edit_simpliciality(H, min_size=min_size)
+                    fes_tmp = face_edit_simpliciality(H, min_size=min_size)
+                    delta_es.append(es_init - es_tmp)
+                    delta_fes.append(fes_init - fes_tmp)
+                    es_init = es_tmp
+                    fes_init = fes_tmp
     print("Actual rewired number:", count)
-    print(success_add)
-    print(success_delete)
+    print("Edge added:" + str(success_add))
+    print("Edge removed:" + str(success_delete))
+    print("Delta ES:", str(delta_es))
+    print("Delta FES:", str(delta_fes))
     return H
 
 
