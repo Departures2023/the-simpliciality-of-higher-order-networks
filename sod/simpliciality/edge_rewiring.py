@@ -27,9 +27,9 @@ def non_simplex_maximal_edges(H, min_size=2, exclude_min_size=True):
     edges_remove = set()
     edges_remove.update(x for x in powerset(max_edges[edge_index], min_size) if x not in set_missing) #and also not in max_edges
     max_to_remove = min(len(edges_remove), len(set_missing))
-    print(max_to_remove)
-    print(list(edges_remove)[0])
-    print(len(edges_remove))
+    print("max to remove: ", max_to_remove)
+    print("list 0 edges_remove: ", list(edges_remove)[0])
+    print("length of edges remove: ", len(edges_remove))
     count = 0
     success_add = []
     success_delete = []
