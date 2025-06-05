@@ -16,7 +16,7 @@ def rewire_Alg1(H, min_size=2, max_size=None):
     # Filter edges bigger than min_size
     edges = H.edges.filterby("size", min_size, "geq").members()
     # Filter maximal edges bigger than min_size
-    max_edges = (H.edges.maximal().filterby("size", min_size, "geq").members())
+    max_edges = (H.edges.maximal().filterby("size", 4, "geq").members())
     tmp_max_edges = max_edges.copy()
     print("Maximal edges:", max_edges)
     # Build a trie for finding subfaces
@@ -34,6 +34,7 @@ def rewire_Alg1(H, min_size=2, max_size=None):
         set_missing.update(missing_subfaces(t, curr, min_size))
         tmp_max_edges.remove(curr)
         if len(set_missing) != 0:
+            edge_index = max_edges.index(curr)
             break
     
     #############################################################################################################
