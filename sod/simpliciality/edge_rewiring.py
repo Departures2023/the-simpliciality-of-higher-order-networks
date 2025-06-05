@@ -1,3 +1,4 @@
+import random
 import numpy as np
 import xgi
 
@@ -16,6 +17,8 @@ def rewire_Alg1(H, min_size=2, max_size=None):
     edges = H.edges.filterby("size", min_size, "geq").members()
     # Filter maximal edges bigger than min_size
     max_edges = (H.edges.maximal().filterby("size", min_size, "geq").members())
+    tmp_max_edges = max_edges.copy()
+    print("Maximal edges:", max_edges)
     # Build a trie for finding subfaces
     t = Trie()
     t.build_trie(edges)
@@ -24,13 +27,26 @@ def rewire_Alg1(H, min_size=2, max_size=None):
     edge_index = 0
     # set_missing will contain the missing subfaces of the first maximal edge
     set_missing = set()
-    # Iterate through the maximal edges to find the first one with missing subfaces
-    for e in max_edges:
-        set_missing.update(missing_subfaces(t, e, min_size))
-        #print(set_missing)
+    
+    # RANDOMLY iterate through the maximal edges to find the first one with missing subfaces
+    for i in range(len(max_edges), 0, -1):
+        curr = tmp_max_edges[random.randint(0, i-1)]
+        set_missing.update(missing_subfaces(t, curr, min_size))
+        tmp_max_edges.remove(curr)
         if len(set_missing) != 0:
             break
-        edge_index += 1
+    
+    #############################################################################################################
+    # SEQUENTIALLY Iterate through the maximal edges to find the first one with missing subfaces
+    # for e in max_edges:
+    #     set_missing.update(missing_subfaces(t, e, min_size))
+    #     #print(set_missing)
+    #     if len(set_missing) != 0:
+    #         break
+    #     edge_index += 1
+    #############################################################################################################
+    
+    
     # Edge_remove = P(maximal edge) - missing subfaces - maximal edges
     edges_remove = set()
     # Print statement for debugging
