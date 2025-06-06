@@ -122,18 +122,24 @@ def rewire_Alg1(H, min_size=2, max_size=None):
 #             non_simplex_maximal_edges.append(e)
 #     return non_simplex_edges
 
-def save_expr_data(epoch, stats, filename):
+def save_expr_data(dataset, round, stats, filename):
     """
     save the experiment data to a file.
     
     """
     os.makedirs(os.path.dirname(filename), exist_ok=True)
-    
     lines = [
-        f"Epoch: {epoch}",
-        f"Cumulative Total Transmitted Elements: {stats['total_transmitted_elements']}",
-        f"Cumulative Zero Transmitted Elements: {stats['zero_transmitted_elements']}",
-        f"Cumulative Zero Element Ratio: {stats['zero_ratio']:.6f} ({stats['zero_ratio']:.2%})",
+        f"dataset: {dataset}",
+        f"round: {round}",
+        f"num_maximal_hyperedge: {stats['num_maximal_hyperedge']}",
+        f"num_failure: {stats['num_failure']}",
+        f"num_same_size: {stats['num_same_size']}",
+        f"time_1: {stats['time_1']:.3f}",
+        f"time_2: {stats['time_2']:.3f}",
+        f"num_missing_subface: {stats['num_missing_subface']}",
+        f"delta_SF: {stats['delta_SF']:.6f}",
+        f"delta_ES: {stats['delta_ES']:.6f}",
+        f"delta_FES: {stats['delta_FES']:.6f}",
         "-" * 50
     ]
     
@@ -162,7 +168,7 @@ def rewire_Alg1_expr(H, min_size=2, max_size=None):
     
     # RANDOMLY iterate through the maximal edges to find the first one with missing subfaces
     for i in range(len(max_edges), 0, -1):
-        curr = tmp_max_edges[random.randint(0, i-1)]
+        curr = tmp_max_edges[random.randrange(0, i)]
         set_missing.update(missing_subfaces(t, curr, min_size))
         tmp_max_edges.remove(curr)
         if len(set_missing) != 0:
@@ -180,36 +186,29 @@ def rewire_Alg1_expr(H, min_size=2, max_size=None):
     max_to_rewire = min(len(edges_remove), len(set_missing))
     print("max to rewire:", max_to_rewire)
     
-    count = 0
-    success_add = []
-    success_delete = []
-    delta_es = []
-    delta_fes = []
+    same_size = 0
+    success_update = 0
+    delta_es = 0
+    delta_fes = 0
     for i in range(max_to_rewire):
         # Randomly select an edge to remove and an edge to add
         tmp_remove = list(edges_remove)[random.randrange(0, len(edges_remove))]
         tmp_add = list(set_missing)[random.randrange(0, len(set_missing))]
         edges_remove.remove(tmp_remove)
         set_missing.remove(tmp_add)
-        count += 1
+        same_size += 1
         # The size of added edge and removed edge must be different
         if (len(tmp_add) != len(tmp_remove)):
             # Traverse through the edges of the hypergraph to find the edgeID of the edge to remove
             for id, edge in H.edges.members(dtype=dict).items():
                 if (edge == tmp_remove):
                     H.remove_edge(id)
-                    H.add_edge(tmp_add, id="rewired_edge" + str(count))
-                    success_add.append(tmp_add)
-                    success_delete.append(tmp_remove)
+                    H.add_edge(tmp_add, id="rewired_edge")
+                    success_update = 1
                     es_tmp = edit_simpliciality(H, min_size=min_size)
                     fes_tmp = face_edit_simpliciality(H, min_size=min_size)
-                    delta_es.append(es_init - es_tmp)
-                    delta_fes.append(fes_init - fes_tmp)
+                    delta_es = es_init - es_tmp
+                    delta_fes = fes_init - fes_tmp
                     break
             break
-    print("Actual rewired number:", count)
-    print("Edge added:" + str(success_add))
-    print("Edge removed:" + str(success_delete))
-    print("Delta ES:", str(delta_es))
-    print("Delta FES:", str(delta_fes))
-    return H
+    return H, success_update, same_size, delta_es, delta_fes
