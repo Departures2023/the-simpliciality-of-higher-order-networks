@@ -1,5 +1,8 @@
+import random
 import numpy as np
 import xgi
+
+from ..simpliciality import edit_simpliciality, face_edit_simpliciality, simplicial_fraction
 from ..trie import Trie
 from .utilities import missing_subfaces, powerset
 
@@ -8,10 +11,14 @@ def rewire_Alg1(H, min_size=2, max_size=None):
     """
     Returns a list of maximal hyperedges that are not simplices.
     """
+    es_init = edit_simpliciality(H, min_size=min_size)
+    fes_init = face_edit_simpliciality(H, min_size=min_size)
     # Filter edges bigger than min_size
     edges = H.edges.filterby("size", min_size, "geq").members()
     # Filter maximal edges bigger than min_size
     max_edges = (H.edges.maximal().filterby("size", min_size, "geq").members())
+    tmp_max_edges = max_edges.copy()
+    print("Maximal edges:", max_edges)
     # Build a trie for finding subfaces
     t = Trie()
     t.build_trie(edges)
@@ -20,13 +27,26 @@ def rewire_Alg1(H, min_size=2, max_size=None):
     edge_index = 0
     # set_missing will contain the missing subfaces of the first maximal edge
     set_missing = set()
-    # Iterate through the maximal edges to find the first one with missing subfaces
-    for e in max_edges:
-        set_missing.update(missing_subfaces(t, e, min_size))
-        #print(set_missing)
+    
+    # RANDOMLY iterate through the maximal edges to find the first one with missing subfaces
+    for i in range(len(max_edges), 0, -1):
+        curr = tmp_max_edges[random.randint(0, i-1)]
+        set_missing.update(missing_subfaces(t, curr, min_size))
+        tmp_max_edges.remove(curr)
         if len(set_missing) != 0:
             break
-        edge_index += 1
+    
+    #############################################################################################################
+    # SEQUENTIALLY Iterate through the maximal edges to find the first one with missing subfaces
+    # for e in max_edges:
+    #     set_missing.update(missing_subfaces(t, e, min_size))
+    #     #print(set_missing)
+    #     if len(set_missing) != 0:
+    #         break
+    #     edge_index += 1
+    #############################################################################################################
+    
+    
     # Edge_remove = P(maximal edge) - missing subfaces - maximal edges
     edges_remove = set()
     # Print statement for debugging
@@ -52,6 +72,8 @@ def rewire_Alg1(H, min_size=2, max_size=None):
     count = 0
     success_add = []
     success_delete = []
+    delta_es = []
+    delta_fes = []
     for i in range(max_to_rewire):
         tmp_remove = set(edges_remove.pop())
         tmp_add = set(set_missing.pop())
@@ -67,9 +89,17 @@ def rewire_Alg1(H, min_size=2, max_size=None):
                     count += 1
                     success_add.append(tmp_add)
                     success_delete.append(tmp_remove)
+                    es_tmp = edit_simpliciality(H, min_size=min_size)
+                    fes_tmp = face_edit_simpliciality(H, min_size=min_size)
+                    delta_es.append(es_init - es_tmp)
+                    delta_fes.append(fes_init - fes_tmp)
+                    es_init = es_tmp
+                    fes_init = fes_tmp
     print("Actual rewired number:", count)
-    print(success_add)
-    print(success_delete)
+    print("Edge added:" + str(success_add))
+    print("Edge removed:" + str(success_delete))
+    print("Delta ES:", str(delta_es))
+    print("Delta FES:", str(delta_fes))
     return H
 
 
