@@ -1,0 +1,42 @@
+dataset: email-eu
+round: 0
+num_maximal_hyperedge: 2737
+max_to_rewire: 31
+success_update: 1
+num_same_size: 0
+total_time: 7.054
+edges_searching_time: 0.433
+rewiring_time: 0.014
+num_missing_subface: 470
+delta_SF: 0.000118
+delta_ES: 0.000000
+delta_FES: 0.000000
+--------------------------------------------------
+dataset: email-eu
+round: 1
+num_maximal_hyperedge: 2737
+max_to_rewire: 26
+success_update: 1
+num_same_size: 0
+total_time: 6.870
+edges_searching_time: 0.399
+rewiring_time: 0.013
+num_missing_subface: 30
+delta_SF: 0.002644
+delta_ES: 0.000000
+delta_FES: 0.000584
+--------------------------------------------------
+dataset: email-eu
+round: 2
+num_maximal_hyperedge: 2737
+max_to_rewire: 19
+success_update: 1
+num_same_size: 0
+total_time: 7.381
+edges_searching_time: 0.260
+rewiring_time: 0.015
+num_missing_subface: 4063
+delta_SF: 0.000028
+delta_ES: 0.000000
+delta_FES: 0.000000
+--------------------------------------------------
