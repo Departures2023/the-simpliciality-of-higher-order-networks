@@ -7,10 +7,12 @@ import xgi
 import sys
 import os
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'edge_rewiring')))
+from edge_rewiring import edge_rewiring_alg
 from sod import *
 from sod.simpliciality import edit_simpliciality
 import threading
-from edge_rewiring import edge_rewiring_alg
+from edge_rewiring import *
 from colorama import init
 from termcolor import colored
 
@@ -53,24 +55,37 @@ def edge_rewiring_exper(int):
         print(colored(datasets[int], 'blue'), stats)  
         
         
-if __name__ =="__main__": 
+# Use a single dataset to run the algorithm multiple times
+def loop_Alg1_expr(index, iter, min_size, max_size):
+    for i in range(iter):
+        H, stats = edge_rewiring_alg.rewire_Alg1_expr(graphs[index], min_size, max_size)
+        H.cleanup(singletons=True)
+        graphs[index] = H
+        # Save the experiment data
+        edge_rewiring_alg.save_expr_data(datasets[index], i, stats, dir[datasets[i]])
+        print(colored(datasets[int], 'blue'), stats)
+        
+        
+if __name__ == "__main__":
+    print("Starting edge rewiring experiments...")
+    global graphs
+    graphs = []
+    max_size = 11
+    min_size = 2
+    
+    # Load the datasets and clean them
+    for i in range (10):
+        graphs.append(xgi.load_xgi_data(datasets[i], max_order=max_size))
+        graphs[i].cleanup(singletons=True)
+    
+    # Create threads to run the algorithm in parallel
     threads = []
     for i in range(10):
-        thread = threading.Thread(target=edge_rewiring_exper, args=(i,))
+        thread = threading.Thread(target=loop_Alg1_expr, args=(i, 100, min_size, max_size,))
         threads.append(thread)
         thread.start()
         
     for thread in threads:
         thread.join()
 
-    print("Done!") 
-    
-    ''' t1 = threading.Thread(target=edge_rewiring_exper, args=(0,))
-    t2 = threading.Thread(target=edge_rewiring_exper, args=(1,))
-
-    t1.start()
-    t2.start()
-
-    t1.join()
-    t2.join()'''
-    
+    print("All threads finished")
