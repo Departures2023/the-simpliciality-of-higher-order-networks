@@ -124,3 +124,31 @@ delta_SF: 0.000000
 delta_ES: 0.000000
 delta_FES: 0.000000
 --------------------------------------------------
+dataset: congress-bills
+round: 1
+num_maximal_hyperedge: 31985
+max_to_rewire: 5
+success_update: 1
+num_same_size: 0
+total_time: 183.657
+edges_searching_time: 2.232
+rewiring_time: 0.065
+num_missing_subface: 5
+delta_SF: 0.000022
+delta_ES: 0.000000
+delta_FES: 0.000013
+--------------------------------------------------
+dataset: congress-bills
+round: 2
+num_maximal_hyperedge: 31985
+max_to_rewire: 18
+success_update: 1
+num_same_size: 0
+total_time: 178.857
+edges_searching_time: 2.574
+rewiring_time: 0.066
+num_missing_subface: 228
+delta_SF: 0.000043
+delta_ES: 0.000000
+delta_FES: 0.000033
+--------------------------------------------------
