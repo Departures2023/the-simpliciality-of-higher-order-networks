@@ -250,3 +250,17 @@ delta_SF: 0.000778
 delta_ES: 0.000000
 delta_FES: 0.000055
 --------------------------------------------------
+dataset: contact-high-school
+round: 0
+num_maximal_hyperedge: 210
+max_to_rewire: 1
+success_update: 1
+num_same_size: 0
+total_time: 1.627
+edges_searching_time: 0.095
+rewiring_time: 0.018
+num_missing_subface: 1
+delta_SF: 0.000778
+delta_ES: 0.000000
+delta_FES: 0.000000
+--------------------------------------------------

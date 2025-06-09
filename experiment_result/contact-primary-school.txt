@@ -292,3 +292,17 @@ delta_SF: 0.000776
 delta_ES: 0.000000
 delta_FES: 0.000157
 --------------------------------------------------
+dataset: contact-primary-school
+round: 0
+num_maximal_hyperedge: 345
+max_to_rewire: 4
+success_update: 1
+num_same_size: 0
+total_time: 11.039
+edges_searching_time: 1.154
+rewiring_time: 0.032
+num_missing_subface: 4
+delta_SF: 0.000574
+delta_ES: 0.000000
+delta_FES: 0.000181
+--------------------------------------------------
