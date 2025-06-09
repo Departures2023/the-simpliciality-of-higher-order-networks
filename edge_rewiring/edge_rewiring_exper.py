@@ -53,15 +53,24 @@ def edge_rewiring_exper(int):
         print(colored(datasets[int], 'blue'), stats)  
         
         
-if __name__ =="__main__":
-    t1 = threading.Thread(target=edge_rewiring_exper, args=(0,))
+if __name__ =="__main__": 
+    threads = []
+    for i in range(10):
+        thread = threading.Thread(target=edge_rewiring_exper, args=(i,))
+        threads.append(thread)
+        thread.start()
+        
+    for thread in threads:
+        thread.join()
+
+    print("Done!") 
+    
+    ''' t1 = threading.Thread(target=edge_rewiring_exper, args=(0,))
     t2 = threading.Thread(target=edge_rewiring_exper, args=(1,))
 
     t1.start()
     t2.start()
 
     t1.join()
-    t2.join()
-
-    print("Done!") 
+    t2.join()'''
     

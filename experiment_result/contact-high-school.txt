@@ -250,3 +250,87 @@ delta_SF: 0.000778
 delta_ES: 0.000000
 delta_FES: 0.000055
 --------------------------------------------------
+dataset: contact-high-school
+round: 0
+num_maximal_hyperedge: 210
+max_to_rewire: 5
+success_update: 1
+num_same_size: 0
+total_time: 0.992
+edges_searching_time: 0.054
+rewiring_time: 0.009
+num_missing_subface: 5
+delta_SF: 0.000347
+delta_ES: 0.000000
+delta_FES: 0.000000
+--------------------------------------------------
+dataset: contact-high-school
+round: 1
+num_maximal_hyperedge: 210
+max_to_rewire: 2
+success_update: 1
+num_same_size: 0
+total_time: 0.652
+edges_searching_time: 0.029
+rewiring_time: 0.002
+num_missing_subface: 2
+delta_SF: 0.000347
+delta_ES: 0.000000
+delta_FES: 0.000000
+--------------------------------------------------
+dataset: contact-high-school
+round: 2
+num_maximal_hyperedge: 210
+max_to_rewire: 2
+success_update: 1
+num_same_size: 0
+total_time: 0.804
+edges_searching_time: 0.144
+rewiring_time: 0.009
+num_missing_subface: 2
+delta_SF: 0.001640
+delta_ES: 0.000000
+delta_FES: 0.000419
+--------------------------------------------------
+dataset: contact-high-school
+round: 0
+num_maximal_hyperedge: 210
+max_to_rewire: 1
+success_update: 0
+num_same_size: 1
+total_time: 0.833
+edges_searching_time: 0.298
+rewiring_time: 0.000
+num_missing_subface: 1
+delta_SF: 0.000000
+delta_ES: 0.000000
+delta_FES: 0.000000
+--------------------------------------------------
+dataset: contact-high-school
+round: 1
+num_maximal_hyperedge: 210
+max_to_rewire: 1
+success_update: 1
+num_same_size: 0
+total_time: 1.052
+edges_searching_time: 0.068
+rewiring_time: 0.003
+num_missing_subface: 1
+delta_SF: 0.001209
+delta_ES: 0.000000
+delta_FES: 0.000182
+--------------------------------------------------
+dataset: contact-high-school
+round: 2
+num_maximal_hyperedge: 210
+max_to_rewire: 1
+success_update: 1
+num_same_size: 0
+total_time: 1.572
+edges_searching_time: 0.092
+rewiring_time: 0.003
+num_missing_subface: 1
+delta_SF: 0.005087
+delta_ES: 0.000000
+delta_FES: 0.001185
+--------------------------------------------------

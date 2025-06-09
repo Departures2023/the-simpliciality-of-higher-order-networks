@@ -292,3 +292,87 @@ delta_SF: 0.000776
 delta_ES: 0.000000
 delta_FES: 0.000157
 --------------------------------------------------
+dataset: contact-primary-school
+round: 0
+num_maximal_hyperedge: 345
+max_to_rewire: 6
+success_update: 1
+num_same_size: 0
+total_time: 2.168
+edges_searching_time: 0.216
+rewiring_time: 0.004
+num_missing_subface: 6
+delta_SF: 0.000202
+delta_ES: 0.000000
+delta_FES: 0.000000
+--------------------------------------------------
+dataset: contact-primary-school
+round: 1
+num_maximal_hyperedge: 345
+max_to_rewire: 2
+success_update: 1
+num_same_size: 1
+total_time: 2.215
+edges_searching_time: 0.261
+rewiring_time: 0.011
+num_missing_subface: 2
+delta_SF: 0.002188
+delta_ES: 0.000000
+delta_FES: 0.000574
+--------------------------------------------------
+dataset: contact-primary-school
+round: 2
+num_maximal_hyperedge: 345
+max_to_rewire: 1
+success_update: 1
+num_same_size: 0
+total_time: 2.340
+edges_searching_time: 0.271
+rewiring_time: 0.004
+num_missing_subface: 1
+delta_SF: 0.004609
+delta_ES: 0.000000
+delta_FES: 0.001292
+--------------------------------------------------
+dataset: contact-primary-school
+round: 0
+num_maximal_hyperedge: 345
+max_to_rewire: 3
+success_update: 1
+num_same_size: 0
+total_time: 3.105
+edges_searching_time: 0.210
+rewiring_time: 0.137
+num_missing_subface: 3
+delta_SF: 0.000373
+delta_ES: 0.000000
+delta_FES: 0.000079
+--------------------------------------------------
+dataset: contact-primary-school
+round: 1
+num_maximal_hyperedge: 345
+max_to_rewire: 2
+success_update: 1
+num_same_size: 0
+total_time: 3.337
+edges_searching_time: 0.191
+rewiring_time: 0.237
+num_missing_subface: 2
+delta_SF: 0.000574
+delta_ES: 0.000000
+delta_FES: 0.000157
+--------------------------------------------------
+dataset: contact-primary-school
+round: 2
+num_maximal_hyperedge: 345
+max_to_rewire: 2
+success_update: 1
+num_same_size: 1
+total_time: 4.466
+edges_searching_time: 0.490
+rewiring_time: 0.005
+num_missing_subface: 2
+delta_SF: 0.002995
+delta_ES: 0.000000
+delta_FES: 0.000668
+--------------------------------------------------

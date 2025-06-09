@@ -1,0 +1,42 @@
+dataset: diseasome
+round: 0
+num_maximal_hyperedge: 69
+max_to_rewire: 0
+success_update: 0
+num_same_size: 0
+total_time: 0.017
+edges_searching_time: 0.002
+rewiring_time: 0.000
+num_missing_subface: 25
+delta_SF: 0.000000
+delta_ES: 0.000000
+delta_FES: 0.000000
+--------------------------------------------------
+dataset: diseasome
+round: 1
+num_maximal_hyperedge: 69
+max_to_rewire: 0
+success_update: 0
+num_same_size: 0
+total_time: 0.012
+edges_searching_time: 0.002
+rewiring_time: 0.000
+num_missing_subface: 56
+delta_SF: 0.000000
+delta_ES: 0.000000
+delta_FES: 0.000000
+--------------------------------------------------
+dataset: diseasome
+round: 2
+num_maximal_hyperedge: 69
+max_to_rewire: 0
+success_update: 0
+num_same_size: 0
+total_time: 0.035
+edges_searching_time: 0.001
+rewiring_time: 0.000
+num_missing_subface: 10
+delta_SF: 0.000000
+delta_ES: 0.000000
+delta_FES: 0.000000
+--------------------------------------------------

@@ -82,3 +82,45 @@ delta_SF: 0.000299
 delta_ES: 0.000000
 delta_FES: 0.000002
 --------------------------------------------------
+dataset: email-eu
+round: 0
+num_maximal_hyperedge: 2737
+max_to_rewire: 11
+success_update: 1
+num_same_size: 0
+total_time: 18.435
+edges_searching_time: 0.592
+rewiring_time: 0.024
+num_missing_subface: 11
+delta_SF: 0.000090
+delta_ES: 0.000000
+delta_FES: 0.000005
+--------------------------------------------------
+dataset: email-eu
+round: 1
+num_maximal_hyperedge: 2737
+max_to_rewire: 12
+success_update: 1
+num_same_size: 0
+total_time: 13.494
+edges_searching_time: 1.252
+rewiring_time: 0.037
+num_missing_subface: 12
+delta_SF: -0.000028
+delta_ES: 0.000000
+delta_FES: -0.000009
+--------------------------------------------------
+dataset: email-eu
+round: 2
+num_maximal_hyperedge: 2737
+max_to_rewire: 9
+success_update: 1
+num_same_size: 0
+total_time: 13.267
+edges_searching_time: 0.519
+rewiring_time: 0.036
+num_missing_subface: 47
+delta_SF: 0.000389
+delta_ES: 0.000000
+delta_FES: 0.000089
+--------------------------------------------------
