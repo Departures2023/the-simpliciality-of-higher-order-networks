@@ -36,12 +36,28 @@ dir = {
 }
 max_order = 11
 min_size = 2
-for i in range(5):
+
+
+def edge_rewiring_exper(int):
     for j in range (3):
-        H = xgi.load_xgi_data(datasets[i], max_order=max_order)
+        H = xgi.load_xgi_data(datasets[int], max_order=max_order)
         H.cleanup(singletons=True)
 
         H, stats = edge_rewiring.rewire_Alg1_expr(H, min_size, max_order)
         H.cleanup(singletons=True)
-        edge_rewiring.save_expr_data(datasets[i], j, stats, dir[datasets[i]])
-        print(stats)
+        edge_rewiring.save_expr_data(datasets[int], j, stats, dir[datasets[int]])
+        print(stats)  
+        
+        
+if __name__ =="__main__":
+    t1 = threading.Thread(target=edge_rewiring_exper, args=(0,))
+    t2 = threading.Thread(target=edge_rewiring_exper, args=(1,))
+
+    t1.start()
+    t2.start()
+
+    t1.join()
+    t2.join()
+
+    print("Done!") 
+    

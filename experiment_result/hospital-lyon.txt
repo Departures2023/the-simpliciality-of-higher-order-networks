@@ -82,3 +82,87 @@ delta_SF: 0.009627
 delta_ES: 0.000000
 delta_FES: 0.001930
 --------------------------------------------------
+dataset: hospital-lyon
+round: 0
+num_maximal_hyperedge: 60
+max_to_rewire: 1
+success_update: 0
+num_same_size: 1
+total_time: 0.079
+edges_searching_time: 0.033
+rewiring_time: 0.000
+num_missing_subface: 1
+delta_SF: 0.000000
+delta_ES: 0.000000
+delta_FES: 0.000000
+--------------------------------------------------
+dataset: hospital-lyon
+round: 1
+num_maximal_hyperedge: 60
+max_to_rewire: 3
+success_update: 1
+num_same_size: 0
+total_time: 0.119
+edges_searching_time: 0.007
+rewiring_time: 0.000
+num_missing_subface: 3
+delta_SF: 0.031911
+delta_ES: 0.000000
+delta_FES: 0.005439
+--------------------------------------------------
+dataset: hospital-lyon
+round: 2
+num_maximal_hyperedge: 60
+max_to_rewire: 3
+success_update: 1
+num_same_size: 1
+total_time: 0.119
+edges_searching_time: 0.034
+rewiring_time: 0.000
+num_missing_subface: 3
+delta_SF: 0.002663
+delta_ES: 0.000000
+delta_FES: 0.000000
+--------------------------------------------------
+dataset: hospital-lyon
+round: 0
+num_maximal_hyperedge: 60
+max_to_rewire: 1
+success_update: 1
+num_same_size: 0
+total_time: 0.121
+edges_searching_time: 0.035
+rewiring_time: 0.001
+num_missing_subface: 1
+delta_SF: 0.020769
+delta_ES: 0.000000
+delta_FES: 0.003801
+--------------------------------------------------
+dataset: hospital-lyon
+round: 1
+num_maximal_hyperedge: 60
+max_to_rewire: 1
+success_update: 1
+num_same_size: 0
+total_time: 0.126
+edges_searching_time: 0.007
+rewiring_time: 0.000
+num_missing_subface: 1
+delta_SF: 0.023555
+delta_ES: 0.000000
+delta_FES: 0.005965
+--------------------------------------------------
+dataset: hospital-lyon
+round: 2
+num_maximal_hyperedge: 60
+max_to_rewire: 1
+success_update: 0
+num_same_size: 1
+total_time: 0.078
+edges_searching_time: 0.007
+rewiring_time: 0.000
+num_missing_subface: 1
+delta_SF: 0.000000
+delta_ES: 0.000000
+delta_FES: 0.000000
+--------------------------------------------------
