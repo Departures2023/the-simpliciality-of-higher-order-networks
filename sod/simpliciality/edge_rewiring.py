@@ -1,5 +1,6 @@
 import os
 import random
+import threading
 import time
 import numpy as np
 import xgi
@@ -128,7 +129,11 @@ def save_expr_data(dataset, round, stats, filename):
     save the experiment data to a file.
     
     """
+    
+    # Create the directory if it does not exist
     os.makedirs(os.path.dirname(filename), exist_ok=True)
+    
+    # Prepare the lines to write to the file
     lines = [
         f"dataset: {dataset}",
         f"round: {round}",
@@ -146,6 +151,7 @@ def save_expr_data(dataset, round, stats, filename):
         "-" * 50
     ]
     
+    # Open the file in append mode and write the lines, Change 'a' to 'w' to rewrite the file
     with open(filename, 'a', encoding='utf-8') as f:
         f.write("\n".join(lines) + "\n")
 
@@ -260,3 +266,63 @@ def rewire_Alg1_expr(H, min_size=2, max_size=None):
     end_time = time.time()
     stats["total_time"] = end_time - start_time
     return H, stats
+
+# Use a single dataset to run the algorithm multiple times
+def loop_Alg1_expr(index, iter, min_size, max_size):
+    for i in range(iter):
+        H, stats = rewire_Alg1_expr(graphs[index], min_size, max_size)
+        H.cleanup(singletons=True)
+        graphs[index] = H
+        # Save the experiment data
+        save_expr_data(datasets[index], i, stats, dir[datasets[i]])
+        
+        
+if __name__ == "__main__":
+    global graphs, dir, datasets
+    graphs = []
+    max_size = 11
+    min_size = 2
+    
+    datasets = [
+    "contact-primary-school",
+    "contact-high-school",
+    "hospital-lyon",
+    "email-enron",
+    "email-eu",
+    "ndc-substances",
+    "diseasome",
+    "disgenenet",
+    "congress-bills",
+    "tags-ask-ubuntu",
+    ]
+    
+    dir = {
+        "contact-primary-school": "experiment_result/contact-primary-school.txt",
+        "contact-high-school": "experiment_result/contact-high-school.txt",
+        "hospital-lyon": "experiment_result/hospital-lyon.txt",
+        "email-enron": "experiment_result/email-enron.txt",
+        "email-eu": "experiment_result/email-eu.txt",
+        "ndc-substances": "experiment_result/ndc-substances.txt",
+        "diseasome": "experiment_result/diseasome.txt",
+        "disgenenet": "experiment_result/disgenenet.txt",
+        "congress-bills": "experiment_result/congress-bills.txt",
+        "tags-ask-ubuntu": "experiment_result/tags-ask-ubuntu.txt",
+    }
+    
+    # Load the datasets and clean them
+    for i in range (10):
+        graphs.append(xgi.load_xgi_data(datasets[i], max_order=max_size))
+        graphs[i].cleanup(singletons=True)
+    
+    # Create threads to run the algorithm in parallel
+    threads = []
+    for i in range(10):
+        thread = threading.Thread(target=loop_Alg1_expr, args=(i, 100, min_size, max_size,))
+        threads.append(thread)
+        thread.start()
+        
+    for thread in threads:
+        thread.join()
+
+    print("All threads finished")
+
