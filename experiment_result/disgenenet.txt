@@ -1,0 +1,42 @@
+dataset: disgenenet
+round: 0
+num_maximal_hyperedge: 463
+max_to_rewire: 1
+success_update: 1
+num_same_size: 0
+total_time: 0.732
+edges_searching_time: 0.004
+rewiring_time: 0.000
+num_missing_subface: 118
+delta_SF: 0.000000
+delta_ES: 0.000000
+delta_FES: 0.000135
+--------------------------------------------------
+dataset: disgenenet
+round: 1
+num_maximal_hyperedge: 463
+max_to_rewire: 2
+success_update: 1
+num_same_size: 1
+total_time: 0.527
+edges_searching_time: 0.006
+rewiring_time: 0.000
+num_missing_subface: 23
+delta_SF: 0.000000
+delta_ES: 0.000000
+delta_FES: 0.000037
+--------------------------------------------------
+dataset: disgenenet
+round: 2
+num_maximal_hyperedge: 463
+max_to_rewire: 1
+success_update: 1
+num_same_size: 0
+total_time: 0.500
+edges_searching_time: 0.008
+rewiring_time: 0.000
+num_missing_subface: 55
+delta_SF: 0.000000
+delta_ES: 0.000000
+delta_FES: 0.000046
+--------------------------------------------------
