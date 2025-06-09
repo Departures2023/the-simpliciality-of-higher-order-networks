@@ -4,11 +4,15 @@
 import xgi
 # from matplotlib import cm
 # from draw import *
+import sys
+import os
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from sod import *
 from sod.simpliciality import edit_simpliciality
 import threading
-import os
-from sod.simpliciality import edge_rewiring
+from edge_rewiring import edge_rewiring_alg
+from colorama import init
+from termcolor import colored
 
 datasets = [
     "contact-primary-school",
@@ -43,10 +47,10 @@ def edge_rewiring_exper(int):
         H = xgi.load_xgi_data(datasets[int], max_order=max_order)
         H.cleanup(singletons=True)
 
-        H, stats = edge_rewiring.rewire_Alg1_expr(H, min_size, max_order)
+        H, stats = edge_rewiring_alg.rewire_Alg1_expr(H, min_size, max_order)
         H.cleanup(singletons=True)
-        edge_rewiring.save_expr_data(datasets[int], j, stats, dir[datasets[int]])
-        print(stats)  
+        edge_rewiring_alg.save_expr_data(datasets[int], j, stats, dir[datasets[int]])
+        print(colored(datasets[int], 'blue'), stats)  
         
         
 if __name__ =="__main__":
