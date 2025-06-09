@@ -40,3 +40,87 @@ delta_SF: 0.000000
 delta_ES: 0.000000
 delta_FES: 0.000000
 --------------------------------------------------
+dataset: diseasome
+round: 8
+num_maximal_hyperedge: 69
+max_to_rewire: 0
+success_update: 0
+num_same_size: 0
+total_time: 0.237
+edges_searching_time: 0.159
+rewiring_time: 0.000
+num_missing_subface: 56
+delta_SF: 0.000000
+delta_ES: 0.000000
+delta_FES: 0.000000
+--------------------------------------------------
+dataset: hospital-lyon
+round: 8
+num_maximal_hyperedge: 60
+max_to_rewire: 1
+success_update: 1
+num_same_size: 0
+total_time: 0.625
+edges_searching_time: 0.020
+rewiring_time: 0.000
+num_missing_subface: 1
+delta_SF: 0.009535
+delta_ES: 0.000000
+delta_FES: 0.002105
+--------------------------------------------------
+dataset: email-enron
+round: 8
+num_maximal_hyperedge: 162
+max_to_rewire: 19
+success_update: 1
+num_same_size: 0
+total_time: 2.118
+edges_searching_time: 0.033
+rewiring_time: 0.001
+num_missing_subface: 993
+delta_SF: 0.001546
+delta_ES: 0.000000
+delta_FES: 0.000038
+--------------------------------------------------
+dataset: contact-high-school
+round: 8
+num_maximal_hyperedge: 210
+max_to_rewire: 1
+success_update: 1
+num_same_size: 0
+total_time: 2.556
+edges_searching_time: 0.146
+rewiring_time: 0.002
+num_missing_subface: 1
+delta_SF: 0.002059
+delta_ES: 0.000000
+delta_FES: 0.000729
+--------------------------------------------------
+dataset: disgenenet
+round: 8
+num_maximal_hyperedge: 463
+max_to_rewire: 1
+success_update: 1
+num_same_size: 0
+total_time: 3.823
+edges_searching_time: 0.005
+rewiring_time: 0.050
+num_missing_subface: 24
+delta_SF: 0.000000
+delta_ES: 0.000000
+delta_FES: 0.001150
+--------------------------------------------------
+dataset: contact-primary-school
+round: 8
+num_maximal_hyperedge: 345
+max_to_rewire: 1
+success_update: 0
+num_same_size: 1
+total_time: 2.948
+edges_searching_time: 0.362
+rewiring_time: 0.000
+num_missing_subface: 1
+delta_SF: 0.000000
+delta_ES: 0.000000
+delta_FES: 0.000000
+--------------------------------------------------
