@@ -1,12 +1,14 @@
+import sys
 import os
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 import random
 import time
 import numpy as np
 import xgi
 
-from ..simpliciality import edit_simpliciality, face_edit_simpliciality, simplicial_fraction
-from ..trie import Trie
-from .utilities import missing_subfaces, powerset
+from sod.simpliciality import edit_simpliciality, face_edit_simpliciality, simplicial_fraction
+from sod.trie import Trie
+from sod.simpliciality.utilities import missing_subfaces, powerset
 
 
 def rewire_Alg1(H, min_size=2, max_size=None):

@@ -40,3 +40,48 @@ delta_SF: 0.000028
 delta_ES: 0.000000
 delta_FES: 0.000000
 --------------------------------------------------
+<<<<<<< HEAD
+=======
+dataset: email-eu
+round: 0
+num_maximal_hyperedge: 2737
+max_to_rewire: 130
+success_update: 1
+num_same_size: 0
+total_time: 4.796
+edges_searching_time: 0.219
+rewiring_time: 0.123
+num_missing_subface: 3952
+delta_SF: 0.000000
+delta_ES: 0.000000
+delta_FES: 0.000000
+--------------------------------------------------
+dataset: email-eu
+round: 1
+num_maximal_hyperedge: 2737
+max_to_rewire: 29
+success_update: 1
+num_same_size: 0
+total_time: 4.687
+edges_searching_time: 0.292
+rewiring_time: 0.010
+num_missing_subface: 217
+delta_SF: 0.000118
+delta_ES: 0.000000
+delta_FES: 0.000087
+--------------------------------------------------
+dataset: email-eu
+round: 2
+num_maximal_hyperedge: 2737
+max_to_rewire: 71
+success_update: 1
+num_same_size: 0
+total_time: 4.680
+edges_searching_time: 0.303
+rewiring_time: 0.010
+num_missing_subface: 430
+delta_SF: 0.000299
+delta_ES: 0.000000
+delta_FES: 0.000002
+--------------------------------------------------
+>>>>>>> Annie
