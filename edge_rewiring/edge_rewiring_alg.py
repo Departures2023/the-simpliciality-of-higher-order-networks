@@ -15,29 +15,6 @@ def rewire_Alg1(H, min_size=2, max_size=None):
     """
     Returns a list of maximal hyperedges that are not simplices.
     """
-    #initialize return statistics
-    global num_maximal_hyperedges
-    global num_same_size
-    global success_update
-    global total_time
-    global edges_searching_time
-    global rewiring_time
-    global num_missing_subface
-    global delta_SF
-    global delta_ES
-    global delta_FES
-
-    num_maximal_hyperedges = 0
-    num_same_size = 0
-    success_update = 0
-    total_time = 0.0
-    edges_searching_time = 0.0
-    rewiring_time = 0.0
-    num_missing_subface = 0
-    delta_SF = 0.0
-    delta_ES = 0.0
-    delta_FES = 0.0
-
     es_init = edit_simpliciality(H, min_size=min_size)
     fes_init = face_edit_simpliciality(H, min_size=min_size)
     # Filter edges bigger than min_size
@@ -201,7 +178,7 @@ def rewire_Alg1_expr(H, min_size=2, max_size=None):
         "delta_ES": 0.0,
         "delta_FES": 0.0
     }
-
+    
     # Edges searching process start
     edges_searching_start = time.time()
     
@@ -227,8 +204,7 @@ def rewire_Alg1_expr(H, min_size=2, max_size=None):
         set_missing.update(missing_subfaces(t, curr, min_size))
         tmp_max_edges.remove(curr)
         if len(set_missing) != 0:
-            num_missing_subface = len(set_missing)
-            stats["num_missing_subface"] = num_missing_subface
+            stats["num_missing_subface"] = len(set_missing)
             break
     
     # Edge_remove = P(maximal edge) - missing subfaces - maximal edges
@@ -240,12 +216,10 @@ def rewire_Alg1_expr(H, min_size=2, max_size=None):
     
     # Store the time taken for searching edges
     edges_searching_end = time.time()
-    edges_searching_time = (edges_searching_end - edges_searching_start)
-    stats["edges_searching_time"] = edges_searching_time
+    stats["edges_searching_time"] = (edges_searching_end - edges_searching_start)
     
     # max_to_rewire is the maximum number of edges we can rewire (remove and add)
-    max_to_rewire = min(len(edges_remove), len(set_missing))
-    stats["max_to_rewire"] = max_to_rewire
+    stats["max_to_rewire"] = min(len(edges_remove), len(set_missing))
     
     # Rewiring process start
     rewiring_start = time.time()
@@ -258,10 +232,6 @@ def rewire_Alg1_expr(H, min_size=2, max_size=None):
         set_missing.remove(tmp_add)
 
         # The size of added edge and removed edge must be different
-        global rewiring_time
-        rewiring_time = 0.0
-        global num_same_size
-        num_same_size = 0
         if (len(tmp_add) != len(tmp_remove)):
             # Traverse through the edges of the hypergraph to find the edgeID of the edge to remove
             for id, edge in H.edges.members(dtype=dict).items():
@@ -272,32 +242,23 @@ def rewire_Alg1_expr(H, min_size=2, max_size=None):
                     
                     # Record the time taken for rewiring
                     rewiring_end = time.time()
-                    rewiring_time += rewiring_end - rewiring_start
-                    stats["rewiring_time"] = rewiring_time
-
+                    stats["rewiring_time"] += rewiring_end - rewiring_start
+                    
                     # Update statistics
-
-                    success_update = 1
-                    stats["success_update"] = success_update
+                    stats["success_update"] = 1
                     sf_tmp = simplicial_fraction(H, min_size=min_size)
                     es_tmp = edit_simpliciality(H, min_size=min_size)
                     fes_tmp = face_edit_simpliciality(H, min_size=min_size)
-                    delta_SF = sf_init - sf_tmp
-                    stats["delta_SF"] = delta_SF
-                    delta_ES = es_init - es_tmp
-                    stats["delta_ES"] = delta_ES
-                    delta_FES = fes_init - fes_tmp
-                    stats["delta_FES"] = delta_FES
+                    stats["delta_SF"] = sf_init - sf_tmp
+                    stats["delta_ES"] = es_init - es_tmp
+                    stats["delta_FES"] = fes_init - fes_tmp
                     break
             break
         else:
             # If the sizes are the same, we do not rewire (count the number of such cases)
-            num_same_size += 1
-            stats["num_same_size"] = num_same_size
+            stats["num_same_size"] += 1
     
     # Alg end time
     end_time = time.time()
-    total_time = end_time - start_time
-    stats["total_time"] = total_time
-    list_all = [max_edges, max_to_rewire, success_update, num_same_size, total_time, edges_searching_time, rewiring_time, num_missing_subface, delta_SF, delta_ES, delta_FES] 
-    return H, stats, list_all
+    stats["total_time"] = end_time - start_time
+    return H, stats
