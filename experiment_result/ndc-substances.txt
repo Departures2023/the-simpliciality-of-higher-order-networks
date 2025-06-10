@@ -40,3 +40,45 @@ delta_SF: 0.000000
 delta_ES: 0.000000
 delta_FES: 0.000000
 --------------------------------------------------
+dataset: ndc-substances
+round: 0
+num_maximal_hyperedge: 2646
+max_to_rewire: 2
+success_update: 1
+num_same_size: 0
+total_time: 15.675
+edges_searching_time: 0.357
+rewiring_time: 0.008
+num_missing_subface: 4080
+delta_SF: 0.000005
+delta_ES: 0.000000
+delta_FES: 0.000043
+--------------------------------------------------
+dataset: ndc-substances
+round: 1
+num_maximal_hyperedge: 2646
+max_to_rewire: 2
+success_update: 1
+num_same_size: 0
+total_time: 23.577
+edges_searching_time: 0.808
+rewiring_time: 0.015
+num_missing_subface: 1010
+delta_SF: 0.000005
+delta_ES: 0.000000
+delta_FES: 0.000016
+--------------------------------------------------
+dataset: ndc-substances
+round: 2
+num_maximal_hyperedge: 2646
+max_to_rewire: 0
+success_update: 0
+num_same_size: 0
+total_time: 11.207
+edges_searching_time: 1.404
+rewiring_time: 0.000
+num_missing_subface: 2035
+delta_SF: 0.000000
+delta_ES: 0.000000
+delta_FES: 0.000000
+--------------------------------------------------

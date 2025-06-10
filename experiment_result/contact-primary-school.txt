@@ -376,3 +376,45 @@ delta_SF: 0.002995
 delta_ES: 0.000000
 delta_FES: 0.000668
 --------------------------------------------------
+dataset: contact-primary-school
+round: 0
+num_maximal_hyperedge: 345
+max_to_rewire: 2
+success_update: 1
+num_same_size: 0
+total_time: 2.908
+edges_searching_time: 0.189
+rewiring_time: 0.017
+num_missing_subface: 2
+delta_SF: 0.002188
+delta_ES: 0.000000
+delta_FES: 0.000731
+--------------------------------------------------
+dataset: contact-primary-school
+round: 1
+num_maximal_hyperedge: 345
+max_to_rewire: 1
+success_update: 1
+num_same_size: 0
+total_time: 2.724
+edges_searching_time: 0.279
+rewiring_time: 0.004
+num_missing_subface: 1
+delta_SF: 0.002592
+delta_ES: 0.000000
+delta_FES: 0.000511
+--------------------------------------------------
+dataset: contact-primary-school
+round: 2
+num_maximal_hyperedge: 345
+max_to_rewire: 2
+success_update: 1
+num_same_size: 0
+total_time: 3.727
+edges_searching_time: 0.625
+rewiring_time: 0.090
+num_missing_subface: 2
+delta_SF: 0.002793
+delta_ES: 0.000000
+delta_FES: 0.000810
+--------------------------------------------------

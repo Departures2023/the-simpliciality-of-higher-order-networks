@@ -169,6 +169,7 @@ def rewire_Alg1_expr(H, min_size=2, max_size=None):
         "num_maximal_hyperedge": 0,
         "max_to_rewire": 0,
         "success_update": 0,
+        "num_failed_rewires": 0,
         "num_same_size": 0,
         "total_time": 0.0,
         "edges_searching_time": 0.0,

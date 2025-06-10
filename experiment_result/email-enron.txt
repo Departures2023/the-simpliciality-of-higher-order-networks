@@ -124,3 +124,45 @@ delta_SF: 0.003603
 delta_ES: 0.000000
 delta_FES: 0.001099
 --------------------------------------------------
+dataset: email-enron
+round: 0
+num_maximal_hyperedge: 162
+max_to_rewire: 11
+success_update: 1
+num_same_size: 0
+total_time: 0.151
+edges_searching_time: 0.006
+rewiring_time: 0.000
+num_missing_subface: 11
+delta_SF: 0.000000
+delta_ES: 0.000000
+delta_FES: -0.000160
+--------------------------------------------------
+dataset: email-enron
+round: 1
+num_maximal_hyperedge: 162
+max_to_rewire: 4
+success_update: 1
+num_same_size: 0
+total_time: 0.323
+edges_searching_time: 0.006
+rewiring_time: 0.000
+num_missing_subface: 4
+delta_SF: 0.002043
+delta_ES: 0.000000
+delta_FES: 0.001628
+--------------------------------------------------
+dataset: email-enron
+round: 2
+num_maximal_hyperedge: 162
+max_to_rewire: 4
+success_update: 1
+num_same_size: 0
+total_time: 0.470
+edges_searching_time: 0.021
+rewiring_time: 0.000
+num_missing_subface: 6
+delta_SF: 0.009843
+delta_ES: 0.000000
+delta_FES: 0.003725
+--------------------------------------------------
