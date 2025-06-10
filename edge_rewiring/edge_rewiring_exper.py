@@ -1,3 +1,4 @@
+#im adding this comment to test git
 # import matplotlib.pyplot as plt
 # import numpy as np
 # import seaborn as sns
@@ -159,7 +160,6 @@ def loop_Alg1_expr(index, iter, times, min_size, max_size, latex_list_one, latex
         str(round((max_delta_FES), 5)) + 
         " \\\\")
     latex_list_two.append("\hline")
-
 
 if __name__ == "__main__":
     print("Starting edge rewiring experiments...")
