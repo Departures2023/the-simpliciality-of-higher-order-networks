@@ -62,7 +62,7 @@ def loop_Alg1_expr(index, iter, min_size, max_size):
         delta_SF += stats["delta_SF"]
         delta_ES += stats["delta_ES"]
         delta_FES += stats["delta_FES"]
-        print(colored(datasets[index], 'blue'), stats)  
+        #print(colored(datasets[index], 'blue'), stats)  
         
     print( Fore.LIGHTGREEN_EX + str(datasets[index]) + ": total_time = " + str(total_time) + 
           " delta_SF = " + str(delta_SF) + 
@@ -85,7 +85,7 @@ if __name__ == "__main__":
     # Create threads to run the algorithm in parallel
     threads = []
     for i in range(10):
-        thread = threading.Thread(target=loop_Alg1_expr, args=(i, 3, min_size, max_size,))
+        thread = threading.Thread(target=loop_Alg1_expr, args=(i, 100, min_size, max_size,))
         threads.append(thread)
         thread.start()
         
