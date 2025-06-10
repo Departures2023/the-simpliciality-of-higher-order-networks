@@ -180,3 +180,31 @@ delta_SF: 0.000018
 delta_ES: 0.000000
 delta_FES: 0.000013
 --------------------------------------------------
+dataset: tags-ask-ubuntu
+round: 0
+num_maximal_hyperedge: 58673
+max_to_rewire: 7
+success_update: 1
+num_same_size: 0
+total_time: 416.024
+edges_searching_time: 4.853
+rewiring_time: 0.063
+num_missing_subface: 7
+delta_SF: 0.000000
+delta_ES: 0.000000
+delta_FES: -0.000000
+--------------------------------------------------
+dataset: tags-ask-ubuntu
+round: 1
+num_maximal_hyperedge: 58673
+max_to_rewire: 12
+success_update: 1
+num_same_size: 0
+total_time: 654.499
+edges_searching_time: 5.624
+rewiring_time: 0.072
+num_missing_subface: 13
+delta_SF: 0.000027
+delta_ES: 0.000000
+delta_FES: 0.000018
+--------------------------------------------------
