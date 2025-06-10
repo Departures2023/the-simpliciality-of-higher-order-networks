@@ -73,7 +73,10 @@ def generate_edge_distribution(min_edge_num, C_distribution, target_sum):
     return edge_distribution
 
 def all_possible_edges(arr_node):
-    return list(combinations(arr_node, i) for i in range(2, len(arr_node) + 1))
+    lst = []
+    for i in range(2, len(arr_node) + 1):
+        lst.append(list(combinations(arr_node, i)))
+    return sum(lst, [])
 
 
 #num_maxhyperedge???
@@ -108,6 +111,7 @@ def edge_rewire_model(edit_simpliciality, approx_num_C, num_max_hyperedge, num_n
     adjusted_lower = (min_size - C_avg) / std
     adjusted_higher = (max_size - C_avg) / std
     
+    # Q3: NEED IMPROVEMENT - BETTER DISTRIBUTION METHOD?
     # Generate the distribution of C values (Union of powerset(maximal hyperedges))
     C_distribution = scipy.stats.truncnorm.rvs(
         adjusted_lower, 
@@ -131,18 +135,24 @@ def edge_rewire_model(edit_simpliciality, approx_num_C, num_max_hyperedge, num_n
     maximal_edge_size_list = [combination_to_size(i) for i in C_distribution]
     
     for i in range(num_max_hyperedge):
-        
+        #TODO: ADD MAXIMAL HYPEREDGE BEFORE HAND
         # Randomly select nodes for the maximal hyperedge
         selected_nodes = random.sample(nodes, maximal_edge_size_list[i])
-        
+        print("selected_nodes:", selected_nodes)
         # Add the maximal hyperedge to the hypergraph
-        H.add_hyperedge(selected_nodes)
+        H.add_edge(selected_nodes)
         
         # Add edges to the hyperedge according to the edge distribution
         possible_edges = all_possible_edges(selected_nodes)
         possible_edge_idx = list(range(len(possible_edges)))
+        print("possible_edges:", possible_edges)
+        print("possible_edge_idx:", possible_edge_idx)
+        print("edge_distribution:", edge_distribution)
+        print("edge_distribution[i]:", edge_distribution[i])
         selected_edge_idx = random.sample(possible_edge_idx, edge_distribution[i])
         for idx in selected_edge_idx:
+            print("selected_edge_idx:", idx)
+            print("Adding edge:", possible_edges)
             H.add_edge(possible_edges[idx])
             
     return H
