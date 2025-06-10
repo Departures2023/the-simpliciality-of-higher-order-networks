@@ -1,207 +1,87 @@
-from collections import defaultdict
-import re
+import os
 
-raw_data = """
-dataset: congress-bills
-round: 0
-num_maximal_hyperedge: 31985
-max_to_rewire: 21
-success_update: 1
-num_same_size: 0
-total_time: 200.171
-edges_searching_time: 2.436
-rewiring_time: 0.071
-num_missing_subface: 991
-delta_SF: 0.000022
-delta_ES: 0.000000
-delta_FES: 0.000019
---------------------------------------------------
-dataset: congress-bills
-round: 1
-num_maximal_hyperedge: 31985
-max_to_rewire: 0
-success_update: 0
-num_same_size: 0
-total_time: 92.472
-edges_searching_time: 2.199
-rewiring_time: 0.000
-num_missing_subface: 10
-delta_SF: 0.000000
-delta_ES: 0.000000
-delta_FES: 0.000000
---------------------------------------------------
-dataset: congress-bills
-round: 2
-num_maximal_hyperedge: 31985
-max_to_rewire: 2
-success_update: 1
-num_same_size: 0
-total_time: 201.487
-edges_searching_time: 2.321
-rewiring_time: 0.068
-num_missing_subface: 499
-delta_SF: 0.000000
-delta_ES: 0.000000
-delta_FES: 0.000000
---------------------------------------------------
-dataset: diseasome
-round: 8
-num_maximal_hyperedge: 69
-max_to_rewire: 0
-success_update: 0
-num_same_size: 0
-total_time: 0.237
-edges_searching_time: 0.159
-rewiring_time: 0.000
-num_missing_subface: 56
-delta_SF: 0.000000
-delta_ES: 0.000000
-delta_FES: 0.000000
---------------------------------------------------
-dataset: hospital-lyon
-round: 8
-num_maximal_hyperedge: 60
-max_to_rewire: 1
-success_update: 1
-num_same_size: 0
-total_time: 0.625
-edges_searching_time: 0.020
-rewiring_time: 0.000
-num_missing_subface: 1
-delta_SF: 0.009535
-delta_ES: 0.000000
-delta_FES: 0.002105
---------------------------------------------------
-dataset: email-enron
-round: 8
-num_maximal_hyperedge: 162
-max_to_rewire: 19
-success_update: 1
-num_same_size: 0
-total_time: 2.118
-edges_searching_time: 0.033
-rewiring_time: 0.001
-num_missing_subface: 993
-delta_SF: 0.001546
-delta_ES: 0.000000
-delta_FES: 0.000038
---------------------------------------------------
-dataset: contact-high-school
-round: 8
-num_maximal_hyperedge: 210
-max_to_rewire: 1
-success_update: 1
-num_same_size: 0
-total_time: 2.556
-edges_searching_time: 0.146
-rewiring_time: 0.002
-num_missing_subface: 1
-delta_SF: 0.002059
-delta_ES: 0.000000
-delta_FES: 0.000729
---------------------------------------------------
-dataset: disgenenet
-round: 8
-num_maximal_hyperedge: 463
-max_to_rewire: 1
-success_update: 1
-num_same_size: 0
-total_time: 3.823
-edges_searching_time: 0.005
-rewiring_time: 0.050
-num_missing_subface: 24
-delta_SF: 0.000000
-delta_ES: 0.000000
-delta_FES: 0.001150
---------------------------------------------------
-dataset: contact-primary-school
-round: 8
-num_maximal_hyperedge: 345
-max_to_rewire: 1
-success_update: 0
-num_same_size: 1
-total_time: 2.948
-edges_searching_time: 0.362
-rewiring_time: 0.000
-num_missing_subface: 1
-delta_SF: 0.000000
-delta_ES: 0.000000
-delta_FES: 0.000000
---------------------------------------------------
-dataset: congress-bills
-round: 1
-num_maximal_hyperedge: 31985
-max_to_rewire: 5
-success_update: 1
-num_same_size: 0
-total_time: 183.657
-edges_searching_time: 2.232
-rewiring_time: 0.065
-num_missing_subface: 5
-delta_SF: 0.000022
-delta_ES: 0.000000
-delta_FES: 0.000013
---------------------------------------------------
-dataset: congress-bills
-round: 2
-num_maximal_hyperedge: 31985
-max_to_rewire: 18
-success_update: 1
-num_same_size: 0
-total_time: 178.857
-edges_searching_time: 2.574
-rewiring_time: 0.066
-num_missing_subface: 228
-delta_SF: 0.000043
-delta_ES: 0.000000
-delta_FES: 0.000033
---------------------------------------------------
-"""
+base_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+experiment_dir = os.path.join(base_dir, "experiment_result")
+output_dir = os.path.join(base_dir, "exptable_result")
 
+os.makedirs(output_dir, exist_ok=True)
+
+# List of files to process
+text_files = [
+    "congress-bills.txt",
+    "contact-high-school.txt",
+    "contact-primary-school.txt",
+    "diseasome.txt",
+    "disgenenet.txt",
+    "email-enron.txt",
+    "email-eu.txt",
+    "hospital-lyon.txt",
+    "ndc-substances.txt",
+    "tags-ask-ubuntu.txt"
+]
+
+#
 def parse_blocks(text):
     blocks = text.strip().split('--------------------------------------------------')
-    records = []
+    data = []
     for block in blocks:
-        record = {}
+        if not block.strip():
+            continue
+        entry = {}
         for line in block.strip().splitlines():
             if ':' in line:
                 key, value = line.split(':', 1)
-                key = key.strip()
-                value = value.strip()
-                try:
-                    value = float(value) if '.' in value else int(value)
-                except ValueError:
-                    pass
-                record[key] = value
-        if record:
-            records.append(record)
-    return records
+                entry[key.strip()] = value.strip()
+        data.append(entry)
+    return data
 
-def compute_averages(records, fields):
-    grouped = defaultdict(list)
-    for rec in records:
-        grouped[rec['dataset']].append(rec)
-    
-    table_rows = []
-    for dataset in sorted(grouped):
-        data = grouped[dataset]
-        row = [dataset]
-        for field in fields:
-            vals = [r.get(field, 0) for r in data]
-            avg = sum(vals) / len(vals) if vals else 0
-            row.append(f"{avg:.6f}" if isinstance(avg, float) else str(avg))
-        table_rows.append(" & ".join(row) + r" \\")
-    return table_rows
+def generate_latex_table(data):
+    if not data:
+        return "No data available."
 
-fields = [
-    "total_time", "rewiring_time", "edges_searching_time",
-    "delta_SF", "delta_ES", "delta_FES"
-]
+    dataset_name = data[0].get("dataset", "unknown").replace('_', '-')
+    rounds = [int(row["round"]) for row in data if "round" in row]
 
-records = parse_blocks(raw_data)
-rows = compute_averages(records, fields)
+    latex = [
+        "\\begin{table}[ht]",
+        "\\centering",
+        f"\\caption{{Edge Rewiring Results for \\texttt{{{dataset_name}}} Dataset (Rounds {min(rounds)}--{max(rounds)})}}",
+        "\\begin{tabular}{l" + "c" * len(data) + "}",
+        "\\hline",
+        "\\textbf{Metric} & " + " & ".join(f"\\textbf{{Round {row['round']}}}" for row in data) + " \\\\",
+        "\\hline"
+    ]
 
-# Output LaTeX table
-print("Dataset & " + " & ".join(f.replace('_', r'\_') for f in fields) + r" \\ \hline")
-for row in rows:
-    print(row)
+    # extract keys excluding 'dataset' and 'round'
+    keys = [k for k in data[0] if k not in ("dataset", "round")]
+    for key in keys:
+        label = key.replace('_', ' ').capitalize()
+        if "delta" in key.lower():
+            label = f"$\\Delta_{{\\mathrm{{{key.split('_')[1].upper()}}}}}$"
+        values = [row.get(key, "") for row in data]
+        latex.append(f"{label} & " + " & ".join(values) + " \\\\")
+
+    latex += ["\\hline", "\\end{tabular}", "\\end{table}"]
+    return "\n".join(latex)
+
+# Process each file in the provided list
+for fname in text_files:
+    input_path = os.path.join(experiment_dir, fname)
+
+    try:
+        with open(input_path, "r") as file:
+            content = file.read()
+        parsed_data = parse_blocks(content)
+        latex_table = generate_latex_table(parsed_data)
+
+        # Write .tex output
+        output_filename = fname.replace(".txt", ".tex")
+        output_path = os.path.join(output_dir, output_filename)
+        with open(output_path, "w") as out_file:
+            out_file.write(latex_table)
+
+        print(f"LaTeX table written: {output_filename}")
+    except FileNotFoundError:
+        print(f"File not found: {input_path}")
+    except Exception as e:
+        print(f"Error processing {fname}: {e}")
