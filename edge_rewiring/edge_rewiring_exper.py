@@ -1,3 +1,4 @@
+#im adding this comment to test git
 # import matplotlib.pyplot as plt
 # import numpy as np
 # import seaborn as sns
@@ -160,7 +161,6 @@ def loop_Alg1_expr(index, iter, times, min_size, max_size, latex_list_one, latex
         " \\\\")
     latex_list_two.append("\hline")
 
-
 if __name__ == "__main__":
     print("Starting edge rewiring experiments...")
     global graphs
@@ -178,7 +178,7 @@ if __name__ == "__main__":
     # Create threads to run the algorithm in parallel
     threads = []
     for i in range(10):
-        thread = threading.Thread(target=loop_Alg1_expr, args=(i, 10, 10, min_size, max_size, latex_list_one, latex_list_two))
+        thread = threading.Thread(target=loop_Alg1_expr, args=(i, 100, 100, min_size, max_size, latex_list_one, latex_list_two))
         threads.append(thread)
         thread.start()
         
