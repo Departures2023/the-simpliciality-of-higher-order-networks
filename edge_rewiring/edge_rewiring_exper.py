@@ -179,7 +179,7 @@ if __name__ == "__main__":
     # Create threads to run the algorithm in parallel
     threads = []
     for i in range(10):
-        thread = threading.Thread(target=loop_Alg1_expr, args=(i, 2, 2, min_size, max_size, latex_list_one, latex_list_two))
+        thread = threading.Thread(target=loop_Alg1_expr, args=(i, 50, 50, min_size, max_size, latex_list_one, latex_list_two))
         threads.append(thread)
         thread.start()
         
