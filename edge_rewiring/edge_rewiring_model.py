@@ -135,7 +135,7 @@ def all_possible_edges(arr_node):
 
 
 
-#num_maxhyperedge???
+# Function to generate a hypergraph with a given edit simpliciality, number of maximal hyperedges, and number of nodes
 def edge_rewire_model(edit_simpliciality, approx_num_C, num_max_hyperedge, num_node, min_size=2, max_size=None):
     # # Checking if input parameters are valid
     # if C_max > possible_combinations(num_node, min_size, max_size):
@@ -156,10 +156,11 @@ def edge_rewire_model(edit_simpliciality, approx_num_C, num_max_hyperedge, num_n
     # Calculate the average number of induced hyperedges
     C_avg = C_total / num_max_hyperedge
     
-    print("edge_total:", edge_total)
-    print("C_total:", C_total)
-    print("num_max_hyperedge:", num_max_hyperedge)
-    print("C_avg:", C_avg)
+    # Print statements for debugging
+    # print("edge_total:", edge_total)
+    # print("C_total:", C_total)
+    # print("num_max_hyperedge:", num_max_hyperedge)
+    # print("C_avg:", C_avg)
     
     
     # Q3: NEED IMPROVEMENT - BETTER DISTRIBUTION METHOD?
@@ -171,7 +172,8 @@ def edge_rewire_model(edit_simpliciality, approx_num_C, num_max_hyperedge, num_n
         num_max_hyperedge=num_max_hyperedge, 
         target_sum=C_total
     )
-    print("C_distribution:", C_distribution)
+    # Print statements for debugging
+    # print("C_distribution:", C_distribution)
     
     # Generate the distribution of numbers of edges actually connected
     edge_distribution  = generate_edge_distribution(
@@ -179,10 +181,16 @@ def edge_rewire_model(edit_simpliciality, approx_num_C, num_max_hyperedge, num_n
         C_distribution=C_distribution, 
         target_sum=edge_total
     )
-    print("edge_distribution:", edge_distribution)
+    
+    # Print statements for debugging
+    # print("edge_distribution:", edge_distribution)
+    
     # Convert the distribution of C values to the number of nodes in maximal hyperedges
     maximal_edge_size_list = [combination_to_size(i) for i in C_distribution]
-    print("maximal_edge_size_list:", maximal_edge_size_list)
+    
+    # Print statements for debugging
+    # print("maximal_edge_size_list:", maximal_edge_size_list)
+    
     final_possible_edge_list = []
     for i in range(num_max_hyperedge):
         # Randomly select nodes for the maximal hyperedge
@@ -192,9 +200,9 @@ def edge_rewire_model(edit_simpliciality, approx_num_C, num_max_hyperedge, num_n
         list_of_sets = [set(item) for item in list(tmp_list)]
         final_possible_edge_list.append(list_of_sets)
         
-        
-        print("selected_nodes:", selected_nodes)
-        print("final_possible_edge_list:", final_possible_edge_list)
+        # Print statements for debugging
+        # print("selected_nodes:", selected_nodes)
+        # print("final_possible_edge_list:", final_possible_edge_list)
         
         # Add the maximal hyperedge to the hypergraph
         H.add_edge(selected_nodes)
@@ -202,11 +210,13 @@ def edge_rewire_model(edit_simpliciality, approx_num_C, num_max_hyperedge, num_n
         # Add edges to the hyperedge according to the edge distribution
         possible_edges = all_possible_edges(selected_nodes)
         possible_edge_idx = list(range(len(possible_edges)))
+        
         # Print statements for debugging
         # print("possible_edges:", possible_edges)
         # print("possible_edge_idx:", possible_edge_idx)
         # print("edge_distribution:", edge_distribution)
         # print("edge_distribution[i]:", edge_distribution[i])
+        
         selected_edge_idx = random.sample(possible_edge_idx, edge_distribution[i])
         for idx in selected_edge_idx:
             print("selected_edge_idx:", idx)
