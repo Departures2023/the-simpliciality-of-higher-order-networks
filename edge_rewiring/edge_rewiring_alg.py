@@ -15,8 +15,8 @@ def rewire_Alg1(H, min_size=2, max_size=None):
     """
     Returns a list of maximal hyperedges that are not simplices.
     """
-    es_init = edit_simpliciality(H, min_size=min_size)
-    fes_init = face_edit_simpliciality(H, min_size=min_size)
+    #es_init = edit_simpliciality(H, min_size=min_size)
+    #fes_init = face_edit_simpliciality(H, min_size=min_size)
     # Filter edges bigger than min_size
     edges = H.edges.filterby("size", min_size, "geq").members()
     # Filter maximal edges bigger than min_size
@@ -77,8 +77,8 @@ def rewire_Alg1(H, min_size=2, max_size=None):
     count = 0
     success_add = []
     success_delete = []
-    delta_es = []
-    delta_fes = []
+    #delta_es = []
+    #delta_fes = []
     for i in range(max_to_rewire):
         tmp_remove = set(edges_remove.pop())
         tmp_add = set(set_missing.pop())
@@ -94,17 +94,17 @@ def rewire_Alg1(H, min_size=2, max_size=None):
                     count += 1
                     success_add.append(tmp_add)
                     success_delete.append(tmp_remove)
-                    es_tmp = edit_simpliciality(H, min_size=min_size)
-                    fes_tmp = face_edit_simpliciality(H, min_size=min_size)
-                    delta_es.append(es_init - es_tmp)
-                    delta_fes.append(fes_init - fes_tmp)
-                    es_init = es_tmp
-                    fes_init = fes_tmp
+                    #es_tmp = edit_simpliciality(H, min_size=min_size)
+                    #fes_tmp = face_edit_simpliciality(H, min_size=min_size)
+                    #delta_es.append(es_init - es_tmp)
+                    #delta_fes.append(fes_init - fes_tmp)
+                    #es_init = es_tmp
+                    #fes_init = fes_tmp
     print("Actual rewired number:", count)
     print("Edge added:" + str(success_add))
     print("Edge removed:" + str(success_delete))
-    print("Delta ES:", str(delta_es))
-    print("Delta FES:", str(delta_fes))
+    #print("Delta ES:", str(delta_es))
+    #print("Delta FES:", str(delta_fes))
     return H
 
 
@@ -142,9 +142,9 @@ def save_expr_data(dataset, round, stats, filename):
         f"edges_searching_time: {stats['edges_searching_time']:.3f}",
         f"rewiring_time: {stats['rewiring_time']:.3f}",
         f"num_missing_subface: {stats['num_missing_subface']}",
-        f"delta_SF: {stats['delta_SF']:.6f}",
-        f"delta_ES: {stats['delta_ES']:.6f}",
-        f"delta_FES: {stats['delta_FES']:.6f}",
+        #f"delta_SF: {stats['delta_SF']:.6f}",
+        #f"delta_ES: {stats['delta_ES']:.6f}",
+        #f"delta_FES: {stats['delta_FES']:.6f}",
         "-" * 50
     ]
     
@@ -160,9 +160,9 @@ def rewire_Alg1_expr(H, min_size=2, max_size=None):
     start_time = time.time()
     
     # Initialize the simplicial fraction, edit simpliciality, and face edit simpliciality
-    sf_init = simplicial_fraction(H, min_size=min_size)
-    es_init = edit_simpliciality(H, min_size=min_size)
-    fes_init = face_edit_simpliciality(H, min_size=min_size)
+    #sf_init = simplicial_fraction(H, min_size=min_size)
+    #es_init = edit_simpliciality(H, min_size=min_size)
+    #fes_init = face_edit_simpliciality(H, min_size=min_size)
     
     # Initialize statistics
     stats = {
@@ -246,12 +246,12 @@ def rewire_Alg1_expr(H, min_size=2, max_size=None):
                     
                     # Update statistics
                     stats["success_update"] = 1
-                    sf_tmp = simplicial_fraction(H, min_size=min_size)
-                    es_tmp = edit_simpliciality(H, min_size=min_size)
-                    fes_tmp = face_edit_simpliciality(H, min_size=min_size)
-                    stats["delta_SF"] = sf_init - sf_tmp
-                    stats["delta_ES"] = es_init - es_tmp
-                    stats["delta_FES"] = fes_init - fes_tmp
+                    #sf_tmp = simplicial_fraction(H, min_size=min_size)
+                    #es_tmp = edit_simpliciality(H, min_size=min_size)
+                    #fes_tmp = face_edit_simpliciality(H, min_size=min_size)
+                    #stats["delta_SF"] = sf_init - sf_tmp
+                    #stats["delta_ES"] = es_init - es_tmp
+                    #stats["delta_FES"] = fes_init - fes_tmp
                     break
             break
         else:
