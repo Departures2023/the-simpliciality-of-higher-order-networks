@@ -54,6 +54,9 @@ def generate_C_distribution(min_size, max_size, C_avg, num_max_hyperedge, target
     # Q1: HOW TO CHOOSE THE VALUE OF STANDARD DEVIATION?
     std = 0.5 * C_avg
     # Q2: CHECK IF I USE THE RIGHT EQUATION FOR UPPER AND LOWER BOUND?
+    if max_size is None:
+        max_size = combination_to_size(target_sum)
+
     adjusted_lower = (min_size - C_avg) / std
     adjusted_higher = (max_size - C_avg) / std
     
@@ -74,7 +77,10 @@ def generate_C_distribution(min_size, max_size, C_avg, num_max_hyperedge, target
         for i in range(int(excess)):
             # exclude indices where the number is already equal to the corresponding C_distribution value
             idx_exclude = [i for i in range(num_max_hyperedge) if min_size == C_distribution[i]]
-            idx = random.choice(list(set([x for x in range(0, num_max_hyperedge)]) - set(idx_exclude)))
+            lst_choose_from = list(set([x for x in range(0, num_max_hyperedge)]) - set(idx_exclude))
+            if (len(lst_choose_from) == 0):
+                break
+            idx = random.choice(lst_choose_from)
             C_distribution[idx] -= 1
         return C_distribution
     elif excess < 0:
@@ -82,7 +88,10 @@ def generate_C_distribution(min_size, max_size, C_avg, num_max_hyperedge, target
         for i in range(int(excess)):
             # exclude indices where the number is already equal to the corresponding C_distribution value
             idx_exclude = [i for i in range(num_max_hyperedge) if max_size == C_distribution[i]]
-            idx = random.choice(list(set([x for x in range(0, num_max_hyperedge)]) - set(idx_exclude)))
+            lst_choose_from = list(set([x for x in range(0, num_max_hyperedge)]) - set(idx_exclude))
+            if (len(lst_choose_from) == 0):
+                break
+            idx = random.choice(lst_choose_from)
             C_distribution[idx] += 1
         return C_distribution
     else:
@@ -101,8 +110,13 @@ def generate_edge_distribution(min_edge_num, C_distribution, target_sum):
     # length of the actual edge distribution equals the number of maximal hyperedges
     length = len(C_distribution)
     
-    if target_sum > C_distribution.sum() or target_sum < length * min_edge_num:
-        raise ValueError("Impossible to generate numbers: Value Error.")
+    # CHOICE1: DIRECTLY RETURN ERROR
+    # if target_sum > C_distribution.sum() or target_sum < length * min_edge_num:
+    #     raise ValueError("Impossible to generate numbers: Value Error.")
+    
+    # CHOICE2: RETURN adjusted list
+    if target_sum > C_distribution.sum():
+        target_sum = C_distribution.sum()
 
     # list of n min_value numbers
     edge_distribution = [min_edge_num] * length
