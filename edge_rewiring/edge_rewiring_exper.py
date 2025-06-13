@@ -110,7 +110,7 @@ def process_dataset (index, times, rewiring_times, min_size, max_size, latex_lis
     # Create threads to run the algorithm in parallel
     threads = []
     for i in range(times):           
-        # Where times is the number of times we want the process to run 
+        # Where times is the number of times we want to rewire
         thread = threading.Thread(target=loop_Alg1_expr, args=(index, rewiring_times, min_size, 
                                                                 max_size, total, ))
         threads.append(thread)
@@ -185,6 +185,9 @@ def process_dataset (index, times, rewiring_times, min_size, max_size, latex_lis
     latex_list_two.append("\hline")  
     
 
+# arguments: 
+# 1. times: how many trials do you want
+# 2. rewiring times: how many rewirings do you want do
 if __name__ == "__main__":
     print("Starting edge rewiring experiments...")
     global graphs
