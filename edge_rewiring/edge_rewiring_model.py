@@ -151,7 +151,7 @@ def all_possible_edges(arr_node):
 
 
 # Function to generate a hypergraph with a given edit simpliciality, number of maximal hyperedges, and number of nodes
-def edge_rewire_model(es, approx_num_C, num_max_hyperedge, num_node, min_size=2, max_size=None):
+def edge_rewire_model_es(es, approx_num_C, num_max_hyperedge, num_node, min_size=2, max_size=None):
     # # Checking if input parameters are valid
     # if C_max > possible_combinations(num_node, min_size, max_size):
     #     raise ValueError("C_max is too large for the number of nodes and the specified min/max size.")
@@ -280,7 +280,7 @@ def final_edge_adjustment_es(H, edges, final_possible_edge_list, edge_to_exclude
             tmp_add = final_possible_edge_list.pop(tmp_idx)
             # tmp_add is a list of sets representing possible edges
             for edge_set in tmp_add:
-                if (edge_set not in [set(e) for e in edges]) and (edge_set not in edge_to_exclude):
+                if (edge_set not in [set(e) for e in edges]):
                     H.add_edge(list(edge_set))
                     curr_es = edit_simpliciality(H, min_size=2)
                     if curr_es >= expected_es:
@@ -300,17 +300,18 @@ def final_edge_adjustment_es(H, edges, final_possible_edge_list, edge_to_exclude
 
 
 # Function to generate a hypergraph with a given edit simpliciality, number of maximal hyperedges, and number of nodes
-def edge_rewire_model_sf(simplicial_fraction, approx_num_E, num_max_hyperedge, num_node, min_size=2, max_size=None):
+def edge_rewire_model_sf(sf, approx_num_E, num_node, min_size=2, max_size=None):
     # # Checking if input parameters are valid
     # if C_max > possible_combinations(num_node, min_size, max_size):
     #     raise ValueError("C_max is too large for the number of nodes and the specified min/max size.")
     # edit_simpliciality_fraction = Fraction(edit_simpliciality).limit_denominator(max_denominator=C_max)
-
+    if max_size is None:
+        max_size = num_node
     # |C| of the graph
     edge_total = int(approx_num_E)
     
     # |H| of the graph
-    S_total = int(approx_num_E * simplicial_fraction)
+    S_total = int(approx_num_E * sf)
     
     # Generate empty hypergraph
     H = xgi.Hypergraph()
@@ -319,62 +320,117 @@ def edge_rewire_model_sf(simplicial_fraction, approx_num_E, num_max_hyperedge, n
     H.add_nodes_from(nodes)
     maximal_edge_is_simplex = []
     maximal_edge_not_simplex = []
+    # Edges can be added for final adjustment
+    final_possible_edge_list = []
     
     # Add simplices to the hypergraph until the total number of simplices is reaches to S_total
     while (S_total > 0):
+        # current number of edges in the hypergraph
+        edges = H.edges.filterby("size", min_size, "geq").members()
         # Find the maximal size of the simplex that can be added
         simplex_size_max = combination_to_size(S_total)
         # Randomly select the size of the simplex to be added
-        curr_size = random.randint(min_size, simplex_size_max)
+        curr_size = min(random.randint(min_size, simplex_size_max), max_size)
         # Randomly select nodes for the simplex
         selected_nodes = random.sample(nodes, curr_size)
+        while (selected_nodes in maximal_edge_is_simplex):
+            selected_nodes = random.sample(nodes, curr_size)
         maximal_edge_is_simplex.append(selected_nodes)
-        # Add all edges of the simplex to the hypergraph
-        H.add_edges_from(powerset(selected_nodes, 2))
-        S_total -= possible_combinations(curr_size, min_size=min_size, max_size=curr_size)
+        # Add all edges of the simplex that javen't been added to the hypergraph
+        all_edges = powerset(selected_nodes, 2)
+        possible_edges = []
+        for edge in all_edges:
+            if (edge not in [set(e) for e in edges]):
+                possible_edges.append(edge)
+        H.add_edges_from(possible_edges)
+        S_total -= len(possible_edges)
+    print("S_total:", S_total)
     
-    #TODO: Involve implementation choice
     while (edge_total > 0):
-        # Find the maximal size of the edge that can be added
+        # current number of edges in the hypergraph
+        edges = H.edges.filterby("size", min_size, "geq").members()
+        # Find the maximal size of the edge that can be addedl
         edge_size_max = combination_to_size(edge_total)
         # Randomly select the size of the edge to be added
-        curr_size = random.randint(min_size, edge_size_max)
+        curr_size = min(random.randint(min_size, edge_size_max), max_size)
         # Randomly select nodes for the maximal hyperedge
         selected_nodes = random.sample(nodes, curr_size)
+        while (selected_nodes in maximal_edge_is_simplex):
+            selected_nodes = random.sample(nodes, curr_size)
         maximal_edge_not_simplex.append(selected_nodes)
         H.add_edge(selected_nodes)
-        # Add all edges of the simplex to the hypergraph
-        H.add_edges_from(powerset(selected_nodes, 2, curr_size-1))
-        # Subtract things in maximal hyperedges
-        edge_total -= possible_combinations(curr_size, min_size=min_size, max_size=curr_size-1)
-        # Subtract the maximal hyperedge
-        edge_total -= 1
+        # Find the edges can be added to the hypergraph
+        all_edges = powerset(selected_nodes, 2, len(selected_nodes) - 1)
+        possible_edges = []
+        for edge in all_edges:
+            if (edge not in [set(e) for e in edges]):
+                possible_edges.append(edge)
+        if len(possible_edges) <= 1:
+            break
+        # Randomly choose the number of edges and edges in possible_edges to be added
+        # Avoid the case that number of edges to be added is bigger than edge_total
+        # Minus 1 from len(possible_edges) to avoid forming simplices
+        num_added_edges = min(edge_total, random.randint(0, len(possible_edges) - 1))
+        idx_added_edges = random.sample(range(len(possible_edges)), num_added_edges)
+        for idx in idx_added_edges:
+            H.add_edge(possible_edges[idx])
+        edge_total -= num_added_edges
+        
+        remaining_edges = set(idx_added_edges) ^ set(range(len(possible_edges)))
+        while len(remaining_edges) > 1:
+            final_possible_edge_list.append(remaining_edges.pop())
+            
+    print("edge_total:", edge_total)
     
     # Final adjustment of the hypergraph
     H = final_edge_adjustment_sf(
         H, 
         maximal_edge_is_simplex, 
-        maximal_edge_not_simplex, 
-        expected_es=edit_simpliciality
+        maximal_edge_not_simplex,
+        final_possible_edge_list,
+        expected_sf=sf
     )
     return H
 
 
-def final_edge_adjustment_sf(H, maximal_edge_is_simplex, maximal_edge_not_simplex, expected_sf):
+def final_edge_adjustment_sf(H, maximal_edge_is_simplex, maximal_edge_not_simplex, final_possible_edge_list, expected_sf):
     curr_sf = simplicial_fraction(H, min_size=2)
     # Split to cases to add or remove edges respectively
     if curr_sf > expected_sf:
         # Add edges to the hypergraph
-        for i in range(len(maximal_edge_not_simplex)):
+        while (curr_sf > expected_sf) and len(maximal_edge_is_simplex) > 0:
+            tmp_idx = random.randint(0, len(maximal_edge_is_simplex) - 1)
+            maximal_selected = maximal_edge_is_simplex[tmp_idx]
+            maximal_edge_is_simplex.pop(tmp_idx)
+            tmp_edges = powerset(maximal_selected, 2, len(maximal_selected) - 1)
+            edges = [set(item) for item in list(tmp_edges)]
+            if (len(edges) > 1):
+                # Limit the lower bound value to avoid large changes
+                edges_selected = random.sample(edges, random.randint(int(len(edges)/2.5), len(edges)))
+                for element in edges_selected:
+                    for id, edge in H.edges.members(dtype=dict).items():
+                            if (edge == element):
+                                H.remove_edge(id)
+                                curr_sf = simplicial_fraction(H, min_size=2)
+    if curr_sf < expected_sf:
+        # Remove edges from the hypergraph untul the edit simpliciality is equal to the expected value
+        while (curr_sf < expected_sf) and len(maximal_edge_not_simplex) > 0:
             tmp_idx = random.randint(0, len(maximal_edge_not_simplex) - 1)
-            tmp_add = maximal_edge_not_simplex.pop(tmp_idx)
-            # tmp_add is a list of sets representing possible edges
-            for edge_set in powerset(tmp_add, 2):
-                if edge_set not in H.edges.members(dtype=set):
-                    H.add_edge(list(edge_set))
-                    curr_sf = simplicial_fraction(H, min_size=2)
-                    if curr_sf(H, min_size=2) >= expected_sf:
-                        return H
+            maximal_selected = maximal_edge_not_simplex[tmp_idx]
+            maximal_edge_not_simplex.pop(tmp_idx)
+            tmp_edges = powerset(maximal_selected, 2, len(maximal_selected) - 1)
+            edges = [set(item) for item in list(tmp_edges)]
+            if (len(edges) > 1):
+                edges_selected = random.sample(edges, random.randint(1, len(edges)))
+                for idx in edges_selected:
+                    for id, edge in H.edges.members(dtype=dict).items():
+                            if (edge == element):
+                                H.remove_edge(id)
+                                curr_sf = simplicial_fraction(H, min_size=2)
+        return H
+    else:
+        return H
+    
 
 # Adjust Main function if needed
 # if __name__ == "__main__":
