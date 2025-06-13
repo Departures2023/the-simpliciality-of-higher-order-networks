@@ -344,6 +344,7 @@ def edge_rewire_model_sf(sf, approx_num_E, num_node, min_size=2, max_size=None):
                 possible_edges.append(edge)
         H.add_edges_from(possible_edges)
         S_total -= len(possible_edges)
+    simplices = H.edges.filterby("size", min_size, "geq").members()
     print("S_total:", S_total)
     
     while (edge_total > 0):
@@ -377,41 +378,56 @@ def edge_rewire_model_sf(sf, approx_num_E, num_node, min_size=2, max_size=None):
         edge_total -= num_added_edges
         
         remaining_edges = set(idx_added_edges) ^ set(range(len(possible_edges)))
+        # print("remaining_edges:", remaining_edges)
         while len(remaining_edges) > 1:
-            final_possible_edge_list.append(remaining_edges.pop())
+            final_possible_edge_list.append(possible_edges[remaining_edges.pop()])
             
     print("edge_total:", edge_total)
-    
+    sf_tmp = simplicial_fraction(H, min_size=2)
+    print("sf_tmp", sf_tmp)
     # Final adjustment of the hypergraph
     H = final_edge_adjustment_sf(
         H, 
         maximal_edge_is_simplex, 
         maximal_edge_not_simplex,
-        final_possible_edge_list,
+        simplices,
         expected_sf=sf
     )
     return H
 
 
-def final_edge_adjustment_sf(H, maximal_edge_is_simplex, maximal_edge_not_simplex, final_possible_edge_list, expected_sf):
+def final_edge_adjustment_sf(H, maximal_edge_is_simplex, maximal_edge_not_simplex, simplices, expected_sf):
     curr_sf = simplicial_fraction(H, min_size=2)
     # Split to cases to add or remove edges respectively
     if curr_sf > expected_sf:
-        # Add edges to the hypergraph
+        # Adjustment 1: remove edges that are simplices from the hypergraph
         while (curr_sf > expected_sf) and len(maximal_edge_is_simplex) > 0:
             tmp_idx = random.randint(0, len(maximal_edge_is_simplex) - 1)
             maximal_selected = maximal_edge_is_simplex[tmp_idx]
             maximal_edge_is_simplex.pop(tmp_idx)
             tmp_edges = powerset(maximal_selected, 2, len(maximal_selected) - 1)
             edges = [set(item) for item in list(tmp_edges)]
-            if (len(edges) > 1):
-                # Limit the lower bound value to avoid large changes
-                edges_selected = random.sample(edges, random.randint(int(len(edges)/2.5), len(edges)))
-                for element in edges_selected:
-                    for id, edge in H.edges.members(dtype=dict).items():
-                            if (edge == element):
+            i = len(edges) - 1
+            while (i >= 0) and (curr_sf > expected_sf):
+                tmp_idx = random.randint(0, i)
+                edge_remove = edges.pop(tmp_idx)
+                for id, edge in H.edges.members(dtype=dict).items():
+                            if (edge == edge_remove):
                                 H.remove_edge(id)
                                 curr_sf = simplicial_fraction(H, min_size=2)
+                i -= 1
+        return H
+        # Note: we don't do this adjusment in this case because it can easily form new simplex
+        ############################################################################        
+        # # Adjustment 2: add edges that are not simplices to the hypergraph:
+        # while (curr_sf > expected_sf) and len(maximal_edge_is_simplex) > 0:
+        #     tmp_idx = random.randint(0, len(final_possible_edge_list) - 1)
+        #     tmp_add = final_possible_edge_list.pop(tmp_idx)
+        #     # tmp_add is a list of sets representing possible edges
+        #     H.add_edge(tmp_add)
+        #     curr_sf = simplicial_fraction(H, min_size=2)
+        ############################################################################
+    print("curr_sf:", curr_sf)
     if curr_sf < expected_sf:
         # Remove edges from the hypergraph untul the edit simpliciality is equal to the expected value
         while (curr_sf < expected_sf) and len(maximal_edge_not_simplex) > 0:
@@ -419,14 +435,17 @@ def final_edge_adjustment_sf(H, maximal_edge_is_simplex, maximal_edge_not_simple
             maximal_selected = maximal_edge_not_simplex[tmp_idx]
             maximal_edge_not_simplex.pop(tmp_idx)
             tmp_edges = powerset(maximal_selected, 2, len(maximal_selected) - 1)
-            edges = [set(item) for item in list(tmp_edges)]
+            all_edges = [set(item) for item in list(tmp_edges)]
+            edges = [e for e in all_edges if e not in simplices]
             if (len(edges) > 1):
                 edges_selected = random.sample(edges, random.randint(1, len(edges)))
-                for idx in edges_selected:
+                for element in edges_selected:
                     for id, edge in H.edges.members(dtype=dict).items():
                             if (edge == element):
                                 H.remove_edge(id)
                                 curr_sf = simplicial_fraction(H, min_size=2)
+                                if curr_sf >= expected_sf:
+                                    break
         return H
     else:
         return H
