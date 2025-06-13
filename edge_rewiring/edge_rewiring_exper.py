@@ -142,7 +142,7 @@ def process_dataset (index, times, rewiring_times, min_size, max_size, latex_lis
     #avg_delta_FES = round((total_delta_FES / times), 5)
     
     # Prints results of each dataset
-    print( Fore.LIGHTGREEN_EX + str(datasets[i]) + ": \n" +
+    print( Fore.LIGHTGREEN_EX + str(datasets[index]) + ": \n" +
         " average time = " + str(avg_time) + "\n" + 
         " average failures = " + str(avg_failures) + "\n" + 
         " failure rate = " + str(failure_rate) + "\n" +
@@ -161,7 +161,7 @@ def process_dataset (index, times, rewiring_times, min_size, max_size, latex_lis
     
     # Appends results to the latex lists, these produce printed latex that can be copied into a latex document
     latex_list_one.append(
-        datasets[i] + " & " +
+        datasets[index] + " & " +
         str(avg_time) + " & " + 
         str(avg_failures) + " & " +
         str(failure_rate) + " & " +
@@ -173,7 +173,7 @@ def process_dataset (index, times, rewiring_times, min_size, max_size, latex_lis
     latex_list_one.append("\hline")
     
     latex_list_two.append(
-        datasets[i] + " & " +
+        datasets[index] + " & " +
         #str(avg_delta_ES) + " & " +
         #str(avg_delta_SF) + " & " +
         #str(round((min_delta_SF), 5)) + " & " +
