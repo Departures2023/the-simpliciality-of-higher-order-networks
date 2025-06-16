@@ -57,9 +57,10 @@ def loop_Alg1_expr(index, iter, min_size, max_size, total):
     delta_FES = 0
     delta_SF = 0'''
     for i in range(iter):
-        H, stats = edge_rewiring_alg.rewire_Alg1_expr(graphs[index], min_size, max_size)
+        G = graphs[index].copy()
+        H, stats = edge_rewiring_alg.rewire_Alg1_expr(G, min_size, max_size)
         H.cleanup(singletons=True)
-        graphs[index] = H
+        G = H
         # Save the experiment data
         edge_rewiring_alg.save_expr_data(datasets[index], i, stats, dir[datasets[index]])
         # Updates all values each time, checking the if statements
@@ -109,6 +110,7 @@ def process_dataset (index, times, rewiring_times, min_size, max_size, latex_lis
     
     # Create threads to run the algorithm in parallel
     threads = []
+    
     for i in range(times):           
         # Where times is the number of times we want to rewire
         thread = threading.Thread(target=loop_Alg1_expr, args=(index, rewiring_times, min_size, 
