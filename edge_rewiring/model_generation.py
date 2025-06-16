@@ -153,7 +153,7 @@ def all_possible_edges(arr_node):
 
 
 # Function to generate a hypergraph with a given edit simpliciality, number of maximal hyperedges, and number of nodes
-def edge_rewire_model_es(es, approx_num_C, num_max_hyperedge, num_node, min_size=2, max_size=None):
+def model_generation_es(es, approx_num_C, num_max_hyperedge, num_node, min_size=2, max_size=None):
     # # Checking if input parameters are valid
     # if C_max > possible_combinations(num_node, min_size, max_size):
     #     raise ValueError("C_max is too large for the number of nodes and the specified min/max size.")
@@ -301,7 +301,7 @@ def final_edge_adjustment_es(H, edges, final_possible_edge_list, edge_to_exclude
 
 
 # Function to generate a hypergraph with a given edit simpliciality, number of maximal hyperedges, and number of nodes
-def edge_rewire_model_sf(sf, approx_num_E, num_node, min_size=2, max_size=None):
+def model_generation_sf(sf, approx_num_E, num_node, min_size=2, max_size=None):
     # # Checking if input parameters are valid
     # if C_max > possible_combinations(num_node, min_size, max_size):
     #     raise ValueError("C_max is too large for the number of nodes and the specified min/max size.")
