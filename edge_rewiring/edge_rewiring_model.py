@@ -22,6 +22,8 @@ def possible_combinations(num_node, min_size=2, max_size=None):
     # Avoid unexpected min_size and max_size values
     if min_size < 2:
         min_size = 2
+    if max_size is None:
+        max_size = num_node
     if max_size > num_node:
         max_size = num_node
 
@@ -56,7 +58,7 @@ def generate_C_distribution(min_size, max_size, C_avg, num_max_hyperedge, target
     std = 0.5 * C_avg
     # Q2: CHECK IF I USE THE RIGHT EQUATION FOR UPPER AND LOWER BOUND?
     if max_size is None:
-        max_size = combination_to_size(target_sum)
+        max_size = target_sum
 
     adjusted_lower = (min_size - C_avg) / std
     adjusted_higher = (max_size - C_avg) / std
@@ -185,14 +187,14 @@ def edge_rewire_model_es(es, approx_num_C, num_max_hyperedge, num_node, min_size
     # Q3: NEED IMPROVEMENT - BETTER DISTRIBUTION METHOD?
     # Generate the distribution of C values (Union of powerset(maximal hyperedges))
     C_distribution = generate_C_distribution(
-        min_size=min_size, 
-        max_size=max_size, 
+        min_size=possible_combinations(min_size), 
+        max_size=C_total, 
         C_avg=C_avg, 
         num_max_hyperedge=num_max_hyperedge, 
         target_sum=C_total
     )
     # Print statements for debugging
-    # print("C_distribution:", C_distribution)
+    print("C_distribution:", C_distribution)
     
     # Generate the distribution of numbers of edges actually connected
     edge_distribution  = generate_edge_distribution(
@@ -280,11 +282,10 @@ def final_edge_adjustment_es(H, edges, final_possible_edge_list, edge_to_exclude
             tmp_add = final_possible_edge_list.pop(tmp_idx)
             # tmp_add is a list of sets representing possible edges
             for edge_set in tmp_add:
-                if (edge_set not in [set(e) for e in edges]):
-                    H.add_edge(list(edge_set))
-                    curr_es = edit_simpliciality(H, min_size=2)
-                    if curr_es >= expected_es:
-                        return H
+                H.add_edge(list(edge_set))
+                curr_es = edit_simpliciality(H, min_size=2)
+                if curr_es >= expected_es:
+                    return H
     elif curr_es > expected_es:
         # Remove edges from the hypergraph untul the edit simpliciality is equal to the expected value
         while curr_es > expected_es:
