@@ -93,6 +93,7 @@ def loop_Alg1_expr(index, iter, min_size, max_size, total):
     total["total_success"] += success
     total["total_time"] += time
     total["total_num_missing_subfaces"] += num_missing_subfaces
+    total["num_max_hyperedges"] = stats["num_maximal_hyperedge"]
     #total_delta_ES += delta_ES
     #total_delta_FES += delta_FES
     #total_delta_SF += delta_SF
@@ -129,7 +130,7 @@ def process_dataset (index, times, rewiring_times, min_size, max_size, latex_lis
     total_delta_SF = 0'''
     max_failures = total["max_failures"]
     min_failures = total["min_failures"]
-    #num_max_hyperedges = total["num_max_hyperedges"]
+    num_max_hyperedges = total["num_max_hyperedges"]
     '''max_delta_FES = 0
         min_delta_FES = iter
         max_delta_SF = 0
@@ -169,7 +170,7 @@ def process_dataset (index, times, rewiring_times, min_size, max_size, latex_lis
         str(failure_rate) + " & " +
         str(min_failures) + " & " +
         str(max_failures) + " & " +
-        #str(num_max_hyperedges) + " & " +
+        str(num_max_hyperedges) + " & " +
         #str(avg_num_missing_subfaces) + 
         " \\\\")
     latex_list_one.append("\hline")
