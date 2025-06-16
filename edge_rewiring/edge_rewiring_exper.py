@@ -57,9 +57,10 @@ def loop_Alg1_expr(index, iter, min_size, max_size, total):
     delta_FES = 0
     delta_SF = 0'''
     for i in range(iter):
-        H, stats = edge_rewiring_alg.rewire_Alg1_expr(graphs[index], min_size, max_size)
+        G = graphs[index].copy()
+        H, stats = edge_rewiring_alg.rewire_Alg1_expr(G, min_size, max_size)
         H.cleanup(singletons=True)
-        graphs[index] = H
+        G = H
         # Save the experiment data
         edge_rewiring_alg.save_expr_data(datasets[index], i, stats, dir[datasets[index]])
         # Updates all values each time, checking the if statements
@@ -92,6 +93,7 @@ def loop_Alg1_expr(index, iter, min_size, max_size, total):
     total["total_success"] += success
     total["total_time"] += time
     total["total_num_missing_subfaces"] += num_missing_subfaces
+    total["num_max_hyperedges"] = stats["num_maximal_hyperedge"]
     #total_delta_ES += delta_ES
     #total_delta_FES += delta_FES
     #total_delta_SF += delta_SF
@@ -109,8 +111,9 @@ def process_dataset (index, times, rewiring_times, min_size, max_size, latex_lis
     
     # Create threads to run the algorithm in parallel
     threads = []
+    
     for i in range(times):           
-        # Where times is the number of times we want the process to run 
+        # Where times is the number of times we want to rewire
         thread = threading.Thread(target=loop_Alg1_expr, args=(index, rewiring_times, min_size, 
                                                                 max_size, total, ))
         threads.append(thread)
@@ -127,7 +130,7 @@ def process_dataset (index, times, rewiring_times, min_size, max_size, latex_lis
     total_delta_SF = 0'''
     max_failures = total["max_failures"]
     min_failures = total["min_failures"]
-    #num_max_hyperedges = total["num_max_hyperedges"]
+    num_max_hyperedges = total["num_max_hyperedges"]
     '''max_delta_FES = 0
         min_delta_FES = iter
         max_delta_SF = 0
@@ -167,7 +170,7 @@ def process_dataset (index, times, rewiring_times, min_size, max_size, latex_lis
         str(failure_rate) + " & " +
         str(min_failures) + " & " +
         str(max_failures) + " & " +
-        #str(num_max_hyperedges) + " & " +
+        str(num_max_hyperedges) + " & " +
         #str(avg_num_missing_subfaces) + 
         " \\\\")
     latex_list_one.append("\hline")
@@ -185,6 +188,9 @@ def process_dataset (index, times, rewiring_times, min_size, max_size, latex_lis
     latex_list_two.append("\hline")  
     
 
+# arguments: 
+# 1. times: how many trials do you want
+# 2. rewiring times: how many rewirings do you want do
 if __name__ == "__main__":
     print("Starting edge rewiring experiments...")
     global graphs
