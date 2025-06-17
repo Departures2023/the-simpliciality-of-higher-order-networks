@@ -192,6 +192,9 @@ def process_dataset (index, times, rewiring_times, min_size, max_size, latex_lis
 # 1. times: how many trials do you want
 # 2. rewiring times: how many rewirings do you want do
 if __name__ == "__main__":
+    if len(sys.argv) < 3:
+        print("Usage Error: <processes> <rewiring_times>")
+        sys.exit()
     print("Starting edge rewiring experiments...")
     global graphs
     graphs = []
