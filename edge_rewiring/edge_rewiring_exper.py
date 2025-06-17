@@ -82,7 +82,7 @@ def loop_Alg1_expr(index, iter, min_size, max_size, total):
         #    max_delta_FES = stats["delta_FES"]
         #if (stats["delta_FES"] < min_delta_FES):
         #    min_delta_FES = stats["delta_FES"]
-        print(colored(datasets[index], 'blue'), stats)
+        #print(colored(datasets[index], 'blue'), stats)
 
     # Checks min and max failures, updates total values
     if (failures > total["max_failures"]):
