@@ -43,63 +43,84 @@ dir = {
     "tags-ask-ubuntu": "experiment_result/tags-ask-ubuntu.txt",
 }
 
+# We redefine these later, in main? 
 max_order = 11
 min_size = 2      
         
-# Use a single dataset of "index" to rewire for "iter" times
-def loop_Alg1_expr(index, iter, min_size, max_size, total):
-# Where iter is the number of iterations we want to run the algorithm
+"""
+Construct_New_Graph
+Inputs: 
+    index - index of dataset we want to use
+    iter - number of rewirings we want to occur
+    min size - minimum size used in main 
+    max size - maximum size used in main
+    total - dictionary of statistics
+
+Output:
+    Updates total successes
+    Updates total time
+    Updates number of missing subfaces 
+    Updates number of maximal hyper-edges
+
+Runs one trial of the edge rewiring algorithm on the given dataset, where iter is the number of
+ edge rewirings we want.
+"""
+def Construct_New_Graph(index, iter, min_size, max_size, total):
+    # Initialize variables to keep track of statistics
     success = 0
     failures = 0
     time = 0
     num_missing_subfaces = 0
-    '''delta_ES = 0
-    delta_FES = 0
-    delta_SF = 0'''
+    #For given number of iterations, we do an edge rewiring
     for i in range(iter):
+        # Makes a second graph
         G = graphs[index].copy()
+        # Runs rewiring, saving it as H and the statistics in stats
         H, stats = edge_rewiring_alg.rewire_Alg1_expr(G, min_size, max_size)
+        # Removes singletons if there are any
         H.cleanup(singletons=True)
+        # Sets new graph to rewired graph
         G = H
         # Save the experiment data
         edge_rewiring_alg.save_expr_data(datasets[index], i, stats, dir[datasets[index]])
-        # Updates all values each time, checking the if statements
-        #total["num_max_hyperedges"] = stats["num_maximal_hyperedge"]
-        #num_missing_subfaces += stats["num_missing_subface"]
+        # Updates if there was a sucess or not
         success += stats["success_update"]
         if stats["success_update"] == 0:
             failures += 1
         time += stats["total_time"]
-        
-        #delta_ES += stats["delta_ES"]
-        #delta_SF += stats["delta_SF"]
-        #if (stats["delta_SF"] > max_delta_SF):
-        #    max_delta_SF = stats["delta_SF"]
-        #if (stats["delta_SF"]  < min_delta_SF):
-        #    min_delta_SF = stats["delta_SF"]
-        #delta_FES += stats["delta_FES"]
-        #if (stats["delta_FES"] > max_delta_FES):
-        #    max_delta_FES = stats["delta_FES"]
-        #if (stats["delta_FES"] < min_delta_FES):
-        #    min_delta_FES = stats["delta_FES"]
-        #print(colored(datasets[index], 'blue'), stats)
+        print(colored(datasets[index], 'blue'), stats)
 
     # Checks min and max failures, updates total values
     if (failures > total["max_failures"]):
         total["max_failures"] = failures
     if (failures < total["min_failures"]):
         total["min_failures"] = failures
-            
+
+    # Updates statistics        
     total["total_success"] += success
     total["total_time"] += time
     total["total_num_missing_subfaces"] += num_missing_subfaces
     total["num_max_hyperedges"] = stats["num_maximal_hyperedge"]
-    #total_delta_ES += delta_ES
-    #total_delta_FES += delta_FES
-    #total_delta_SF += delta_SF
-        
-# Use a single dataset of "index" to process "times" trials
-def process_dataset (index, times, rewiring_times, min_size, max_size, latex_list_one, latex_list_two):
+
+"""
+Process_Dataset
+Inputs: 
+    index - dataset index
+    trials - number of trials we would like to complete
+    rewiring times - number of rewirings, used in construct new graph
+    min size - minimum size used in main
+    max size - maximum size used in main
+    latex list one - latex list one for formatting
+    latex list two - latex list two for formatting
+
+Output:
+    Updates latex list one and two
+    Updates total, including total success, total time, number of missing surfaces, number of maximal
+     hyper-edges, min failures and max failures Prints the results from each dataset
+
+For a single dataset, runs Construct_New_Graph the given number of trials
+"""     
+def process_dataset (index, trials, rewiring_times, min_size, max_size, latex_list):
     total = {
             'total_success': 0,
             'total_time': 0,
@@ -112,37 +133,30 @@ def process_dataset (index, times, rewiring_times, min_size, max_size, latex_lis
     # Create threads to run the algorithm in parallel
     threads = []
     
-    for i in range(times):           
-        # Where times is the number of times we want to rewire
-        thread = threading.Thread(target=loop_Alg1_expr, args=(index, rewiring_times, min_size, 
+    # Where trials is the number of processes we want to run
+    for i in range(trials):     
+        # Runs Construct_New_Graph in its own thread      
+        thread = threading.Thread(target=Construct_New_Graph, args=(index, rewiring_times, min_size, 
                                                                 max_size, total, ))
         threads.append(thread)
         thread.start()
-        
+
+    # For all threads, joins them to syncronize    
     for thread in threads:
         thread.join()
         
+    # Updates statistics
     total_success = total["total_success"]
     total_time = total["total_time"]
-    #total_num_missing_subfaces = total["total_num_missing_subfaces"]
-    '''total_delta_ES = 0
-    total_delta_FES = 0
-    total_delta_SF = 0'''
     max_failures = total["max_failures"]
     min_failures = total["min_failures"]
     num_max_hyperedges = total["num_max_hyperedges"]
-    '''max_delta_FES = 0
-        min_delta_FES = iter
-        max_delta_SF = 0
-        min_delta_SF = iter'''
+
     # Calculates averages and does necessary rounding
-    avg_time = round(total_time / times, 2)
-    total_failures = rewiring_times * times - total_success
-    avg_failures = total_failures / times
+    avg_time = round(total_time / trials, 2)
+    total_failures = rewiring_times * trials - total_success
+    avg_failures = total_failures / trials
     failure_rate = round((avg_failures / rewiring_times), 5)
-    #avg_delta_SF = round((total_delta_SF / times), 5)
-    #avg_delta_ES = round((total_delta_ES / times), 5)
-    #avg_delta_FES = round((total_delta_FES / times), 5)
     
     # Prints results of each dataset
     print( Fore.LIGHTGREEN_EX + str(datasets[index]) + ": \n" +
@@ -153,17 +167,9 @@ def process_dataset (index, times, rewiring_times, min_size, max_size, latex_lis
         " max failures = " + str(max_failures) + "\n" )
         #" number of edges that meet requirements = " + str(num_max_hyperedges) + "\n" +
         #" average number missing subfaces = " + str(avg_num_missing_subfaces) + "\n" +
-        #" average delta_ES = " + str(avg_delta_ES)  + "\n" + 
-        #" average delta_SF = " + str(avg_delta_SF) + "\n" + 
-        #" min delta_SF = " + str(round((min_delta_SF), 5)) + "\n" +
-        #" max delta_SF = " + str(round((max_delta_SF), 5)) + "\n" +
-        #" average delta_FES = " + str(avg_delta_FES) + "\n" +
-        #" min delta_FES = " + str(round((min_delta_FES), 5)) + "\n" +     
-        #" max delta_FES = " + str(round((max_delta_FES), 5)) + "\n")
-    
     
     # Appends results to the latex lists, these produce printed latex that can be copied into a latex document
-    latex_list_one.append(
+    latex_list.append(
         datasets[index] + " & " +
         str(avg_time) + " & " + 
         str(avg_failures) + " & " +
@@ -173,56 +179,59 @@ def process_dataset (index, times, rewiring_times, min_size, max_size, latex_lis
         str(num_max_hyperedges) + " & " +
         #str(avg_num_missing_subfaces) + 
         " \\\\")
-    latex_list_one.append("\hline")
-    
-    latex_list_two.append(
-        datasets[index] + " & " +
-        #str(avg_delta_ES) + " & " +
-        #str(avg_delta_SF) + " & " +
-        #str(round((min_delta_SF), 5)) + " & " +
-        #str(round((max_delta_SF), 5)) + " & " +
-        #str(avg_delta_FES) + " & " +
-        #str(round((min_delta_FES), 5)) + " & " +
-        #str(round((max_delta_FES), 5)) + 
-        " \\\\")
-    latex_list_two.append("\hline")  
-    
+    latex_list.append("\hline")   
 
 # arguments: 
-# 1. times: how many trials do you want
+# 1. trials: how many trials do you want
 # 2. rewiring times: how many rewirings do you want do
+"""
+Process_Dataset
+Arguments: 
+    1. trials: how many trials do you want
+    2. rewiring times: how many rewirings do you want do
+
+Output:
+    Prints Latex Code for the results of the experiments
+
+Runs Process_Dataset for each dataset in parallel, the given number of times.
+""" 
 if __name__ == "__main__":
+    # Checks if arguments are given, if not prints error and exits
     if len(sys.argv) < 3:
         print("Usage Error: <processes> <rewiring_times>")
         sys.exit()
     print("Starting edge rewiring experiments...")
+    #Initializes graphs and needed values
     global graphs
     graphs = []
     max_size = 11
     min_size = 2
-    latex_list_one = []
-    latex_list_two = []
-    times = int(sys.argv[1])
+    datasets_size = 10
+    latex_list = []
+    trials = int(sys.argv[1])
     rewiring_times = int(sys.argv[2])
-    # Load the datasets and clean them
-    for i in range (10):
+    # For all of the datasets
+    for i in range (datasets_size):
+        # Uploads datasets
         graphs.append(xgi.load_xgi_data(datasets[i], max_order=max_size))
+        # Removes any singletons
         graphs[i].cleanup(singletons=True)
     
     # Create threads to run the algorithm in parallel
     threads = []
 
-    for i in range(10):       
-        # Where times is the number of times we want the process to run 
-        thread = threading.Thread(target=process_dataset, args=(i, times, rewiring_times, min_size, max_size, latex_list_one, latex_list_two))
+    # For all datasets
+    for i in range(datasets_size):       
+        # Threads process_dataset so each process runs in parallel
+        thread = threading.Thread(target=process_dataset, args=(i, trials, rewiring_times, min_size, max_size, latex_list))
         threads.append(thread)
         thread.start()              
-        
+
+    # For all threads, joins them to syncronize    
     for thread in threads:
         thread.join()
 
+    # Prints the results of the experiments
     print(colored("All threads finished!", 'red'))
-    print(*latex_list_one, sep="\n")
-    print("\n \n \n ***** \n \n \n")
-    print(*latex_list_two, sep="\n")
+    print(*latex_list, sep="\n")
     print(colored("\n Done!", "red"))
