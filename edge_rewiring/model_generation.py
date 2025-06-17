@@ -213,16 +213,18 @@ def model_generation_es(es, approx_num_C, num_max_hyperedge, num_node, min_size=
     # Print statements for debugging
     # print("maximal_edge_size_list:", maximal_edge_size_list)
     
+    maximal_edge_set = set()
     final_possible_edge_list = []
     for i in range(num_max_hyperedge):
         # Randomly select nodes for the maximal hyperedge
         selected_nodes = random.sample(nodes, maximal_edge_size_list[i])
-        # Avoid adding repeating nodes
-        while (selected_nodes in edge_to_exclude):
+        # Avoid adding repeating nodes and make sure the selected nodes are not a subset of any existing maximal hyperedge
+        while (selected_nodes in edge_to_exclude and selected_nodes.issubset(maximal_edge_set)):
             selected_nodes = random.sample(nodes, maximal_edge_size_list[i])
             
         # Add the maximal hyperedge to the hypergraph
         H.add_edge(selected_nodes)
+        maximal_edge_set.update(selected_nodes)
         edge_to_exclude.append(selected_nodes)
 
         # Generate the powerset of the selected nodes (possible edges to add for adjustment)
@@ -430,7 +432,7 @@ def final_edge_adjustment_sf(H, maximal_edge_is_simplex, maximal_edge_not_simple
         ############################################################################
     print("curr_sf:", curr_sf)
     if curr_sf < expected_sf:
-        # Remove edges from the hypergraph untul the edit simpliciality is equal to the expected value
+        # Remove edges from the hypergraph until the edit simpliciality is equal to the expected value
         while (curr_sf < expected_sf) and len(maximal_edge_not_simplex) > 0:
             tmp_idx = random.randint(0, len(maximal_edge_not_simplex) - 1)
             maximal_selected = maximal_edge_not_simplex[tmp_idx]
