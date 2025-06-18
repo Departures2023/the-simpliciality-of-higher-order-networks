@@ -88,7 +88,7 @@ def Construct_New_Graph(index, iter, min_size, max_size, total):
         if stats["success_update"] == 0:
             failures += 1
         time += stats["total_time"]
-        print(colored(datasets[index], 'blue'), stats)
+        #print(colored(datasets[index], 'blue'), stats)
 
     # Checks min and max failures, updates total values
     if (failures > total["max_failures"]):
