@@ -453,6 +453,34 @@ def final_edge_adjustment_sf(H, maximal_edge_is_simplex, maximal_edge_not_simple
     else:
         return H
     
+# Function to approximate the upper bound of |C| of a hypergraph with a given edit simpliciality, number of maximal hyperedges, and number of nodes
+def approximate_C_upperbound(num_node, min_size, max_size, num_max_hyperedge):
+    # Case 1: size of maximal hyperedge is not limited by max_size
+    if max_size is None or max_size > num_node:
+        # Upper bound is the case to form a maximal hyperedge with largest size possible, while other maximal hyperedges are of size min_size
+        C_big_edge = possible_combinations((num_node - 2*(num_max_hyperedge - 1)), min_size)
+        C_upperbound = C_big_edge + (num_max_hyperedge - 1)
+        return C_upperbound
+    else:
+        # Case 2: size of maximal hyperedge is limited by max_size
+        # Upper bound is the case to form bunch of maximal hyperedges with largest size possible, while other maximal hyperedges are of size min_size
+        # except the last one, which is of size num_node % max_size (takes the rest of the possible nodes)
+        C_upperbound = 0
+        while (num_node % max_size > 2*num_max_hyperedge) and (num_node > max_size) and (num_max_hyperedge > 0):
+            C_big_edge = possible_combinations(max_size, min_size)
+            C_upperbound+= C_big_edge
+            num_node -= max_size
+            num_max_hyperedge -= 1
+        C_upperbound += num_max_hyperedge - 1
+        num_node -= 2*(num_max_hyperedge - 1)
+        C_upperbound += possible_combinations(min(num_node, max_size), min_size)
+        return C_upperbound
+
+
+
+
+
+    
 
 # Adjust Main function if needed
 # if __name__ == "__main__":
