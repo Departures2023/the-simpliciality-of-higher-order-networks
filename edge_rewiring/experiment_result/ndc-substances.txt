@@ -2968,3 +2968,47 @@ edges_searching_time: 0.892
 rewiring_time: 0.000
 num_missing_subface: 10
 --------------------------------------------------
+dataset: ndc-substances
+round: 3
+num_maximal_hyperedge: 2646
+max_to_rewire: 0
+success_update: 0
+num_same_size: 0
+total_time: 1.917
+edges_searching_time: 1.917
+rewiring_time: 0.000
+num_missing_subface: 1012
+--------------------------------------------------
+dataset: ndc-substances
+round: 3
+num_maximal_hyperedge: 2646
+max_to_rewire: 3
+success_update: 1
+num_same_size: 0
+total_time: 364.166
+edges_searching_time: 363.941
+rewiring_time: 0.224
+num_missing_subface: 498
+--------------------------------------------------
+dataset: ndc-substances
+round: 2
+num_maximal_hyperedge: 2646
+max_to_rewire: 2
+success_update: 1
+num_same_size: 0
+total_time: 0.988
+edges_searching_time: 0.984
+rewiring_time: 0.004
+num_missing_subface: 4080
+--------------------------------------------------
+dataset: ndc-substances
+round: 2
+num_maximal_hyperedge: 2646
+max_to_rewire: 1
+success_update: 1
+num_same_size: 0
+total_time: 2.153
+edges_searching_time: 2.152
+rewiring_time: 0.001
+num_missing_subface: 118
+--------------------------------------------------

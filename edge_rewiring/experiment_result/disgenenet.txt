@@ -3155,3 +3155,36 @@ edges_searching_time: 0.110
 rewiring_time: 0.000
 num_missing_subface: 119
 --------------------------------------------------
+dataset: disgenenet
+round: 2
+num_maximal_hyperedge: 463
+max_to_rewire: 0
+success_update: 0
+num_same_size: 0
+total_time: 0.000
+edges_searching_time: 0.000
+rewiring_time: 0.000
+num_missing_subface: 10
+--------------------------------------------------
+dataset: disgenenet
+round: 4
+num_maximal_hyperedge: 463
+max_to_rewire: 0
+success_update: 0
+num_same_size: 0
+total_time: 0.001
+edges_searching_time: 0.001
+rewiring_time: 0.000
+num_missing_subface: 119
+--------------------------------------------------
+dataset: disgenenet
+round: 3
+num_maximal_hyperedge: 463
+max_to_rewire: 0
+success_update: 0
+num_same_size: 0
+total_time: 0.008
+edges_searching_time: 0.008
+rewiring_time: 0.000
+num_missing_subface: 501
+--------------------------------------------------

@@ -51,7 +51,6 @@ def rewire_Alg1(H, min_size=2, max_size=None):
     #     edge_index += 1
     #############################################################################################################
     
-    
     # Edge_remove = P(maximal edge) - missing subfaces - maximal edges
     edges_remove = set()
     # Print statement for debugging

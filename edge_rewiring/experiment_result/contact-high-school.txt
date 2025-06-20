@@ -3200,3 +3200,25 @@ edges_searching_time: 1.378
 rewiring_time: 0.005
 num_missing_subface: 2
 --------------------------------------------------
+dataset: contact-high-school
+round: 2
+num_maximal_hyperedge: 210
+max_to_rewire: 2
+success_update: 1
+num_same_size: 1
+total_time: 3.716
+edges_searching_time: 3.716
+rewiring_time: 0.000
+num_missing_subface: 2
+--------------------------------------------------
+dataset: contact-high-school
+round: 5
+num_maximal_hyperedge: 210
+max_to_rewire: 4
+success_update: 1
+num_same_size: 0
+total_time: 2.637
+edges_searching_time: 2.636
+rewiring_time: 0.000
+num_missing_subface: 4
+--------------------------------------------------

@@ -3133,3 +3133,36 @@ edges_searching_time: 0.021
 rewiring_time: 0.000
 num_missing_subface: 1
 --------------------------------------------------
+dataset: hospital-lyon
+round: 2
+num_maximal_hyperedge: 60
+max_to_rewire: 1
+success_update: 1
+num_same_size: 0
+total_time: 1.776
+edges_searching_time: 1.776
+rewiring_time: 0.000
+num_missing_subface: 1
+--------------------------------------------------
+dataset: hospital-lyon
+round: 3
+num_maximal_hyperedge: 60
+max_to_rewire: 2
+success_update: 1
+num_same_size: 0
+total_time: 0.239
+edges_searching_time: 0.239
+rewiring_time: 0.000
+num_missing_subface: 2
+--------------------------------------------------
+dataset: hospital-lyon
+round: 2
+num_maximal_hyperedge: 60
+max_to_rewire: 1
+success_update: 1
+num_same_size: 0
+total_time: 0.206
+edges_searching_time: 0.206
+rewiring_time: 0.000
+num_missing_subface: 1
+--------------------------------------------------

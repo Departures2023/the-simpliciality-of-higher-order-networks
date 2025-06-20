@@ -41,11 +41,7 @@ dir = {
     "disgenenet": "experiment_result/disgenenet.txt",
     "congress-bills": "experiment_result/congress-bills.txt",
     "tags-ask-ubuntu": "experiment_result/tags-ask-ubuntu.txt",
-}
-
-# We redefine these later, in main? 
-max_order = 11
-min_size = 2      
+}  
         
 """
 Construct_New_Graph
