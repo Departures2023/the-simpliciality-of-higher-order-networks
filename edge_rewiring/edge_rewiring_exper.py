@@ -109,7 +109,7 @@ Output:
 
 For a single dataset, runs Construct_New_Graph the given number of trials
 """     
-def process_dataset (index, trials, rewiring_times, min_size, max_size, latex_list):
+def process_dataset (index, trials, rewiring_times, min_size, max_size, latex_list, og_cc, og_clique_centrality):
     total = {
             'total_success': 0,
             'total_time': 0,
@@ -126,7 +126,7 @@ def process_dataset (index, trials, rewiring_times, min_size, max_size, latex_li
     for i in range(trials):     
         # Runs Construct_New_Graph in its own thread      
         thread = threading.Thread(target=Construct_New_Graph, args=(index, rewiring_times, min_size, 
-                                                                max_size, total, ))
+                                                                max_size, total))
         threads.append(thread)
         thread.start()
 
@@ -141,6 +141,7 @@ def process_dataset (index, trials, rewiring_times, min_size, max_size, latex_li
     min_failures = total["min_failures"]
     num_max_hyperedges = total["num_max_hyperedges"]
     total_cc = sum(list(xgi.clustering_coefficient(graphs[index]).values()))
+    centrality = sum(list(xgi.clique_eigenvector_centrality(graphs[index]).values()))
 
     # Calculates averages and does necessary rounding
     avg_time = round(total_time / trials, 2)
@@ -148,6 +149,9 @@ def process_dataset (index, trials, rewiring_times, min_size, max_size, latex_li
     avg_failures = total_failures / trials
     failure_rate = round((avg_failures / rewiring_times), 5)
     avg_cc = round((total_cc / len(graphs[index].nodes)) / trials, 5)
+    delta_cc = round((avg_cc - og_cc), 5)
+    centrality = round(centrality / len(graphs[index].nodes), 5)
+    delta_clique_centrality = round(og_clique_centrality - centrality, 5)
     
     # Prints results of each dataset
     print( Fore.LIGHTGREEN_EX + str(datasets[index]) + ": \n" +
@@ -156,9 +160,10 @@ def process_dataset (index, trials, rewiring_times, min_size, max_size, latex_li
         " failure rate = " + str(failure_rate) + "\n" +
         " min failures = " + str(min_failures) + "\n" +
         " max failures = " + str(max_failures) + "\n" + 
-        " average clustering coefficient = " + str(avg_cc) + "\n" )
-        #" number of edges that meet requirements = " + str(num_max_hyperedges) + "\n" +
-        #" average number missing subfaces = " + str(avg_num_missing_subfaces) + "\n" +
+        " average clustering coefficient = " + str(avg_cc) + "\n" + 
+        " change in clustering coefficient = " + str(delta_cc) + "\n" +
+        " clique eigenvector centrality = " + str(centrality) + "\n" +
+        " change in clique eigenvector centrality = " + str(delta_clique_centrality))
     
     # Appends results to the latex lists, these produce printed latex that can be copied into a latex document
     latex_list.append(
@@ -170,11 +175,13 @@ def process_dataset (index, trials, rewiring_times, min_size, max_size, latex_li
         str(max_failures) + " & " +
         str(num_max_hyperedges) + " & " +
         str(avg_cc) + " & " +
+        str(delta_cc) + " & " +
+        str(centrality) +
         " \\\\")
     latex_list.append("\hline")   
 
 """
-Process_Dataset
+main
 Arguments: 
     1. trials: how many trials do you want
     2. rewiring times: how many rewirings do you want do
@@ -199,6 +206,7 @@ if __name__ == "__main__":
     latex_list = []
     trials = int(sys.argv[1])
     rewiring_times = int(sys.argv[2])
+
     # For all of the datasets
     for i in range (datasets_size):
         # Uploads datasets
@@ -212,7 +220,9 @@ if __name__ == "__main__":
     # For all datasets
     for i in range(datasets_size):       
         # Threads process_dataset so each process runs in parallel
-        thread = threading.Thread(target=process_dataset, args=(i, trials, rewiring_times, min_size, max_size, latex_list))
+        og_cc = sum(list(xgi.clustering_coefficient(graphs[i]).values())) / len(graphs[i].nodes)
+        og_clique_centrality = sum(list(xgi.clique_eigenvector_centrality(graphs[i]).values())) / len(graphs[i].nodes)
+        thread = threading.Thread(target=process_dataset, args=(i, trials, rewiring_times, min_size, max_size, latex_list, og_cc, og_clique_centrality))
         threads.append(thread)
         thread.start()              
 
