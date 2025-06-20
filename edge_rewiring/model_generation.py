@@ -87,8 +87,7 @@ def generate_C_distribution(min_size, max_size, C_avg, num_max_hyperedge, target
     # Q1: HOW TO CHOOSE THE VALUE OF STANDARD DEVIATION?
     std = 0.5 * C_avg
     # Q2: CHECK IF I USE THE RIGHT EQUATION FOR UPPER AND LOWER BOUND?
-    if max_size is None:
-        max_size = target_sum
+    # Don't override max_size with target_sum - use the actual max_size passed in
 
     adjusted_lower = (min_size - C_avg) / std
     adjusted_higher = (max_size - C_avg) / std
@@ -149,6 +148,8 @@ def generate_edge_distribution(min_edge_num, C_distribution, target_sum):
     
     # CHOICE2: RETURN adjusted list
     if target_sum > C_distribution.sum():
+        print(f"Warning: target_sum ({target_sum}) is larger than C_distribution.sum() ({C_distribution.sum()})")
+        print(f"Adjusting target_sum to {C_distribution.sum()}")
         target_sum = C_distribution.sum()
 
     # list of n min_value numbers
@@ -184,10 +185,17 @@ def all_possible_edges(arr_node):
 
 # Function to generate a hypergraph with a given edit simpliciality, number of maximal hyperedges, and number of nodes
 def model_generation_es(es, approx_num_C, num_max_hyperedge, num_node, min_size=2, max_size=None):
-    # # Checking if input parameters are valid
-    # if C_max > possible_combinations(num_node, min_size, max_size):
-    #     raise ValueError("C_max is too large for the number of nodes and the specified min/max size.")
-    # edit_simpliciality_fraction = Fraction(edit_simpliciality).limit_denominator(max_denominator=C_max)
+    # Checking if input parameters are valid
+    if max_size is None:
+        max_size = num_node
+    
+    # Calculate the maximum possible combinations for the given parameters
+    max_possible_C = approximate_C_upperbound(num_node, min_size, max_size, num_max_hyperedge)
+    
+    if approx_num_C > max_possible_C:
+        print(f"Warning: approx_num_C ({approx_num_C}) is larger than maximum possible combinations ({max_possible_C})")
+        print(f"Adjusting approx_num_C to {max_possible_C}")
+        approx_num_C = max_possible_C
 
     # |C| of the graph
     C_total = int(approx_num_C)
@@ -496,6 +504,7 @@ def final_edge_adjustment_sf(H, maximal_edge_is_simplex, maximal_edge_not_simple
     else:
         return H
     
+# NOTE THAT THE UPPER BOUND THIS FUNCTION RETURN IS POSSIBLE TO BE A LITTLE SMALLER THAN THE ACTUAL UPPER BOUND (IT DIDN'T CONSIDER OVERLAPPING MAXIMAL HYPEREDGES)
 # Function to approximate the upper bound of |C| of a hypergraph with a given edit simpliciality, number of maximal hyperedges, and number of nodes
 def approximate_C_upperbound(num_node, min_size, max_size, num_max_hyperedge):
     # Case 1: size of maximal hyperedge is not limited by max_size
@@ -509,14 +518,17 @@ def approximate_C_upperbound(num_node, min_size, max_size, num_max_hyperedge):
         # Upper bound is the case to form bunch of maximal hyperedges with largest size possible, while other maximal hyperedges are of size min_size
         # except the last one, which is of size num_node % max_size (takes the rest of the possible nodes)
         C_upperbound = 0
-        while (num_node % max_size > 2*num_max_hyperedge) and (num_node > max_size) and (num_max_hyperedge > 0):
+        # Calculate the sum of combinations for sizes from min_size to max_size (maximal hyperedges of size max_size)
+        while ((num_node - max_size) >= 2*num_max_hyperedge) and (num_max_hyperedge > 0):
             C_big_edge = possible_combinations(max_size, min_size)
             C_upperbound+= C_big_edge
             num_node -= max_size
             num_max_hyperedge -= 1
-        C_upperbound += num_max_hyperedge - 1
-        num_node -= 2*(num_max_hyperedge - 1)
-        C_upperbound += possible_combinations(min(num_node, max_size), min_size)
+        # If there are still maximal hyperedges to form, form them with the rest of the possible nodes
+        if num_max_hyperedge > 0:
+            C_upperbound += num_max_hyperedge - 1
+            num_node -= 2*(num_max_hyperedge - 1)
+            C_upperbound += possible_combinations(min(num_node, max_size), min_size)
         return C_upperbound
 
 
