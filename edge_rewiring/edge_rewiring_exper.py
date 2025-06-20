@@ -140,12 +140,14 @@ def process_dataset (index, trials, rewiring_times, min_size, max_size, latex_li
     max_failures = total["max_failures"]
     min_failures = total["min_failures"]
     num_max_hyperedges = total["num_max_hyperedges"]
+    total_cc = sum(list(xgi.clustering_coefficient(graphs[index]).values()))
 
     # Calculates averages and does necessary rounding
     avg_time = round(total_time / trials, 2)
     total_failures = rewiring_times * trials - total_success
     avg_failures = total_failures / trials
     failure_rate = round((avg_failures / rewiring_times), 5)
+    avg_cc = round((total_cc / len(graphs[index].nodes)), 5)
     
     # Prints results of each dataset
     print( Fore.LIGHTGREEN_EX + str(datasets[index]) + ": \n" +
@@ -153,7 +155,8 @@ def process_dataset (index, trials, rewiring_times, min_size, max_size, latex_li
         " average failures = " + str(avg_failures) + "\n" + 
         " failure rate = " + str(failure_rate) + "\n" +
         " min failures = " + str(min_failures) + "\n" +
-        " max failures = " + str(max_failures) + "\n" )
+        " max failures = " + str(max_failures) + "\n" + 
+        " average clustering coefficient = " + str(avg_cc) + "\n" )
         #" number of edges that meet requirements = " + str(num_max_hyperedges) + "\n" +
         #" average number missing subfaces = " + str(avg_num_missing_subfaces) + "\n" +
     
@@ -166,7 +169,7 @@ def process_dataset (index, trials, rewiring_times, min_size, max_size, latex_li
         str(min_failures) + " & " +
         str(max_failures) + " & " +
         str(num_max_hyperedges) + " & " +
-        #str(avg_num_missing_subfaces) + 
+        str(avg_cc) + " & " +
         " \\\\")
     latex_list.append("\hline")   
 
