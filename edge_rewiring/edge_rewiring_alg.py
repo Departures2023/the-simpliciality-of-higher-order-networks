@@ -6,7 +6,6 @@ import random
 import time
 import numpy as np
 import xgi
-
 from sod.simpliciality import edit_simpliciality, face_edit_simpliciality, simplicial_fraction
 from sod.trie import Trie
 from sod.simpliciality.utilities import missing_subfaces, powerset
@@ -102,10 +101,7 @@ def rewire_Alg1(H, min_size=2, max_size=None):
 #     return non_simplex_edges
 
 def save_expr_data(dataset, round, stats, filename):
-    """
-    save the experiment data to a file.
-    
-    """
+    #gets all of the stats 
     os.makedirs(os.path.dirname(filename), exist_ok=True)
     lines = [
         f"dataset: {dataset}",
@@ -118,27 +114,29 @@ def save_expr_data(dataset, round, stats, filename):
         f"edges_searching_time: {stats['edges_searching_time']:.3f}",
         f"rewiring_time: {stats['rewiring_time']:.3f}",
         f"num_missing_subface: {stats['num_missing_subface']}",
-        #f"delta_SF: {stats['delta_SF']:.6f}",
-        #f"delta_ES: {stats['delta_ES']:.6f}",
-        #f"delta_FES: {stats['delta_FES']:.6f}",
         "-" * 50
     ]
-    
+    #opens and writes to the file
     with open(filename, 'a', encoding='utf-8') as f:
         f.write("\n".join(lines) + "\n")
 
+""""
+Rewire_Alg1_expr
+Inputs: 
+    H - hypergraph 
+    min_size - minimum size of edges, set to two to avoid singletons
+    max_size - maximum size of edges, set to None
+
+Output:
+    Returns H, the rewired hypergraph
+    Stores statistics in stats, including number of maximal hyperedges, maximum number of edges to rewire,
+    success updates, number of same size edges, total time taken, edges searching time, and rewiring time,
+
+Rewires edges in the given hypergraph by removing one and adding another of different size.
+"""
 def rewire_Alg1_expr(H, min_size=2, max_size=None):
-    """
-    Returns a list of maximal hyperedges that are not simplices.
-    """
-    
     # Alg start time
     start_time = time.time()
-    
-    # Initialize the simplicial fraction, edit simpliciality, and face edit simpliciality
-    #sf_init = simplicial_fraction(H, min_size=min_size)
-    #es_init = edit_simpliciality(H, min_size=min_size)
-    #fes_init = face_edit_simpliciality(H, min_size=min_size)
     
     # Initialize statistics
     stats = {
@@ -149,10 +147,7 @@ def rewire_Alg1_expr(H, min_size=2, max_size=None):
         "total_time": 0.0,
         "edges_searching_time": 0.0,
         "rewiring_time": 0.0,
-        "num_missing_subface": 0,
-        "delta_SF": 0.0,
-        "delta_ES": 0.0,
-        "delta_FES": 0.0
+        "num_missing_subface": 0
     }
     
     # Edges searching process start
@@ -222,12 +217,6 @@ def rewire_Alg1_expr(H, min_size=2, max_size=None):
                     
                     # Update statistics
                     stats["success_update"] = 1
-                    #sf_tmp = simplicial_fraction(H, min_size=min_size)
-                    #es_tmp = edit_simpliciality(H, min_size=min_size)
-                    #fes_tmp = face_edit_simpliciality(H, min_size=min_size)
-                    #stats["delta_SF"] = sf_init - sf_tmp
-                    #stats["delta_ES"] = es_init - es_tmp
-                    #stats["delta_FES"] = fes_init - fes_tmp
                     break
             break
         else:
