@@ -2682,3 +2682,58 @@ edges_searching_time: 15.354
 rewiring_time: 0.110
 num_missing_subface: 1972
 --------------------------------------------------
+dataset: email-eu
+round: 0
+num_maximal_hyperedge: 2737
+max_to_rewire: 9
+success_update: 1
+num_same_size: 0
+total_time: 1.052
+edges_searching_time: 1.045
+rewiring_time: 0.007
+num_missing_subface: 47
+--------------------------------------------------
+dataset: email-eu
+round: 0
+num_maximal_hyperedge: 2737
+max_to_rewire: 20
+success_update: 1
+num_same_size: 0
+total_time: 1.373
+edges_searching_time: 1.305
+rewiring_time: 0.067
+num_missing_subface: 2015
+--------------------------------------------------
+dataset: email-eu
+round: 0
+num_maximal_hyperedge: 2737
+max_to_rewire: 37
+success_update: 1
+num_same_size: 0
+total_time: 1.391
+edges_searching_time: 1.364
+rewiring_time: 0.026
+num_missing_subface: 464
+--------------------------------------------------
+dataset: email-eu
+round: 0
+num_maximal_hyperedge: 2737
+max_to_rewire: 21
+success_update: 1
+num_same_size: 0
+total_time: 2.307
+edges_searching_time: 2.271
+rewiring_time: 0.035
+num_missing_subface: 225
+--------------------------------------------------
+dataset: email-eu
+round: 0
+num_maximal_hyperedge: 2737
+max_to_rewire: 10
+success_update: 1
+num_same_size: 0
+total_time: 3.282
+edges_searching_time: 3.019
+rewiring_time: 0.264
+num_missing_subface: 109
+--------------------------------------------------

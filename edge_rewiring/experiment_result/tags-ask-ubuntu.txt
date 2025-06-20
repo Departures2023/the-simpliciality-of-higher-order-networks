@@ -1692,3 +1692,36 @@ edges_searching_time: 11.754
 rewiring_time: 0.171
 num_missing_subface: 6
 --------------------------------------------------
+dataset: tags-ask-ubuntu
+round: 0
+num_maximal_hyperedge: 58673
+max_to_rewire: 5
+success_update: 1
+num_same_size: 0
+total_time: 6.951
+edges_searching_time: 6.886
+rewiring_time: 0.064
+num_missing_subface: 20
+--------------------------------------------------
+dataset: tags-ask-ubuntu
+round: 0
+num_maximal_hyperedge: 58673
+max_to_rewire: 2
+success_update: 0
+num_same_size: 2
+total_time: 6.899
+edges_searching_time: 6.899
+rewiring_time: 0.000
+num_missing_subface: 8
+--------------------------------------------------
+dataset: tags-ask-ubuntu
+round: 0
+num_maximal_hyperedge: 58673
+max_to_rewire: 4
+success_update: 1
+num_same_size: 0
+total_time: 6.752
+edges_searching_time: 6.684
+rewiring_time: 0.052
+num_missing_subface: 6
+--------------------------------------------------

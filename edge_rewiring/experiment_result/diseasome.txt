@@ -2968,3 +2968,58 @@ edges_searching_time: 0.000
 rewiring_time: 0.000
 num_missing_subface: 25
 --------------------------------------------------
+dataset: diseasome
+round: 0
+num_maximal_hyperedge: 69
+max_to_rewire: 0
+success_update: 0
+num_same_size: 0
+total_time: 0.000
+edges_searching_time: 0.000
+rewiring_time: 0.000
+num_missing_subface: 10
+--------------------------------------------------
+dataset: diseasome
+round: 0
+num_maximal_hyperedge: 69
+max_to_rewire: 0
+success_update: 0
+num_same_size: 0
+total_time: 0.000
+edges_searching_time: 0.000
+rewiring_time: 0.000
+num_missing_subface: 25
+--------------------------------------------------
+dataset: diseasome
+round: 0
+num_maximal_hyperedge: 69
+max_to_rewire: 0
+success_update: 0
+num_same_size: 0
+total_time: 0.002
+edges_searching_time: 0.002
+rewiring_time: 0.000
+num_missing_subface: 56
+--------------------------------------------------
+dataset: diseasome
+round: 0
+num_maximal_hyperedge: 69
+max_to_rewire: 0
+success_update: 0
+num_same_size: 0
+total_time: 0.000
+edges_searching_time: 0.000
+rewiring_time: 0.000
+num_missing_subface: 10
+--------------------------------------------------
+dataset: diseasome
+round: 0
+num_maximal_hyperedge: 69
+max_to_rewire: 0
+success_update: 0
+num_same_size: 0
+total_time: 0.002
+edges_searching_time: 0.002
+rewiring_time: 0.000
+num_missing_subface: 25
+--------------------------------------------------

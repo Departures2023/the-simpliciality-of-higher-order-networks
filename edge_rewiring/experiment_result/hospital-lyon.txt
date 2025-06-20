@@ -3166,3 +3166,58 @@ edges_searching_time: 0.206
 rewiring_time: 0.000
 num_missing_subface: 1
 --------------------------------------------------
+dataset: hospital-lyon
+round: 0
+num_maximal_hyperedge: 60
+max_to_rewire: 1
+success_update: 1
+num_same_size: 0
+total_time: 0.031
+edges_searching_time: 0.031
+rewiring_time: 0.000
+num_missing_subface: 1
+--------------------------------------------------
+dataset: hospital-lyon
+round: 0
+num_maximal_hyperedge: 60
+max_to_rewire: 1
+success_update: 1
+num_same_size: 0
+total_time: 0.017
+edges_searching_time: 0.017
+rewiring_time: 0.000
+num_missing_subface: 1
+--------------------------------------------------
+dataset: hospital-lyon
+round: 0
+num_maximal_hyperedge: 60
+max_to_rewire: 4
+success_update: 1
+num_same_size: 1
+total_time: 0.045
+edges_searching_time: 0.044
+rewiring_time: 0.001
+num_missing_subface: 4
+--------------------------------------------------
+dataset: hospital-lyon
+round: 0
+num_maximal_hyperedge: 60
+max_to_rewire: 1
+success_update: 1
+num_same_size: 0
+total_time: 0.069
+edges_searching_time: 0.069
+rewiring_time: 0.000
+num_missing_subface: 1
+--------------------------------------------------
+dataset: hospital-lyon
+round: 0
+num_maximal_hyperedge: 60
+max_to_rewire: 10
+success_update: 1
+num_same_size: 0
+total_time: 0.080
+edges_searching_time: 0.080
+rewiring_time: 0.000
+num_missing_subface: 10
+--------------------------------------------------

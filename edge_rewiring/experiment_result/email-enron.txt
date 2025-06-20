@@ -3133,3 +3133,58 @@ edges_searching_time: 0.079
 rewiring_time: 0.000
 num_missing_subface: 11
 --------------------------------------------------
+dataset: email-enron
+round: 0
+num_maximal_hyperedge: 162
+max_to_rewire: 11
+success_update: 1
+num_same_size: 2
+total_time: 0.000
+edges_searching_time: 0.000
+rewiring_time: 0.000
+num_missing_subface: 14
+--------------------------------------------------
+dataset: email-enron
+round: 0
+num_maximal_hyperedge: 162
+max_to_rewire: 11
+success_update: 1
+num_same_size: 0
+total_time: 0.598
+edges_searching_time: 0.598
+rewiring_time: 0.000
+num_missing_subface: 14
+--------------------------------------------------
+dataset: email-enron
+round: 0
+num_maximal_hyperedge: 162
+max_to_rewire: 3
+success_update: 1
+num_same_size: 0
+total_time: 0.008
+edges_searching_time: 0.007
+rewiring_time: 0.001
+num_missing_subface: 3
+--------------------------------------------------
+dataset: email-enron
+round: 0
+num_maximal_hyperedge: 162
+max_to_rewire: 2
+success_update: 1
+num_same_size: 0
+total_time: 0.024
+edges_searching_time: 0.024
+rewiring_time: 0.000
+num_missing_subface: 8
+--------------------------------------------------
+dataset: email-enron
+round: 0
+num_maximal_hyperedge: 162
+max_to_rewire: 2
+success_update: 1
+num_same_size: 0
+total_time: 0.631
+edges_searching_time: 0.631
+rewiring_time: 0.000
+num_missing_subface: 2
+--------------------------------------------------

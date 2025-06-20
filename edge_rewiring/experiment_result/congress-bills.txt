@@ -2176,3 +2176,36 @@ edges_searching_time: 328.593
 rewiring_time: 0.000
 num_missing_subface: 25
 --------------------------------------------------
+dataset: congress-bills
+round: 0
+num_maximal_hyperedge: 31985
+max_to_rewire: 0
+success_update: 0
+num_same_size: 0
+total_time: 3.374
+edges_searching_time: 3.374
+rewiring_time: 0.000
+num_missing_subface: 1012
+--------------------------------------------------
+dataset: congress-bills
+round: 0
+num_maximal_hyperedge: 31985
+max_to_rewire: 2
+success_update: 0
+num_same_size: 2
+total_time: 3.380
+edges_searching_time: 3.380
+rewiring_time: 0.000
+num_missing_subface: 8
+--------------------------------------------------
+dataset: congress-bills
+round: 0
+num_maximal_hyperedge: 31985
+max_to_rewire: 8
+success_update: 1
+num_same_size: 0
+total_time: 3.127
+edges_searching_time: 3.063
+rewiring_time: 0.064
+num_missing_subface: 2027
+--------------------------------------------------
