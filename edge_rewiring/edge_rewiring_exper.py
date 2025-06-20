@@ -147,7 +147,7 @@ def process_dataset (index, trials, rewiring_times, min_size, max_size, latex_li
     total_failures = rewiring_times * trials - total_success
     avg_failures = total_failures / trials
     failure_rate = round((avg_failures / rewiring_times), 5)
-    avg_cc = round((total_cc / len(graphs[index].nodes)), 5)
+    avg_cc = round((total_cc / len(graphs[index].nodes)) / trials, 5)
     
     # Prints results of each dataset
     print( Fore.LIGHTGREEN_EX + str(datasets[index]) + ": \n" +
