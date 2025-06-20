@@ -1,6 +1,7 @@
 dataset: congress-bills
 round: 0
 num_maximal_hyperedge: 31985
+<<<<<<< HEAD
 max_to_rewire: 20
 success_update: 1
 num_same_size: 0
@@ -11,10 +12,23 @@ num_missing_subface: 36
 delta_SF: 0.000021
 delta_ES: 0.000000
 delta_FES: 0.000004
+=======
+max_to_rewire: 14
+success_update: 1
+num_same_size: 0
+total_time: 16904.576
+edges_searching_time: 2.312
+rewiring_time: 0.066
+num_missing_subface: 42
+delta_SF: 0.000043
+delta_ES: 0.000000
+delta_FES: 0.000018
+>>>>>>> origin/main
 --------------------------------------------------
 dataset: congress-bills
 round: 1
 num_maximal_hyperedge: 31985
+<<<<<<< HEAD
 max_to_rewire: 5
 success_update: 1
 num_same_size: 0
@@ -22,11 +36,35 @@ total_time: 197.614
 edges_searching_time: 2.611
 rewiring_time: 0.084
 num_missing_subface: 2030
+=======
+max_to_rewire: 78
+success_update: 1
+num_same_size: 0
+total_time: 14542.046
+edges_searching_time: 338.841
+rewiring_time: 0.082
+num_missing_subface: 4004
+delta_SF: 0.000021
+delta_ES: 0.000000
+delta_FES: 0.000008
+--------------------------------------------------
+dataset: congress-bills
+round: 2
+num_maximal_hyperedge: 31985
+max_to_rewire: 9
+success_update: 1
+num_same_size: 0
+total_time: 18400.426
+edges_searching_time: 1.639
+rewiring_time: 0.714
+num_missing_subface: 492
+>>>>>>> origin/main
 delta_SF: 0.000001
 delta_ES: 0.000000
 delta_FES: 0.000012
 --------------------------------------------------
 dataset: congress-bills
+<<<<<<< HEAD
 round: 2
 num_maximal_hyperedge: 31985
 max_to_rewire: 7
@@ -39,4 +77,116 @@ num_missing_subface: 4075
 delta_SF: 0.000001
 delta_ES: 0.000000
 delta_FES: 0.000003
+=======
+round: 0
+num_maximal_hyperedge: 31985
+max_to_rewire: 2
+success_update: 1
+num_same_size: 1
+total_time: 361.586
+edges_searching_time: 3.443
+rewiring_time: 0.095
+num_missing_subface: 23
+delta_SF: 0.000001
+delta_ES: 0.000000
+delta_FES: 0.000013
+--------------------------------------------------
+dataset: congress-bills
+round: 1
+num_maximal_hyperedge: 31985
+max_to_rewire: 1
+success_update: 1
+num_same_size: 0
+total_time: 304.663
+edges_searching_time: 3.505
+rewiring_time: 0.091
+num_missing_subface: 24
+delta_SF: 0.000001
+delta_ES: 0.000000
+delta_FES: 0.000022
+--------------------------------------------------
+dataset: congress-bills
+round: 2
+num_maximal_hyperedge: 31985
+max_to_rewire: 1
+success_update: 1
+num_same_size: 0
+total_time: 289.292
+edges_searching_time: 4.320
+rewiring_time: 0.064
+num_missing_subface: 500
+delta_SF: 0.000001
+delta_ES: 0.000000
+delta_FES: 0.000006
+--------------------------------------------------
+dataset: congress-bills
+round: 0
+num_maximal_hyperedge: 31985
+max_to_rewire: 16
+success_update: 1
+num_same_size: 0
+total_time: 335.063
+edges_searching_time: 3.639
+rewiring_time: 0.106
+num_missing_subface: 40
+delta_SF: 0.000000
+delta_ES: 0.000000
+delta_FES: 0.000002
+--------------------------------------------------
+dataset: congress-bills
+round: 0
+num_maximal_hyperedge: 31985
+max_to_rewire: 18
+success_update: 1
+num_same_size: 1
+total_time: 289.201
+edges_searching_time: 2.804
+rewiring_time: 0.064
+num_missing_subface: 228
+delta_SF: 0.000022
+delta_ES: 0.000000
+delta_FES: 0.000009
+--------------------------------------------------
+dataset: congress-bills
+round: 1
+num_maximal_hyperedge: 31985
+max_to_rewire: 4
+success_update: 1
+num_same_size: 0
+total_time: 224.816
+edges_searching_time: 2.745
+rewiring_time: 0.114
+num_missing_subface: 2031
+delta_SF: 0.000001
+delta_ES: 0.000000
+delta_FES: 0.000010
+--------------------------------------------------
+dataset: congress-bills
+round: 0
+num_maximal_hyperedge: 31985
+max_to_rewire: 0
+success_update: 0
+num_same_size: 0
+total_time: 110.356
+edges_searching_time: 2.794
+rewiring_time: 0.000
+num_missing_subface: 10
+delta_SF: 0.000000
+delta_ES: 0.000000
+delta_FES: 0.000000
+--------------------------------------------------
+dataset: congress-bills
+round: 1
+num_maximal_hyperedge: 31985
+max_to_rewire: 1
+success_update: 0
+num_same_size: 1
+total_time: 165.963
+edges_searching_time: 2.902
+rewiring_time: 0.000
+num_missing_subface: 9
+delta_SF: 0.000000
+delta_ES: 0.000000
+delta_FES: 0.000000
+>>>>>>> origin/main
 --------------------------------------------------

@@ -15,8 +15,31 @@ def rewire_Alg1(H, min_size=2, max_size=None):
     """
     Returns a list of maximal hyperedges that are not simplices.
     """
-    #es_init = edit_simpliciality(H, min_size=min_size)
-    #fes_init = face_edit_simpliciality(H, min_size=min_size)
+    #initialize return statistics
+    global num_maximal_hyperedges
+    global num_same_size
+    global success_update
+    global total_time
+    global edges_searching_time
+    global rewiring_time
+    global num_missing_subface
+    global delta_SF
+    global delta_ES
+    global delta_FES
+
+    num_maximal_hyperedges = 0
+    num_same_size = 0
+    success_update = 0
+    total_time = 0.0
+    edges_searching_time = 0.0
+    rewiring_time = 0.0
+    num_missing_subface = 0
+    delta_SF = 0.0
+    delta_ES = 0.0
+    delta_FES = 0.0
+
+    es_init = edit_simpliciality(H, min_size=min_size)
+    fes_init = face_edit_simpliciality(H, min_size=min_size)
     # Filter edges bigger than min_size
     edges = H.edges.filterby("size", min_size, "geq").members()
     # Filter maximal edges bigger than min_size
@@ -77,8 +100,8 @@ def rewire_Alg1(H, min_size=2, max_size=None):
     count = 0
     success_add = []
     success_delete = []
-    #delta_es = []
-    #delta_fes = []
+    delta_es = []
+    delta_fes = []
     for i in range(max_to_rewire):
         tmp_remove = set(edges_remove.pop())
         tmp_add = set(set_missing.pop())
@@ -94,17 +117,17 @@ def rewire_Alg1(H, min_size=2, max_size=None):
                     count += 1
                     success_add.append(tmp_add)
                     success_delete.append(tmp_remove)
-                    #es_tmp = edit_simpliciality(H, min_size=min_size)
-                    #fes_tmp = face_edit_simpliciality(H, min_size=min_size)
-                    #delta_es.append(es_init - es_tmp)
-                    #delta_fes.append(fes_init - fes_tmp)
-                    #es_init = es_tmp
-                    #fes_init = fes_tmp
+                    es_tmp = edit_simpliciality(H, min_size=min_size)
+                    fes_tmp = face_edit_simpliciality(H, min_size=min_size)
+                    delta_es.append(es_init - es_tmp)
+                    delta_fes.append(fes_init - fes_tmp)
+                    es_init = es_tmp
+                    fes_init = fes_tmp
     print("Actual rewired number:", count)
     print("Edge added:" + str(success_add))
     print("Edge removed:" + str(success_delete))
-    #print("Delta ES:", str(delta_es))
-    #print("Delta FES:", str(delta_fes))
+    print("Delta ES:", str(delta_es))
+    print("Delta FES:", str(delta_fes))
     return H
 
 
@@ -142,9 +165,9 @@ def save_expr_data(dataset, round, stats, filename):
         f"edges_searching_time: {stats['edges_searching_time']:.3f}",
         f"rewiring_time: {stats['rewiring_time']:.3f}",
         f"num_missing_subface: {stats['num_missing_subface']}",
-        #f"delta_SF: {stats['delta_SF']:.6f}",
-        #f"delta_ES: {stats['delta_ES']:.6f}",
-        #f"delta_FES: {stats['delta_FES']:.6f}",
+        f"delta_SF: {stats['delta_SF']:.6f}",
+        f"delta_ES: {stats['delta_ES']:.6f}",
+        f"delta_FES: {stats['delta_FES']:.6f}",
         "-" * 50
     ]
     
@@ -160,16 +183,15 @@ def rewire_Alg1_expr(H, min_size=2, max_size=None):
     start_time = time.time()
     
     # Initialize the simplicial fraction, edit simpliciality, and face edit simpliciality
-    #sf_init = simplicial_fraction(H, min_size=min_size)
-    #es_init = edit_simpliciality(H, min_size=min_size)
-    #fes_init = face_edit_simpliciality(H, min_size=min_size)
+    sf_init = simplicial_fraction(H, min_size=min_size)
+    es_init = edit_simpliciality(H, min_size=min_size)
+    fes_init = face_edit_simpliciality(H, min_size=min_size)
     
     # Initialize statistics
     stats = {
         "num_maximal_hyperedge": 0,
         "max_to_rewire": 0,
         "success_update": 0,
-        "num_failed_rewires": 0,
         "num_same_size": 0,
         "total_time": 0.0,
         "edges_searching_time": 0.0,
@@ -179,7 +201,7 @@ def rewire_Alg1_expr(H, min_size=2, max_size=None):
         "delta_ES": 0.0,
         "delta_FES": 0.0
     }
-    
+
     # Edges searching process start
     edges_searching_start = time.time()
     
@@ -205,7 +227,8 @@ def rewire_Alg1_expr(H, min_size=2, max_size=None):
         set_missing.update(missing_subfaces(t, curr, min_size))
         tmp_max_edges.remove(curr)
         if len(set_missing) != 0:
-            stats["num_missing_subface"] = len(set_missing)
+            num_missing_subface = len(set_missing)
+            stats["num_missing_subface"] = num_missing_subface
             break
     
     # Edge_remove = P(maximal edge) - missing subfaces - maximal edges
@@ -217,10 +240,12 @@ def rewire_Alg1_expr(H, min_size=2, max_size=None):
     
     # Store the time taken for searching edges
     edges_searching_end = time.time()
-    stats["edges_searching_time"] = (edges_searching_end - edges_searching_start)
+    edges_searching_time = (edges_searching_end - edges_searching_start)
+    stats["edges_searching_time"] = edges_searching_time
     
     # max_to_rewire is the maximum number of edges we can rewire (remove and add)
-    stats["max_to_rewire"] = min(len(edges_remove), len(set_missing))
+    max_to_rewire = min(len(edges_remove), len(set_missing))
+    stats["max_to_rewire"] = max_to_rewire
     
     # Rewiring process start
     rewiring_start = time.time()
@@ -233,6 +258,10 @@ def rewire_Alg1_expr(H, min_size=2, max_size=None):
         set_missing.remove(tmp_add)
 
         # The size of added edge and removed edge must be different
+        global rewiring_time
+        rewiring_time = 0.0
+        global num_same_size
+        num_same_size = 0
         if (len(tmp_add) != len(tmp_remove)):
             # Traverse through the edges of the hypergraph to find the edgeID of the edge to remove
             for id, edge in H.edges.members(dtype=dict).items():
@@ -243,23 +272,32 @@ def rewire_Alg1_expr(H, min_size=2, max_size=None):
                     
                     # Record the time taken for rewiring
                     rewiring_end = time.time()
-                    stats["rewiring_time"] += rewiring_end - rewiring_start
-                    
+                    rewiring_time += rewiring_end - rewiring_start
+                    stats["rewiring_time"] = rewiring_time
+
                     # Update statistics
-                    stats["success_update"] = 1
-                    #sf_tmp = simplicial_fraction(H, min_size=min_size)
-                    #es_tmp = edit_simpliciality(H, min_size=min_size)
-                    #fes_tmp = face_edit_simpliciality(H, min_size=min_size)
-                    #stats["delta_SF"] = sf_init - sf_tmp
-                    #stats["delta_ES"] = es_init - es_tmp
-                    #stats["delta_FES"] = fes_init - fes_tmp
+
+                    success_update = 1
+                    stats["success_update"] = success_update
+                    sf_tmp = simplicial_fraction(H, min_size=min_size)
+                    es_tmp = edit_simpliciality(H, min_size=min_size)
+                    fes_tmp = face_edit_simpliciality(H, min_size=min_size)
+                    delta_SF = sf_init - sf_tmp
+                    stats["delta_SF"] = delta_SF
+                    delta_ES = es_init - es_tmp
+                    stats["delta_ES"] = delta_ES
+                    delta_FES = fes_init - fes_tmp
+                    stats["delta_FES"] = delta_FES
                     break
             break
         else:
             # If the sizes are the same, we do not rewire (count the number of such cases)
-            stats["num_same_size"] += 1
+            num_same_size += 1
+            stats["num_same_size"] = num_same_size
     
     # Alg end time
     end_time = time.time()
-    stats["total_time"] = end_time - start_time
-    return H, stats
+    total_time = end_time - start_time
+    stats["total_time"] = total_time
+    list_all = [max_edges, max_to_rewire, success_update, num_same_size, total_time, edges_searching_time, rewiring_time, num_missing_subface, delta_SF, delta_ES, delta_FES] 
+    return H, stats, list_all

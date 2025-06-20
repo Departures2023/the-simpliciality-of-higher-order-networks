@@ -4,3 +4,5 @@ numpy
 scipy
 pytest
 joblib
+termcolor
+colorama

@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 dataset: contact-high-school
 round: 0
 num_maximal_hyperedge: 210
@@ -376,3 +377,5 @@ delta_SF: 0.001209
 delta_ES: 0.000000
 delta_FES: 0.000419
 --------------------------------------------------
+=======
+>>>>>>> origin/main

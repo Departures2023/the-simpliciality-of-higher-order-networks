@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 dataset: hospital-lyon
 round: 0
 num_maximal_hyperedge: 60
@@ -250,3 +251,5 @@ delta_SF: 0.024947
 delta_ES: 0.000000
 delta_FES: 0.006374
 --------------------------------------------------
+=======
+>>>>>>> origin/main
