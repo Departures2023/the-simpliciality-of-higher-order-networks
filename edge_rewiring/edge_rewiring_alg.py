@@ -1,3 +1,4 @@
+import copy
 import sys
 import os
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
@@ -21,90 +22,65 @@ def rewire_Alg1(H, min_size=2, max_size=None):
     edges = H.edges.filterby("size", min_size, "geq").members()
     # Filter maximal edges bigger than min_size
     max_edges = (H.edges.maximal().filterby("size", 4, "geq").members())
-    tmp_max_edges = max_edges.copy()
-    print("Maximal edges:", max_edges)
+
     # Build a trie for finding subfaces
     t = Trie()
     t.build_trie(edges)
 
-    # edge_index record the index of the first maximal edge that has missing subfaces
-    edge_index = 0
-    # set_missing will contain the missing subfaces of the first maximal edge
-    set_missing = set()
-    curr = set()
-    
-    # RANDOMLY iterate through the maximal edges to find the first one with missing subfaces
-    for i in range(len(max_edges), 0, -1):
-        curr = tmp_max_edges[random.randint(0, i-1)]
-        set_missing.update(missing_subfaces(t, curr, min_size))
-        tmp_max_edges.remove(curr)
-        if len(set_missing) != 0:
-            break
-    
-    #############################################################################################################
-    # SEQUENTIALLY Iterate through the maximal edges to find the first one with missing subfaces
-    # for e in max_edges:
-    #     set_missing.update(missing_subfaces(t, e, min_size))
-    #     #print(set_missing)
-    #     if len(set_missing) != 0:
-    #         break
-    #     edge_index += 1
-    #############################################################################################################
+    weight = []
     
     
-    # Edge_remove = P(maximal edge) - missing subfaces - maximal edges
-    edges_remove = set()
-    # Print statement for debugging
-    # print(len(max_edges))
-    # print(max_edges)
-    # print(set_missing)
-    edges_remove.update(
-        frozenset(x) for x in powerset(curr, min_size, max_size)
-        if frozenset(x) not in set_missing and frozenset(x) not in map(frozenset, max_edges)
-    )
-    # Print statement for debugging
-    # print(edges_remove)
-    # print(sorted(edges_remove.union(set_missing), key = len))
-    # print(len(edges_remove.union(set_missing)))
-    # print(max_edges[edge_index])
+    set_missing_list = []
+    edge_remove_list = []
+    for e in max_edges:
+        # set_missing will contain the missing subfaces of the current maximal edge
+        set_missing = set()
+        # edges_remove will contain the edges to remove from the current maximal edge
+        edges_remove = set()
+        # Find the "missing subfaces" and "edges to remove" of the current maximal edge
+        set_missing.update(missing_subfaces(t, e, min_size))
+        edges_remove.update(frozenset(x) for x in powerset(e, min_size, max_size)
+            if frozenset(x) not in set_missing and frozenset(x) not in map(frozenset, max_edges))
+        
+        if (len(set_missing) != 0) and (len(edges_remove) != 0):
+            set_missing_list.append(set_missing)
+            edge_remove_list.append(edges_remove)
+            weight.append(1 / (len(edges_remove) * len(set_missing)))
     
-    # max_to_rewire is the maximum number of edges we can rewire (remove and add)
-    max_to_rewire = min(len(edges_remove), len(set_missing))
-    print("max to rewire:", max_to_rewire)
-    # Print statement for debugging
-    #print(edges_remove)
-    #print(set_missing)
-    count = 0
-    success_add = []
-    success_delete = []
-    #delta_es = []
-    #delta_fes = []
-    for i in range(max_to_rewire):
-        tmp_remove = set(edges_remove.pop())
-        tmp_add = set(set_missing.pop())
-        # The size of added edge and removed edge must be different
-        if (len(tmp_add) != len(tmp_remove)):
+    print("Weight:", weight)
+    print("Set missing list:", set_missing_list)
+    print("Edge remove list:", edge_remove_list)
+    
+    # Randomly select a maximal edge with the given weight
+    curr_idx = random.choices(range(len(set_missing_list)), weights=weight, k=1)[0]
+    print("Current index:", curr_idx)
+    # Get the set missing and edges remove of the selected maximal edge
+    set_missing = set_missing_list[curr_idx]
+    edges_remove = edge_remove_list[curr_idx]
+    
+    while len(set_missing) > 0:
+        # Randomly select an edge to add
+        tmp_add = list(set_missing)[random.randrange(0, len(set_missing))]
+        # Remove the edge with the same size as the edge to add
+        tmp_set_missing = copy.deepcopy(set_missing)
+        for e in tmp_set_missing:
+            if len(e) == len(tmp_add):
+                set_missing.remove(e)
+        # Find the edge in edges_remove that has different size than the edge to add
+        tmp_remove_list = []
+        for e in edges_remove:
+            if len(e) != len(tmp_add):
+                tmp_remove_list.append(e)
+        if len(tmp_remove_list) > 0:
+            # Randomly select an edge to remove
+            tmp_remove = tmp_remove_list[random.randrange(0, len(tmp_remove_list))]
+            
             # Traverse through the edges of the hypergraph to find the edgeID of the edge to remove
             for id, edge in H.edges.members(dtype=dict).items():
-                # Print statement for debugging
-                # print(edge, tmp_remove)
                 if (edge == tmp_remove):
                     H.remove_edge(id)
-                    H.add_edge(tmp_add, id="rewired_edge" + str(count))
-                    count += 1
-                    success_add.append(tmp_add)
-                    success_delete.append(tmp_remove)
-                    #es_tmp = edit_simpliciality(H, min_size=min_size)
-                    #fes_tmp = face_edit_simpliciality(H, min_size=min_size)
-                    #delta_es.append(es_init - es_tmp)
-                    #delta_fes.append(fes_init - fes_tmp)
-                    #es_init = es_tmp
-                    #fes_init = fes_tmp
-    print("Actual rewired number:", count)
-    print("Edge added:" + str(success_add))
-    print("Edge removed:" + str(success_delete))
-    #print("Delta ES:", str(delta_es))
-    #print("Delta FES:", str(delta_fes))
+                    H.add_edge(tmp_add, id="rewired_edge")
+                    return H
     return H
 
 
