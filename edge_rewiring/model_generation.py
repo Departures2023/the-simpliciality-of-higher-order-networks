@@ -246,8 +246,8 @@ def model_generation_es(es, approx_num_C, num_max_hyperedge, num_node, min_size=
     
     # Convert the distribution of C values to the number of nodes in maximal hyperedges
     maximal_edge_size_list = [combination_to_size(i) for i in C_distribution]
-    # Avoid adding repeating edges
-    edge_to_exclude = []
+    # Avoid adding repeating edges - use set for consistent comparison
+    edge_to_exclude = set()
     # Print statements for debugging
     # print("maximal_edge_size_list:", maximal_edge_size_list)
     
@@ -256,18 +256,22 @@ def model_generation_es(es, approx_num_C, num_max_hyperedge, num_node, min_size=
     for i in range(num_max_hyperedge):
         # Randomly select nodes for the maximal hyperedge
         selected_nodes = random.sample(nodes, maximal_edge_size_list[i])
+        selected_nodes_set = frozenset(selected_nodes)  # Convert to frozenset for consistent comparison
+        
         # Avoid adding repeating nodes and make sure the selected nodes are not a subset of any existing maximal hyperedge
-        while (selected_nodes in edge_to_exclude and selected_nodes.issubset(maximal_edge_set)):
+        # Fixed logic: use OR instead of AND, and fix subset comparison
+        while (selected_nodes_set in edge_to_exclude or selected_nodes_set.issubset(maximal_edge_set)):
             selected_nodes = random.sample(nodes, maximal_edge_size_list[i])
+            selected_nodes_set = frozenset(selected_nodes)
             
         # Add the maximal hyperedge to the hypergraph
         H.add_edge(selected_nodes)
         maximal_edge_set.update(selected_nodes)
-        edge_to_exclude.append(selected_nodes)
+        edge_to_exclude.add(selected_nodes_set)
 
         # Generate the powerset of the selected nodes (possible edges to add for adjustment)
         tmp_list = powerset(selected_nodes, 2, len(selected_nodes) - 1)
-        possible_edges = [set(item) for item in list(tmp_list)]
+        possible_edges = [frozenset(item) for item in list(tmp_list)]  # Use frozenset for consistent comparison
         possible_edges_copy = copy.deepcopy(possible_edges)
         
         # Print statements for debugging
@@ -287,14 +291,16 @@ def model_generation_es(es, approx_num_C, num_max_hyperedge, num_node, min_size=
         # print("edge_distribution[i]:", edge_distribution[i])
         
         # Avoid the case that edge_distribution[i] is bigger than len(possible_edge_idx) after repeated nodes are deleted
-        selected_edge_idx = random.sample(possible_edge_idx, min(edge_distribution[i], len(possible_edge_idx)))
-        for idx in selected_edge_idx:
-            # Print statements for debugging
-            # print("selected_edge_idx:", idx)
-            # print("Adding edge:", possible_edges)
-            H.add_edge(possible_edges[idx])
-            edge_to_exclude.append(possible_edges[idx])
-            possible_edges_copy.remove(possible_edges[idx])
+        num_edges_to_add = min(edge_distribution[i], len(possible_edge_idx))
+        if num_edges_to_add > 0:
+            selected_edge_idx = random.sample(possible_edge_idx, num_edges_to_add)
+            for idx in selected_edge_idx:
+                # Print statements for debugging
+                # print("selected_edge_idx:", idx)
+                # print("Adding edge:", possible_edges[idx])
+                H.add_edge(list(possible_edges[idx]))  # Convert frozenset back to list for adding to hypergraph
+                edge_to_exclude.add(possible_edges[idx])
+                possible_edges_copy.remove(possible_edges[idx])
 
         final_possible_edge_list.append(possible_edges_copy)
         
@@ -320,12 +326,15 @@ def final_edge_adjustment_es(H, edges, final_possible_edge_list, edge_to_exclude
         for i in range(len(final_possible_edge_list)):
             tmp_idx = random.randint(0, len(final_possible_edge_list) - 1)
             tmp_add = final_possible_edge_list.pop(tmp_idx)
-            # tmp_add is a list of sets representing possible edges
+            # tmp_add is a list of frozensets representing possible edges
             for edge_set in tmp_add:
-                H.add_edge(list(edge_set))
-                curr_es = edit_simpliciality(H, min_size=2)
-                if curr_es >= expected_es:
-                    return H
+                # Check if edge is already excluded to avoid duplicates
+                if edge_set not in edge_to_exclude:
+                    H.add_edge(list(edge_set))
+                    edge_to_exclude.add(edge_set)  # Track the added edge
+                    curr_es = edit_simpliciality(H, min_size=2)
+                    if curr_es >= expected_es:
+                        return H
     elif curr_es > expected_es:
         # Remove edges from the hypergraph untul the edit simpliciality is equal to the expected value
         while curr_es > expected_es:
@@ -531,16 +540,42 @@ def approximate_C_upperbound(num_node, min_size, max_size, num_max_hyperedge):
             C_upperbound += possible_combinations(min(num_node, max_size), min_size)
         return C_upperbound
 
+# Test function to verify no duplicate edges are generated
+def test_no_duplicate_edges():
 
-
-
-
+    H = model_generation_es(es=0.5, approx_num_C=2000, num_max_hyperedge=10, num_node=1500, min_size=2, max_size=10)
+    edges = H.edges.members()
     
+    # Convert edges to frozensets for comparison
+    edge_sets = [frozenset(edge) for edge in edges]
+    # Check for duplicates
+    unique_edges = set(edge_sets)
+    
+    print(f"Total edges: {len(edge_sets)}")
+    print(f"Unique edges: {len(unique_edges)}")
+    print(f"Duplicates found: {len(edge_sets) - len(unique_edges)}")
+    
+    if len(edge_sets) == len(unique_edges):
+        print("✅ No duplicate edges found!")
+        sf = simplicial_fraction(H, min_size=2)
+        es = edit_simpliciality(H, min_size=2)
+        fes = face_edit_simpliciality(H, min_size=2)
+        print(f"Simplicial fraction: {sf}")
+        print(f"Edit simpliciality: {es}")
+        print(f"Face edit simpliciality: {fes}")
+        return True
+    else:
+        print("❌ Duplicate edges detected!")
+        # Print duplicates for debugging
+        edge_counts = {}
+        for edge in edge_sets:
+            edge_counts[edge] = edge_counts.get(edge, 0) + 1
+        
+        duplicates = {edge: count for edge, count in edge_counts.items() if count > 1}
+        print("Duplicate edges:", duplicates)
+        return False
 
 # Adjust Main function if needed
-# if __name__ == "__main__":
-#     print("Starting edge rewiring experiments...")
-#     print(Fraction(78).limit_denominator())
-#     print(Fraction(0.78).limit_denominator())
-    
-#     combination_to_size
+if __name__ == "__main__":
+    print("Testing edge rewiring model generation...")
+    test_no_duplicate_edges()
