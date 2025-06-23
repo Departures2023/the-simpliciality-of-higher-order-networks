@@ -1,0 +1,33 @@
+dataset: congress-bills
+round: 0
+num_maximal_hyperedge: 31985
+max_to_rewire: 2
+success_update: 1
+num_same_size: 0
+total_time: 9.079
+edges_searching_time: 8.969
+rewiring_time: 0.105
+num_missing_subface: 2033
+--------------------------------------------------
+dataset: congress-bills
+round: 0
+num_maximal_hyperedge: 31985
+max_to_rewire: 0
+success_update: 0
+num_same_size: 0
+total_time: 4.791
+edges_searching_time: 4.791
+rewiring_time: 0.000
+num_missing_subface: 25
+--------------------------------------------------
+dataset: congress-bills
+round: 0
+num_maximal_hyperedge: 31985
+max_to_rewire: 2
+success_update: 1
+num_same_size: 0
+total_time: 4.569
+edges_searching_time: 4.448
+rewiring_time: 0.115
+num_missing_subface: 54
+--------------------------------------------------

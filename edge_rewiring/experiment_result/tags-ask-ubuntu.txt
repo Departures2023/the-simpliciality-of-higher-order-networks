@@ -1,0 +1,11 @@
+dataset: tags-ask-ubuntu
+round: 0
+num_maximal_hyperedge: 58673
+max_to_rewire: 3
+success_update: 1
+num_same_size: 2
+total_time: 9.222
+edges_searching_time: 9.144
+rewiring_time: 0.068
+num_missing_subface: 7
+--------------------------------------------------

@@ -1,0 +1,33 @@
+dataset: email-enron
+round: 0
+num_maximal_hyperedge: 162
+max_to_rewire: 5
+success_update: 1
+num_same_size: 0
+total_time: 0.024
+edges_searching_time: 0.024
+rewiring_time: 0.000
+num_missing_subface: 5
+--------------------------------------------------
+dataset: email-enron
+round: 0
+num_maximal_hyperedge: 162
+max_to_rewire: 4
+success_update: 1
+num_same_size: 0
+total_time: 0.026
+edges_searching_time: 0.026
+rewiring_time: 0.000
+num_missing_subface: 6
+--------------------------------------------------
+dataset: email-enron
+round: 0
+num_maximal_hyperedge: 162
+max_to_rewire: 36
+success_update: 1
+num_same_size: 0
+total_time: 0.064
+edges_searching_time: 0.060
+rewiring_time: 0.004
+num_missing_subface: 210
+--------------------------------------------------
