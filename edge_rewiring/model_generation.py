@@ -148,7 +148,7 @@ def generate_edge_distribution(min_edge_num, C_distribution, target_sum):
     
     # CHOICE2: RETURN adjusted list
     if target_sum > C_distribution.sum():
-        print(f"Warning: target_sum ({target_sum}) is larger than C_distribution.sum() ({C_distribution.sum()})")
+        print(f"❌ Warning: target_sum ({target_sum}) is larger than C_distribution.sum() ({C_distribution.sum()})")
         print(f"Adjusting target_sum to {C_distribution.sum()}")
         target_sum = C_distribution.sum()
 
@@ -184,7 +184,7 @@ def all_possible_edges(arr_node):
 
 
 # Function to generate a hypergraph with a given edit simpliciality, number of maximal hyperedges, and number of nodes
-def model_generation_es(es, approx_num_C, num_max_hyperedge, num_node, min_size=2, max_size=None):
+def model_generation_es(es, approx_num_C, num_max_hyperedge, num_node, min_size=2, max_size=None, adjust_es=False):
     # Checking if input parameters are valid
     if max_size is None:
         max_size = num_node
@@ -193,7 +193,7 @@ def model_generation_es(es, approx_num_C, num_max_hyperedge, num_node, min_size=
     max_possible_C = approximate_C_upperbound(num_node, min_size, max_size, num_max_hyperedge)
     
     if approx_num_C > max_possible_C:
-        print(f"Warning: approx_num_C ({approx_num_C}) is larger than maximum possible combinations ({max_possible_C})")
+        print(f"❌ Warning: approx_num_C ({approx_num_C}) is larger than maximum possible combinations ({max_possible_C})")
         print(f"Adjusting approx_num_C to {max_possible_C}")
         approx_num_C = max_possible_C
 
@@ -202,6 +202,15 @@ def model_generation_es(es, approx_num_C, num_max_hyperedge, num_node, min_size=
     
     # |H| of the graph
     edge_total = int(approx_num_C * es)
+    
+    # TODO: Check the performance of model generation with and without adjust_es
+    # New implementation of edit simpliciality (es = (|E| - num_max_hyperedge)/(|C| - num_max_hyperedge))
+    if adjust_es:
+        edge_total = int((C_total - num_max_hyperedge) * es) + num_max_hyperedge
+        if not (C_total >= edge_total and edge_total >= num_max_hyperedge):
+            print(f"❌ Warning: C_total ({C_total}) is smaller than edge_total ({edge_total}) or num_max_hyperedge ({num_max_hyperedge})")
+            sys.exit()
+    
     
     # Generate empty hypergraph
     H = xgi.Hypergraph()
@@ -543,7 +552,7 @@ def approximate_C_upperbound(num_node, min_size, max_size, num_max_hyperedge):
 # Test function to verify no duplicate edges are generated
 def test_no_duplicate_edges():
 
-    H = model_generation_es(es=0.5, approx_num_C=2000, num_max_hyperedge=10, num_node=1500, min_size=2, max_size=10)
+    H = model_generation_es(es=0, approx_num_C=10, num_max_hyperedge=10, num_node=1500, min_size=2, max_size=10, adjust_es=True)
     edges = H.edges.members()
     
     # Convert edges to frozensets for comparison
@@ -557,6 +566,8 @@ def test_no_duplicate_edges():
     
     if len(edge_sets) == len(unique_edges):
         print("✅ No duplicate edges found!")
+        print("="*50)
+        print(f"Edges: {edge_sets}")
         sf = simplicial_fraction(H, min_size=2)
         es = edit_simpliciality(H, min_size=2)
         fes = face_edit_simpliciality(H, min_size=2)
