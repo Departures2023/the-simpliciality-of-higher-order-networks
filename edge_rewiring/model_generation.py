@@ -264,7 +264,7 @@ def model_generation_es(es, approx_num_C, num_max_hyperedge, num_node, min_size=
         target_sum=C_total
     )
     # Print statements for debugging
-    print("C_distribution:", C_distribution)
+    #print("C_distribution:", C_distribution)
     
     # Generate the distribution of numbers of edges actually connected
     edge_distribution  = generate_edge_distribution(
@@ -418,7 +418,7 @@ def model_generation_sf(sf, approx_num_E, num_node, min_size=2, max_size=None):
         H.add_edges_from(possible_edges)
         S_total -= len(possible_edges)
     simplices = H.edges.filterby("size", min_size, "geq").members()
-    print("S_total:", S_total)
+    #print("S_total:", S_total)
     
     while (edge_total > 0):
         # current number of edges in the hypergraph
@@ -455,9 +455,9 @@ def model_generation_sf(sf, approx_num_E, num_node, min_size=2, max_size=None):
         while len(remaining_edges) > 1:
             final_possible_edge_list.append(possible_edges[remaining_edges.pop()])
             
-    print("edge_total:", edge_total)
+    #print("edge_total:", edge_total)
     sf_tmp = simplicial_fraction(H, min_size=2)
-    print("sf_tmp", sf_tmp)
+    #print("sf_tmp", sf_tmp)
     # Final adjustment of the hypergraph
     H = final_edge_adjustment_sf(
         H, 
@@ -500,7 +500,7 @@ def final_edge_adjustment_sf(H, maximal_edge_is_simplex, maximal_edge_not_simple
         #     H.add_edge(tmp_add)
         #     curr_sf = simplicial_fraction(H, min_size=2)
         ############################################################################
-    print("curr_sf:", curr_sf)
+    #print("curr_sf:", curr_sf)
     if curr_sf < expected_sf:
         # Remove edges from the hypergraph until the edit simpliciality is equal to the expected value
         while (curr_sf < expected_sf) and len(maximal_edge_not_simplex) > 0:

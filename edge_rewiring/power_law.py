@@ -27,18 +27,18 @@ def has_powerlaw(H, p_value = 0.10) :
 
     R, p = fit.distribution_compare('truncated_power_law', 'exponential')
     print(f"  R = {R:.4f}, p = {p:.4f}")
-    # plt.figure(figsize=(8, 6))
-    # powerlaw.plot_pdf(filtered_degrees, color='b', label='Empirical Data')
-    # fit.power_law.plot_pdf(color='r', linestyle='--', label='Power-law Fit')
-    # plt.xlabel("Degree")
-    # plt.ylabel("P(degree)")
-    # plt.title("Power-law Fit to Hypergraph Degree Distribution")
-    # plt.legend()
-    # plt.grid(True)
-    # plt.tight_layout()
-    # plt.show()
+    plt.figure(figsize=(8, 6))
+    powerlaw.plot_pdf(filtered_degrees, color='b', label='Empirical Data')
+    fit.power_law.plot_pdf(color='r', linestyle='--', label='Power-law Fit')
+    plt.xlabel("Degree")
+    plt.ylabel("P(degree)")
+    plt.title("Power-law Fit to Hypergraph Degree Distribution")
+    plt.legend()
+    plt.grid(True)
+    plt.tight_layout()
+    plt.show()
 
-    return R > 0 and p < p_value
+    return R > 0 and p > p_value
 
 def degree_distribution(H) :
     # Check if H is loaded correctly

@@ -31,3 +31,14 @@ edges_searching_time: 0.051
 rewiring_time: 0.000
 num_missing_subface: 1
 --------------------------------------------------
+dataset: hospital-lyon
+round: 0
+num_maximal_hyperedge: 60
+max_to_rewire: 1
+success_update: 0
+num_same_size: 1
+total_time: 0.019
+edges_searching_time: 0.019
+rewiring_time: 0.000
+num_missing_subface: 1
+--------------------------------------------------

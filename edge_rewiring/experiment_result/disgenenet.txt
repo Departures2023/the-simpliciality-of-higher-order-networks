@@ -31,3 +31,14 @@ edges_searching_time: 0.005
 rewiring_time: 0.000
 num_missing_subface: 1012
 --------------------------------------------------
+dataset: disgenenet
+round: 0
+num_maximal_hyperedge: 463
+max_to_rewire: 0
+success_update: 0
+num_same_size: 0
+total_time: 0.004
+edges_searching_time: 0.004
+rewiring_time: 0.000
+num_missing_subface: 501
+--------------------------------------------------
