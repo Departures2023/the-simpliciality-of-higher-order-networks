@@ -12,6 +12,7 @@ from edge_rewiring import *
 from colorama import init
 from termcolor import colored
 from multiprocessing import Process, Manager, Queue
+import time
 
 datasets = [
     "contact-primary-school",
@@ -123,7 +124,6 @@ def process_dataset (index, trials, rewiring_times, min_size, max_size, latex_li
             'max_failures': 0
             })
         graph.append(graphs[index])
-        print(graphs[index])
     # Create threads to run the algorithm in parallel
         processes = []
 
@@ -187,6 +187,7 @@ Output:
 Runs Process_Dataset for each dataset in parallel, the given number of times.
 """ 
 if __name__ == "__main__":
+    start = time.time()
     # Checks if arguments are given, if not prints error and exits
     if len(sys.argv) < 3:
         print("Usage Error: <processes> <rewiring_times>")
@@ -233,3 +234,7 @@ if __name__ == "__main__":
         print(colored("All threads finished!", 'red'))
         print(*latex_list, sep="\n")
         print(colored("\n Done!", "red"))
+
+    end = time.time()
+    all = end - start
+    print("time for all processes is ", all)
