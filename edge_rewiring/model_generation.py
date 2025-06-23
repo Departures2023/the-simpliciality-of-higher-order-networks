@@ -19,6 +19,17 @@ from sod.simpliciality.utilities import missing_subfaces, powerset
 
 # Function to calculate the number of possible combinations of nodes -> possible edges
 def possible_combinations(num_node, min_size=2, max_size=None):
+    """
+    Calculate the number of possible combinations of nodes -> possible edges
+
+    Args:
+        num_node (int): number of nodes
+        min_size (int): min size of an edge. Defaults to 2.
+        max_size (int): max size of an edge. Defaults to None.
+
+    Returns:
+        int: possible combinations of nodes -> possible edges
+    """
     # Avoid unexpected min_size and max_size values
     if min_size < 2:
         min_size = 2
@@ -35,6 +46,15 @@ def possible_combinations(num_node, min_size=2, max_size=None):
 
 # Function to convert the number of combinations (edges) to the number of nodes
 def combination_to_size(C):
+    """
+    Convert the number of combinations (edges) to the number of nodes
+
+    Args:
+        C (int): Number of combinations (edges) within a maximal hyperedge
+
+    Returns:
+        int: Minimum number of nodes needed in the maximal hyperedge
+    """
     num_node = 2
     while C > possible_combinations(num_node=num_node, min_size=2, max_size=num_node):
         num_node += 1
@@ -52,13 +72,22 @@ def combination_to_size(C):
 def generate_C_distribution(min_size, max_size, C_avg, num_max_hyperedge, target_sum):
     """
     Generate a list of n random numbers, each at least min_value, such that their sum is target_sum.
+
+    Args:
+        min_size (int): min size of an edge
+        max_size (int): max size of an edge
+        C_avg (float): average number of combinations (induced edges) within a maximal hyperedge
+        num_max_hyperedge (int): number of maximal hyperedges
+        target_sum (int): total number of combinations (induced edges) within all maximal hyperedges
+
+    Returns:
+        _type_: _description_
     """
     
     # Q1: HOW TO CHOOSE THE VALUE OF STANDARD DEVIATION?
     std = 0.5 * C_avg
     # Q2: CHECK IF I USE THE RIGHT EQUATION FOR UPPER AND LOWER BOUND?
-    if max_size is None:
-        max_size = target_sum
+    # Don't override max_size with target_sum - use the actual max_size passed in
 
     adjusted_lower = (min_size - C_avg) / std
     adjusted_higher = (max_size - C_avg) / std
@@ -119,6 +148,8 @@ def generate_edge_distribution(min_edge_num, C_distribution, target_sum):
     
     # CHOICE2: RETURN adjusted list
     if target_sum > C_distribution.sum():
+        print(f"❌ Warning: target_sum ({target_sum}) is larger than C_distribution.sum() ({C_distribution.sum()})")
+        print(f"Adjusting target_sum to {C_distribution.sum()}")
         target_sum = C_distribution.sum()
 
     # list of n min_value numbers
@@ -153,17 +184,33 @@ def all_possible_edges(arr_node):
 
 
 # Function to generate a hypergraph with a given edit simpliciality, number of maximal hyperedges, and number of nodes
-def model_generation_es(es, approx_num_C, num_max_hyperedge, num_node, min_size=2, max_size=None):
-    # # Checking if input parameters are valid
-    # if C_max > possible_combinations(num_node, min_size, max_size):
-    #     raise ValueError("C_max is too large for the number of nodes and the specified min/max size.")
-    # edit_simpliciality_fraction = Fraction(edit_simpliciality).limit_denominator(max_denominator=C_max)
+def model_generation_es(es, approx_num_C, num_max_hyperedge, num_node, min_size=2, max_size=None, adjust_es=False):
+    # Checking if input parameters are valid
+    if max_size is None:
+        max_size = num_node
+    
+    # Calculate the maximum possible combinations for the given parameters
+    max_possible_C = approximate_C_upperbound(num_node, min_size, max_size, num_max_hyperedge)
+    
+    if approx_num_C > max_possible_C:
+        print(f"❌ Warning: approx_num_C ({approx_num_C}) is larger than maximum possible combinations ({max_possible_C})")
+        print(f"Adjusting approx_num_C to {max_possible_C}")
+        approx_num_C = max_possible_C
 
     # |C| of the graph
     C_total = int(approx_num_C)
     
     # |H| of the graph
     edge_total = int(approx_num_C * es)
+    
+    # TODO: Check the performance of model generation with and without adjust_es
+    # New implementation of edit simpliciality (es = (|E| - num_max_hyperedge)/(|C| - num_max_hyperedge))
+    if adjust_es:
+        edge_total = int((C_total - num_max_hyperedge) * es) + num_max_hyperedge
+        if not (C_total >= edge_total and edge_total >= num_max_hyperedge):
+            print(f"❌ Warning: C_total ({C_total}) is smaller than edge_total ({edge_total}) or num_max_hyperedge ({num_max_hyperedge})")
+            sys.exit()
+    
     
     # Generate empty hypergraph
     H = xgi.Hypergraph()
@@ -208,26 +255,32 @@ def model_generation_es(es, approx_num_C, num_max_hyperedge, num_node, min_size=
     
     # Convert the distribution of C values to the number of nodes in maximal hyperedges
     maximal_edge_size_list = [combination_to_size(i) for i in C_distribution]
-    # Avoid adding repeating edges
-    edge_to_exclude = []
+    # Avoid adding repeating edges - use set for consistent comparison
+    edge_to_exclude = set()
     # Print statements for debugging
     # print("maximal_edge_size_list:", maximal_edge_size_list)
     
+    maximal_edge_set = set()
     final_possible_edge_list = []
     for i in range(num_max_hyperedge):
         # Randomly select nodes for the maximal hyperedge
         selected_nodes = random.sample(nodes, maximal_edge_size_list[i])
-        # Avoid adding repeating nodes
-        while (selected_nodes in edge_to_exclude):
+        selected_nodes_set = frozenset(selected_nodes)  # Convert to frozenset for consistent comparison
+        
+        # Avoid adding repeating nodes and make sure the selected nodes are not a subset of any existing maximal hyperedge
+        # Fixed logic: use OR instead of AND, and fix subset comparison
+        while (selected_nodes_set in edge_to_exclude or selected_nodes_set.issubset(maximal_edge_set)):
             selected_nodes = random.sample(nodes, maximal_edge_size_list[i])
+            selected_nodes_set = frozenset(selected_nodes)
             
         # Add the maximal hyperedge to the hypergraph
         H.add_edge(selected_nodes)
-        edge_to_exclude.append(selected_nodes)
+        maximal_edge_set.update(selected_nodes)
+        edge_to_exclude.add(selected_nodes_set)
 
         # Generate the powerset of the selected nodes (possible edges to add for adjustment)
         tmp_list = powerset(selected_nodes, 2, len(selected_nodes) - 1)
-        possible_edges = [set(item) for item in list(tmp_list)]
+        possible_edges = [frozenset(item) for item in list(tmp_list)]  # Use frozenset for consistent comparison
         possible_edges_copy = copy.deepcopy(possible_edges)
         
         # Print statements for debugging
@@ -247,14 +300,16 @@ def model_generation_es(es, approx_num_C, num_max_hyperedge, num_node, min_size=
         # print("edge_distribution[i]:", edge_distribution[i])
         
         # Avoid the case that edge_distribution[i] is bigger than len(possible_edge_idx) after repeated nodes are deleted
-        selected_edge_idx = random.sample(possible_edge_idx, min(edge_distribution[i], len(possible_edge_idx)))
-        for idx in selected_edge_idx:
-            # Print statements for debugging
-            # print("selected_edge_idx:", idx)
-            # print("Adding edge:", possible_edges)
-            H.add_edge(possible_edges[idx])
-            edge_to_exclude.append(possible_edges[idx])
-            possible_edges_copy.remove(possible_edges[idx])
+        num_edges_to_add = min(edge_distribution[i], len(possible_edge_idx))
+        if num_edges_to_add > 0:
+            selected_edge_idx = random.sample(possible_edge_idx, num_edges_to_add)
+            for idx in selected_edge_idx:
+                # Print statements for debugging
+                # print("selected_edge_idx:", idx)
+                # print("Adding edge:", possible_edges[idx])
+                H.add_edge(list(possible_edges[idx]))  # Convert frozenset back to list for adding to hypergraph
+                edge_to_exclude.add(possible_edges[idx])
+                possible_edges_copy.remove(possible_edges[idx])
 
         final_possible_edge_list.append(possible_edges_copy)
         
@@ -280,12 +335,15 @@ def final_edge_adjustment_es(H, edges, final_possible_edge_list, edge_to_exclude
         for i in range(len(final_possible_edge_list)):
             tmp_idx = random.randint(0, len(final_possible_edge_list) - 1)
             tmp_add = final_possible_edge_list.pop(tmp_idx)
-            # tmp_add is a list of sets representing possible edges
+            # tmp_add is a list of frozensets representing possible edges
             for edge_set in tmp_add:
-                H.add_edge(list(edge_set))
-                curr_es = edit_simpliciality(H, min_size=2)
-                if curr_es >= expected_es:
-                    return H
+                # Check if edge is already excluded to avoid duplicates
+                if edge_set not in edge_to_exclude:
+                    H.add_edge(list(edge_set))
+                    edge_to_exclude.add(edge_set)  # Track the added edge
+                    curr_es = edit_simpliciality(H, min_size=2)
+                    if curr_es >= expected_es:
+                        return H
     elif curr_es > expected_es:
         # Remove edges from the hypergraph untul the edit simpliciality is equal to the expected value
         while curr_es > expected_es:
@@ -396,21 +454,28 @@ def model_generation_sf(sf, approx_num_E, num_node, min_size=2, max_size=None):
     )
     return H
 
-
+# Function to adjust the hypergraph to match the expected simplicial fraction
 def final_edge_adjustment_sf(H, maximal_edge_is_simplex, maximal_edge_not_simplex, simplices, expected_sf):
+    # Calculate the current simplicial fraction
     curr_sf = simplicial_fraction(H, min_size=2)
     # Split to cases to add or remove edges respectively
     if curr_sf > expected_sf:
         # Adjustment 1: remove edges that are simplices from the hypergraph
         while (curr_sf > expected_sf) and len(maximal_edge_is_simplex) > 0:
+            # Randomly select a maximal simplex, which edges will be removed one by one
             tmp_idx = random.randint(0, len(maximal_edge_is_simplex) - 1)
+            # Remove the selected maximal simplex from the list
             maximal_selected = maximal_edge_is_simplex[tmp_idx]
             maximal_edge_is_simplex.pop(tmp_idx)
+            # Find all edges of the selected maximal simplex
             tmp_edges = powerset(maximal_selected, 2, len(maximal_selected) - 1)
             edges = [set(item) for item in list(tmp_edges)]
+            # Remove edges one by one until the simplicial fraction is equal to the expected value
             i = len(edges) - 1
             while (i >= 0) and (curr_sf > expected_sf):
+                # Randomly select an edge to remove
                 tmp_idx = random.randint(0, i)
+                # Remove the selected edge from the list
                 edge_remove = edges.pop(tmp_idx)
                 for id, edge in H.edges.members(dtype=dict).items():
                             if (edge == edge_remove):
@@ -429,15 +494,21 @@ def final_edge_adjustment_sf(H, maximal_edge_is_simplex, maximal_edge_not_simple
         #     curr_sf = simplicial_fraction(H, min_size=2)
         ############################################################################
     print("curr_sf:", curr_sf)
+    # Split to cases to add or remove edges respectively
     if curr_sf < expected_sf:
-        # Remove edges from the hypergraph untul the edit simpliciality is equal to the expected value
+        # Remove edges from the hypergraph until the edit simpliciality is equal to the expected value or there are no more edges to remove
         while (curr_sf < expected_sf) and len(maximal_edge_not_simplex) > 0:
+            # Randomly select a maximal hyperedge, which edges will be removed one by one
             tmp_idx = random.randint(0, len(maximal_edge_not_simplex) - 1)
+            # Remove the selected maximal hyperedge from the list
             maximal_selected = maximal_edge_not_simplex[tmp_idx]
             maximal_edge_not_simplex.pop(tmp_idx)
+            # Find all edges in the selected maximal hyperedge
             tmp_edges = powerset(maximal_selected, 2, len(maximal_selected) - 1)
+            # Find all edges of the selected maximal hyperedge that are not simplices
             all_edges = [set(item) for item in list(tmp_edges)]
             edges = [e for e in all_edges if e not in simplices]
+            # If there are more than 1 edge inside the selected maximal hyperedge, randomly select some of them to remove
             if (len(edges) > 1):
                 edges_selected = random.sample(edges, random.randint(1, len(edges)))
                 for element in edges_selected:
@@ -451,11 +522,71 @@ def final_edge_adjustment_sf(H, maximal_edge_is_simplex, maximal_edge_not_simple
     else:
         return H
     
+# NOTE THAT THE UPPER BOUND THIS FUNCTION RETURN IS POSSIBLE TO BE A LITTLE SMALLER THAN THE ACTUAL UPPER BOUND (IT DIDN'T CONSIDER OVERLAPPING MAXIMAL HYPEREDGES)
+# Function to approximate the upper bound of |C| of a hypergraph with a given edit simpliciality, number of maximal hyperedges, and number of nodes
+def approximate_C_upperbound(num_node, min_size, max_size, num_max_hyperedge):
+    # Case 1: size of maximal hyperedge is not limited by max_size
+    if max_size is None or max_size > num_node:
+        # Upper bound is the case to form a maximal hyperedge with largest size possible, while other maximal hyperedges are of size min_size
+        C_big_edge = possible_combinations((num_node - 2*(num_max_hyperedge - 1)), min_size)
+        C_upperbound = C_big_edge + (num_max_hyperedge - 1)
+        return C_upperbound
+    else:
+        # Case 2: size of maximal hyperedge is limited by max_size
+        # Upper bound is the case to form bunch of maximal hyperedges with largest size possible, while other maximal hyperedges are of size min_size
+        # except the last one, which is of size num_node % max_size (takes the rest of the possible nodes)
+        C_upperbound = 0
+        # Calculate the sum of combinations for sizes from min_size to max_size (maximal hyperedges of size max_size)
+        while ((num_node - max_size) >= 2*num_max_hyperedge) and (num_max_hyperedge > 0):
+            C_big_edge = possible_combinations(max_size, min_size)
+            C_upperbound+= C_big_edge
+            num_node -= max_size
+            num_max_hyperedge -= 1
+        # If there are still maximal hyperedges to form, form them with the rest of the possible nodes
+        if num_max_hyperedge > 0:
+            C_upperbound += num_max_hyperedge - 1
+            num_node -= 2*(num_max_hyperedge - 1)
+            C_upperbound += possible_combinations(min(num_node, max_size), min_size)
+        return C_upperbound
+
+# Test function to verify no duplicate edges are generated
+def test_no_duplicate_edges():
+
+    H = model_generation_es(es=0, approx_num_C=10, num_max_hyperedge=10, num_node=1500, min_size=2, max_size=10, adjust_es=True)
+    edges = H.edges.members()
+    
+    # Convert edges to frozensets for comparison
+    edge_sets = [frozenset(edge) for edge in edges]
+    # Check for duplicates
+    unique_edges = set(edge_sets)
+    
+    print(f"Total edges: {len(edge_sets)}")
+    print(f"Unique edges: {len(unique_edges)}")
+    print(f"Duplicates found: {len(edge_sets) - len(unique_edges)}")
+    
+    if len(edge_sets) == len(unique_edges):
+        print("✅ No duplicate edges found!")
+        print("="*50)
+        print(f"Edges: {edge_sets}")
+        sf = simplicial_fraction(H, min_size=2)
+        es = edit_simpliciality(H, min_size=2)
+        fes = face_edit_simpliciality(H, min_size=2)
+        print(f"Simplicial fraction: {sf}")
+        print(f"Edit simpliciality: {es}")
+        print(f"Face edit simpliciality: {fes}")
+        return True
+    else:
+        print("❌ Duplicate edges detected!")
+        # Print duplicates for debugging
+        edge_counts = {}
+        for edge in edge_sets:
+            edge_counts[edge] = edge_counts.get(edge, 0) + 1
+        
+        duplicates = {edge: count for edge, count in edge_counts.items() if count > 1}
+        print("Duplicate edges:", duplicates)
+        return False
 
 # Adjust Main function if needed
-# if __name__ == "__main__":
-#     print("Starting edge rewiring experiments...")
-#     print(Fraction(78).limit_denominator())
-#     print(Fraction(0.78).limit_denominator())
-    
-#     combination_to_size
+if __name__ == "__main__":
+    print("Testing edge rewiring model generation...")
+    test_no_duplicate_edges()

@@ -1,10 +1,4 @@
-#im adding this comment to test git
-# import matplotlib.pyplot as plt
-# import numpy as np
-# import seaborn as sns
 import xgi
-# from matplotlib import cm
-# from draw import *
 import sys
 import os
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
@@ -99,7 +93,6 @@ def Construct_New_Graph(index, iter, min_size, max_size, total, graph):
     total["total_num_missing_subfaces"] += num_missing_subfaces
     total["num_max_hyperedges"] = stats["num_maximal_hyperedge"]
 
-    return total
 """
 Process_Dataset
 Inputs: 
@@ -108,19 +101,16 @@ Inputs:
     rewiring times - number of rewirings, used in construct new graph
     min size - minimum size used in main
     max size - maximum size used in main
-    latex list one - latex list one for formatting
-    latex list two - latex list two for formatting
+    latex list - latex list one for formatting
 
 Output:
-    Updates latex list one and two
+    Updates latex list
     Updates total, including total success, total time, number of missing surfaces, number of maximal
      hyper-edges, min failures and max failures Prints the results from each dataset
 
 For a single dataset, runs Construct_New_Graph the given number of trials
 """     
-def process_dataset (index, trials, rewiring_times, min_size, max_size, latex_list, graphs):
-    
-    
+def process_dataset (index, trials, rewiring_times, min_size, max_size, latex_list, graphs):   
     
     with Manager() as manager:
         graph = manager.list()
@@ -185,11 +175,8 @@ def process_dataset (index, trials, rewiring_times, min_size, max_size, latex_li
             " \\\\")
         latex_list.append("\hline")   
 
-# arguments: 
-# 1. trials: how many trials do you want
-# 2. rewiring times: how many rewirings do you want do
 """
-Process_Dataset
+main
 Arguments: 
     1. trials: how many trials do you want
     2. rewiring times: how many rewirings do you want do
@@ -214,6 +201,7 @@ if __name__ == "__main__":
     
     trials = int(sys.argv[1])
     rewiring_times = int(sys.argv[2])
+
     # For all of the datasets
     '''for i in range (datasets_size):
         # Uploads datasets
