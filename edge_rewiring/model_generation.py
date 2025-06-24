@@ -188,7 +188,12 @@ def model_generation_es(es, approx_num_C, num_max_hyperedge, num_node, min_size=
     # Checking if input parameters are valid
     if max_size is None:
         max_size = num_node
-    
+        
+    if approx_num_C < num_max_hyperedge:
+        print(f"❌ Warning: approx_num_C ({approx_num_C}) is smaller than num_max_hyperedge ({num_max_hyperedge})")
+        print(f"Adjusting approx_num_C to {num_max_hyperedge}")
+        approx_num_C = num_max_hyperedge
+        
     # Calculate the maximum possible combinations for the given parameters
     max_possible_C = approximate_C_upperbound(num_node, min_size, max_size, num_max_hyperedge)
     
