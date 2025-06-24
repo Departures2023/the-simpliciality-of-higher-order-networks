@@ -219,14 +219,14 @@ if __name__ == "__main__":
     start = time.time()
     # Checks if arguments are given, if not prints error and exits
     if len(sys.argv) < 3:
-        print("Usage Error: <processes> <rewiring_times>")
+        print("Usage Error: <processes> <rewiring_times> <the number of first dataset> <the number of the end + 1> \ncontact-primary-school, contact-high-school, hospital-lyon, \nemail-enron, email-eu, ndc-substances, \ndiseasome, disgenenet, congress-bills, \ntags-ask-ubuntu")
         sys.exit()
     print("Starting edge rewiring experiments...")
     #Initializes graphs and needed values
     max_size = 11
     min_size = 2
-    datasets_size = 10
-    
+    begin_dataset = int(sys.argv[3])
+    end_dataset = int(sys.argv[4])
     trials = int(sys.argv[1])
     rewiring_times = int(sys.argv[2])
 
@@ -235,15 +235,18 @@ if __name__ == "__main__":
         latex_list_one = manager.list()
         latex_list_two = manager.list()
         graphs = manager.list() 
-        for i in range (datasets_size):
-            graphs.append(xgi.load_xgi_data(datasets[i], max_order=max_size))
-            graphs[i].cleanup(singletons=True)
+        for i in range (10):
+            if (i < begin_dataset or i >= end_dataset):
+                graphs.append(0)
+            else:
+                graphs.append(xgi.load_xgi_data(datasets[i], max_order=max_size))
+                graphs[i].cleanup(singletons=True)
 
     # Create threads to run the algorithm in parallel
         processes = []
 
         # For all datasets
-        for i in range(datasets_size): 
+        for i in range(begin_dataset, end_dataset): 
             # Gets original values
             og_cc = sum(list(xgi.clustering_coefficient(graphs[i]).values())) / len(graphs[i].nodes)
             og_clique_centrality = sum(list(xgi.clique_eigenvector_centrality(graphs[i]).values())) / len(graphs[i].nodes)
