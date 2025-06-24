@@ -65,12 +65,16 @@ def Construct_New_Graph(index, iter, min_size, max_size, total, graph):
     num_missing_subfaces = 0
     # Makes a second graph
     G = graph[0].copy()
+    print("hi", index, edit_simpliciality(G, min_size))
+    G.cleanup(singletons=True)
+    print("hello", index, edit_simpliciality(G, min_size))
     #For given number of iterations, we do an edge rewiring
     for i in range(iter):
+        G.cleanup(singletons=True)
         # Runs rewiring, saving it as H and the statistics in stats
         H, stats = edge_rewiring_alg.rewire_Alg1_expr(G, min_size, max_size)
         # Removes singletons if there are any
-        H.cleanup(singletons=True)
+        #H.cleanup(singletons=True)
         # Sets new graph to rewired graph
         G = H
         # Save the experiment data
@@ -90,7 +94,8 @@ def Construct_New_Graph(index, iter, min_size, max_size, total, graph):
 
     # Updates statistics  
     total["total_cc"] += sum(list(xgi.clique_eigenvector_centrality(G).values()))
-    total["total_es"] += edit_simpliciality(G, min_size)    
+    es = edit_simpliciality(G, min_size)
+    total["total_es"] += es    
     total["centrality"] += sum(list(xgi.clustering_coefficient(G).values()))
     total["total_success"] += success
     total["total_time"] += time
@@ -133,9 +138,10 @@ def process_dataset (index, trials, rewiring_times, min_size, max_size, latex_li
         graph.append(graphs[index])
     # Create threads to run the algorithm in parallel
         processes = []
-
+        graph[0].cleanup(singletons = True)
         # Where trials is the number of processes we want to run
         for i in range(trials):     
+            graph[0].cleanup(singletons = True)
             # Runs Construct_New_Graph in its own thread      
             p = Process(target=Construct_New_Graph, args=(index, rewiring_times, min_size, 
                                                                     max_size, total, graph))
@@ -239,8 +245,7 @@ if __name__ == "__main__":
             if (i < begin_dataset or i >= end_dataset):
                 graphs.append(0)
             else:
-                graphs.append(xgi.load_xgi_data(datasets[i], max_order=max_size))
-                graphs[i].cleanup(singletons=True)
+                graphs.append(xgi.load_xgi_data(datasets[i], max_order=max_size))              
 
     # Create threads to run the algorithm in parallel
         processes = []
@@ -250,7 +255,9 @@ if __name__ == "__main__":
             # Gets original values
             og_cc = sum(list(xgi.clustering_coefficient(graphs[i]).values())) / len(graphs[i].nodes)
             og_clique_centrality = sum(list(xgi.clique_eigenvector_centrality(graphs[i]).values())) / len(graphs[i].nodes)
-            og_es = edit_simpliciality(graphs[i], min_size=min_size)      
+            graphs[i].cleanup(singletons=True)
+            graphs[i].cleanup(singletons=True)
+            og_es = edit_simpliciality(graphs[i], min_size=min_size)   
             # Threads process_dataset so each process runs in parallel
             p = Process(target=process_dataset, args=(i, trials, rewiring_times, min_size, max_size, latex_list_one, 
                                                       latex_list_two, graphs, og_cc, og_clique_centrality, og_es))
