@@ -12,6 +12,8 @@ from edge_rewiring import *
 from colorama import init
 from termcolor import colored
 import time
+global total_es
+total_es = 0
 
 datasets = [
     "contact-primary-school",
@@ -110,7 +112,7 @@ Output:
 
 For a single dataset, runs Construct_New_Graph the given number of trials
 """     
-def process_dataset (index, trials, rewiring_times, min_size, max_size, latex_list, og_cc, og_clique_centrality):
+def process_dataset (index, trials, rewiring_times, min_size, max_size, latex_list_one, latex_list_two, og_cc, og_clique_centrality, og_es):
     total = {
             'total_success': 0,
             'total_time': 0,
@@ -126,7 +128,7 @@ def process_dataset (index, trials, rewiring_times, min_size, max_size, latex_li
     # Where trials is the number of processes we want to run
     for i in range(trials):     
         # Runs Construct_New_Graph in its own thread      
-        thread = threading.Thread(target=Construct_New_Graph, args=(index, rewiring_times, min_size, max_size, total, ))
+        thread = threading.Thread(target=Construct_New_Graph, args=(index, rewiring_times, min_size, max_size, total))
         threads.append(thread)
         thread.start()
 
@@ -142,6 +144,7 @@ def process_dataset (index, trials, rewiring_times, min_size, max_size, latex_li
     num_max_hyperedges = total["num_max_hyperedges"]
     total_cc = sum(list(xgi.clustering_coefficient(graphs[index]).values()))
     centrality = sum(list(xgi.clique_eigenvector_centrality(graphs[index]).values()))
+    total_es = edit_simpliciality(graphs[index], min_size=min_size)    
 
     # Calculates averages and does necessary rounding
     avg_time = round(total_time / trials, 2)
@@ -152,6 +155,9 @@ def process_dataset (index, trials, rewiring_times, min_size, max_size, latex_li
     delta_cc = round((avg_cc - og_cc), 5)
     centrality = round(centrality / len(graphs[index].nodes), 5)
     delta_clique_centrality = round(og_clique_centrality - centrality, 5)
+    avg_es = total_es
+    delta_es = (og_es - avg_es)
+
 
     # Prints results of each dataset
     print( Fore.LIGHTGREEN_EX + str(datasets[index]) + ": \n" +
@@ -160,28 +166,36 @@ def process_dataset (index, trials, rewiring_times, min_size, max_size, latex_li
         " failure rate = " + str(failure_rate) + "\n" +
         " min failures = " + str(min_failures) + "\n" +
         " max failures = " + str(max_failures) + "\n" + 
-        " average clustering coefficient = " + str(avg_cc) + "\n" +
-        #" number of edges that meet requirements = " + str(num_max_hyperedges) + "\n" +
-        #" average number missing subfaces = " + str(avg_num_missing_subfaces) + "\n" +
         " average clustering coefficient = " + str(avg_cc) + "\n" + 
         " change in clustering coefficient = " + str(delta_cc) + "\n" +
         " clique eigenvector centrality = " + str(centrality) + "\n" +
-        " change in clique eigenvector centrality = " + str(delta_clique_centrality))
+        " change in clique eigenvector centrality = " + str(delta_clique_centrality) + "\n" +
+        " original ES = " + str(og_es) + "\n" +
+        " new ES = " + str(avg_es) + "\n" +
+        " change in ES = " + str(delta_es))
 
     # Appends results to the latex lists, these produce printed latex that can be copied into a latex document
-    latex_list.append(
+    latex_list_one.append(
         datasets[index] + " & " +
+        str(avg_es) + " & " +
+        str(delta_es) + " & " +
         str(avg_time) + " & " + 
         str(avg_failures) + " & " +
         str(failure_rate) + " & " +
         str(min_failures) + " & " +
         str(max_failures) + " & " +
-        str(num_max_hyperedges) + " & " +
+        str(num_max_hyperedges) +
+    " \\\\")
+    latex_list_one.append("\hline") 
+
+    latex_list_two.append(
+        datasets[index] + " & " +
         str(avg_cc) + " & " +
         str(delta_cc) + " & " +
-        str(centrality) +
+        str(centrality) + " & " +
+        str(delta_clique_centrality) +
         " \\\\")
-    latex_list.append("\hline")   
+    latex_list_two.append("\hline")
 
 """
 Process_Dataset
@@ -208,7 +222,8 @@ if __name__ == "__main__":
     max_size = 11
     min_size = 2
     datasets_size = 10
-    latex_list = []
+    latex_list_one = []
+    latex_list_two = []
     trials = int(sys.argv[1])
     rewiring_times = int(sys.argv[2])
 
@@ -225,10 +240,11 @@ if __name__ == "__main__":
     # For all datasets
     for i in range(1):       
         # Threads process_dataset so each process runs in parallel
-        thread = threading.Thread(target=process_dataset, args=(i, trials, rewiring_times, min_size, max_size, latex_list))
+        thread = threading.Thread(target=process_dataset, args=(i, trials, rewiring_times, min_size, max_size, latex_list_one, latex_list_two))
         og_cc = sum(list(xgi.clustering_coefficient(graphs[i]).values())) / len(graphs[i].nodes)
         og_clique_centrality = sum(list(xgi.clique_eigenvector_centrality(graphs[i]).values())) / len(graphs[i].nodes)
-        thread = threading.Thread(target=process_dataset, args=(i, trials, rewiring_times, min_size, max_size, latex_list, og_cc, og_clique_centrality))
+        og_es = edit_simpliciality(graphs[i], min_size=min_size)    
+        thread = threading.Thread(target=process_dataset, args=(i, trials, rewiring_times, min_size, max_size, latex_list_one, latex_list_two, og_cc, og_clique_centrality, og_es))
         threads.append(thread)
         thread.start()              
 
@@ -239,4 +255,7 @@ if __name__ == "__main__":
     # Prints the results of the experiments
     end = time.time()
     total_time = end - start
-    print(colored("\n Done! - Time:" + str(total_time), "red"))
+    print(colored("\n Done! - Time:" + str(total_time) + "\n", "red"))
+    print(latex_list_one)
+    print("\n\n\n ***** \n\n\n")
+    print(latex_list_two)
