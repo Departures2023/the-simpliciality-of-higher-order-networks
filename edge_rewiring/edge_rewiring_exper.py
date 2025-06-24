@@ -63,10 +63,10 @@ def Construct_New_Graph(index, iter, min_size, max_size, total, graph):
     failures = 0
     time = 0
     num_missing_subfaces = 0
+    # Makes a second graph
+    G = graph[0].copy()
     #For given number of iterations, we do an edge rewiring
     for i in range(iter):
-        # Makes a second graph
-        G = graph[0].copy()
         # Runs rewiring, saving it as H and the statistics in stats
         H, stats = edge_rewiring_alg.rewire_Alg1_expr(G, min_size, max_size)
         # Removes singletons if there are any
@@ -88,7 +88,10 @@ def Construct_New_Graph(index, iter, min_size, max_size, total, graph):
     if (failures < total["min_failures"]):
         total["min_failures"] = failures
 
-    # Updates statistics        
+    # Updates statistics  
+    total["total_cc"] += sum(list(xgi.clique_eigenvector_centrality(G).values()))
+    total["total_es"] += edit_simpliciality(G, min_size)    
+    total["centrality"] += sum(list(xgi.clustering_coefficient(G).values()))
     total["total_success"] += success
     total["total_time"] += time
     total["total_num_missing_subfaces"] += num_missing_subfaces
@@ -111,7 +114,8 @@ Output:
 
 For a single dataset, runs Construct_New_Graph the given number of trials
 """     
-def process_dataset (index, trials, rewiring_times, min_size, max_size, latex_list_one, latex_list_two, graphs, og_cc, og_clique_centrality, og_es):   
+def process_dataset (index, trials, rewiring_times, min_size, max_size, latex_list_one, 
+                     latex_list_two, graphs, og_cc, og_clique_centrality, og_es):   
     
     with Manager() as manager:
         graph = manager.list()
@@ -121,7 +125,10 @@ def process_dataset (index, trials, rewiring_times, min_size, max_size, latex_li
             'total_num_missing_subfaces': 0,
             'num_max_hyperedges': 0,
             'min_failures': rewiring_times,
-            'max_failures': 0
+            'max_failures': 0,
+            'total_cc': 0,
+            'centrality': 0,
+            'total_es': 0
             })
         graph.append(graphs[index])
     # Create threads to run the algorithm in parallel
@@ -145,10 +152,9 @@ def process_dataset (index, trials, rewiring_times, min_size, max_size, latex_li
         max_failures = total["max_failures"]
         min_failures = total["min_failures"]
         num_max_hyperedges = total["num_max_hyperedges"]
-        total_cc = sum(list(xgi.clustering_coefficient(graphs[index]).values()))
-        centrality = sum(list(xgi.clique_eigenvector_centrality(graphs[index]).values()))
-        total_es = edit_simpliciality(graphs[index], min_size=min_size)
-
+        total_cc = total["total_cc"]
+        centrality = total["centrality"]
+        total_es = total["total_es"]
         # Calculates averages and does necessary rounding
         avg_time = round(total_time / trials, 2)
         total_failures = rewiring_times * trials - total_success
@@ -243,7 +249,8 @@ if __name__ == "__main__":
             og_clique_centrality = sum(list(xgi.clique_eigenvector_centrality(graphs[i]).values())) / len(graphs[i].nodes)
             og_es = edit_simpliciality(graphs[i], min_size=min_size)      
             # Threads process_dataset so each process runs in parallel
-            p = Process(target=process_dataset, args=(i, trials, rewiring_times, min_size, max_size, latex_list_one, latex_list_two, graphs, og_cc, og_clique_centrality, og_es))
+            p = Process(target=process_dataset, args=(i, trials, rewiring_times, min_size, max_size, latex_list_one, 
+                                                      latex_list_two, graphs, og_cc, og_clique_centrality, og_es))
             processes.append(p)
             p.start()              
 
