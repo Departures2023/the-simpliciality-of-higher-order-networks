@@ -3067,3 +3067,29 @@ edges_searching_time: 0.734
 rewiring_time: 0.000
 num_missing_subface: 2034
 --------------------------------------------------
+dataset: ndc-substances
+round: 0
+num_maximal_hyperedge: 4405
+max_to_rewire: 2
+success_update: 1
+num_same_size: 0
+total_time: 57.028
+edges_searching_time: 56.865
+rewiring_time: 0.147
+avg_missing_subface: 686.0713788300835
+num_candidates: 2872
+selected_idx: 1421
+--------------------------------------------------
+dataset: ndc-substances
+round: 0
+num_maximal_hyperedge: 4405
+max_to_rewire: 1
+success_update: 1
+num_same_size: 0
+total_time: 119.645
+edges_searching_time: 119.232
+rewiring_time: 0.379
+avg_missing_subface: 686.0713788300835
+num_candidates: 2872
+selected_idx: 2177
+--------------------------------------------------

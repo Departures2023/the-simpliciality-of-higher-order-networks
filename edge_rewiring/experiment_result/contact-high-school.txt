@@ -3277,3 +3277,107 @@ edges_searching_time: 0.613
 rewiring_time: 0.000
 num_missing_subface: 3
 --------------------------------------------------
+dataset: contact-high-school
+round: 0
+num_maximal_hyperedge: 523
+max_to_rewire: 1
+success_update: 1
+num_same_size: 0
+total_time: 28.739
+edges_searching_time: 28.344
+rewiring_time: 0.394
+avg_missing_subface: 2.112449799196787
+num_candidates: 249
+selected_idx: 134
+--------------------------------------------------
+dataset: contact-high-school
+round: 0
+num_maximal_hyperedge: 523
+max_to_rewire: 3
+success_update: 1
+num_same_size: 0
+total_time: 44.612
+edges_searching_time: 43.899
+rewiring_time: 0.680
+avg_missing_subface: 2.112449799196787
+num_candidates: 249
+selected_idx: 44
+--------------------------------------------------
+dataset: contact-high-school
+round: 0
+num_maximal_hyperedge: 210
+max_to_rewire: 1
+success_update: 1
+num_same_size: 0
+total_time: 0.204
+edges_searching_time: 0.201
+rewiring_time: 0.003
+avg_missing_subface: 2.462068965517241
+num_candidates: 145
+selected_idx: 137
+--------------------------------------------------
+dataset: contact-high-school
+round: 1
+num_maximal_hyperedge: 210
+max_to_rewire: 4
+success_update: 1
+num_same_size: 0
+total_time: 0.332
+edges_searching_time: 0.327
+rewiring_time: 0.004
+avg_missing_subface: 2.462068965517241
+num_candidates: 145
+selected_idx: 18
+--------------------------------------------------
+dataset: contact-high-school
+round: 2
+num_maximal_hyperedge: 210
+max_to_rewire: 1
+success_update: 1
+num_same_size: 0
+total_time: 0.140
+edges_searching_time: 0.140
+rewiring_time: 0.000
+avg_missing_subface: 2.462068965517241
+num_candidates: 145
+selected_idx: 32
+--------------------------------------------------
+dataset: contact-high-school
+round: 3
+num_maximal_hyperedge: 210
+max_to_rewire: 1
+success_update: 1
+num_same_size: 0
+total_time: 0.393
+edges_searching_time: 0.352
+rewiring_time: 0.040
+avg_missing_subface: 2.462068965517241
+num_candidates: 145
+selected_idx: 5
+--------------------------------------------------
+dataset: contact-high-school
+round: 4
+num_maximal_hyperedge: 210
+max_to_rewire: 2
+success_update: 1
+num_same_size: 0
+total_time: 0.211
+edges_searching_time: 0.208
+rewiring_time: 0.002
+avg_missing_subface: 2.462068965517241
+num_candidates: 145
+selected_idx: 131
+--------------------------------------------------
+dataset: contact-high-school
+round: 5
+num_maximal_hyperedge: 210
+max_to_rewire: 1
+success_update: 1
+num_same_size: 0
+total_time: 0.203
+edges_searching_time: 0.203
+rewiring_time: 0.000
+avg_missing_subface: 2.462068965517241
+num_candidates: 145
+selected_idx: 48
+--------------------------------------------------

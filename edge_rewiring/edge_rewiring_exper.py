@@ -1,4 +1,4 @@
-import xgi
+
 import sys
 import os
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
@@ -11,7 +11,6 @@ from colorama import Fore
 from edge_rewiring import *
 from colorama import init
 from termcolor import colored
-from multiprocessing import Process, Manager, Queue
 import time
 
 datasets = [
@@ -37,8 +36,8 @@ dir = {
     "disgenenet": "experiment_result/disgenenet.txt",
     "congress-bills": "experiment_result/congress-bills.txt",
     "tags-ask-ubuntu": "experiment_result/tags-ask-ubuntu.txt",
-}
-        
+}  
+
 """
 Construct_New_Graph
 Inputs: 
@@ -57,7 +56,7 @@ Output:
 Runs one trial of the edge rewiring algorithm on the given dataset, where iter is the number of
  edge rewirings we want.
 """
-def Construct_New_Graph(index, iter, min_size, max_size, total, graph):
+def Construct_New_Graph(index, iter, min_size, max_size, total):
     # Initialize variables to keep track of statistics
     success = 0
     failures = 0
@@ -66,7 +65,7 @@ def Construct_New_Graph(index, iter, min_size, max_size, total, graph):
     #For given number of iterations, we do an edge rewiring
     for i in range(iter):
         # Makes a second graph
-        G = graph[0].copy()
+        G = graphs[index].copy()
         # Runs rewiring, saving it as H and the statistics in stats
         H, stats = edge_rewiring_alg.rewire_Alg1_expr(G, min_size, max_size)
         # Removes singletons if there are any
@@ -80,7 +79,7 @@ def Construct_New_Graph(index, iter, min_size, max_size, total, graph):
         if stats["success_update"] == 0:
             failures += 1
         time += stats["total_time"]
-        #print(colored(datasets[index], 'blue'), stats)
+        print(colored(datasets[index], 'blue'), stats)
 
     # Checks min and max failures, updates total values
     if (failures > total["max_failures"]):
@@ -111,94 +110,81 @@ Output:
 
 For a single dataset, runs Construct_New_Graph the given number of trials
 """     
-def process_dataset (index, trials, rewiring_times, min_size, max_size, latex_list_one, latex_list_two, graphs, og_cc, og_clique_centrality, og_es):   
-    
-    with Manager() as manager:
-        graph = manager.list()
-        total = manager.dict({
+def process_dataset (index, trials, rewiring_times, min_size, max_size, latex_list, og_cc, og_clique_centrality):
+    total = {
             'total_success': 0,
             'total_time': 0,
             'total_num_missing_subfaces': 0,
             'num_max_hyperedges': 0,
             'min_failures': rewiring_times,
             'max_failures': 0
-            })
-        graph.append(graphs[index])
+        }
+
     # Create threads to run the algorithm in parallel
-        processes = []
+    threads = []
 
-        # Where trials is the number of processes we want to run
-        for i in range(trials):     
-            # Runs Construct_New_Graph in its own thread      
-            p = Process(target=Construct_New_Graph, args=(index, rewiring_times, min_size, 
-                                                                    max_size, total, graph))
-            processes.append(p)
-            p.start()
+    # Where trials is the number of processes we want to run
+    for i in range(trials):     
+        # Runs Construct_New_Graph in its own thread      
+        thread = threading.Thread(target=Construct_New_Graph, args=(index, rewiring_times, min_size, max_size, total, ))
+        threads.append(thread)
+        thread.start()
 
-        # For all threads, joins them to syncronize    
-        for p in processes:
-            p.join()           
-    
-        # Updates statistics
-        total_success = total["total_success"]
-        total_time = total["total_time"]
-        max_failures = total["max_failures"]
-        min_failures = total["min_failures"]
-        num_max_hyperedges = total["num_max_hyperedges"]
-        total_cc = sum(list(xgi.clustering_coefficient(graphs[index]).values()))
-        centrality = sum(list(xgi.clique_eigenvector_centrality(graphs[index]).values()))
-        total_es = edit_simpliciality(graphs[index], min_size=min_size)
+    # For all threads, joins them to syncronize    
+    for thread in threads:
+        thread.join()
 
-        # Calculates averages and does necessary rounding
-        avg_time = round(total_time / trials, 2)
-        total_failures = rewiring_times * trials - total_success
-        avg_failures = total_failures / trials
-        failure_rate = round((avg_failures / rewiring_times), 5)
-        avg_cc = round((total_cc / len(graphs[index].nodes)) / trials, 5)
-        delta_cc = round((avg_cc - og_cc), 5)
-        centrality = round(centrality / len(graphs[index].nodes), 5)
-        delta_clique_centrality = round(og_clique_centrality - centrality, 5)
-        es = round((total_es / trials), 5)
-        delta_es = round((es - og_es), 5)
+    # Updates statistics
+    total_success = total["total_success"]
+    total_time = total["total_time"]
+    max_failures = total["max_failures"]
+    min_failures = total["min_failures"]
+    num_max_hyperedges = total["num_max_hyperedges"]
+    total_cc = sum(list(xgi.clustering_coefficient(graphs[index]).values()))
+    centrality = sum(list(xgi.clique_eigenvector_centrality(graphs[index]).values()))
 
-        # Prints results of each dataset
-        print( Fore.LIGHTGREEN_EX + str(datasets[index]) + ": \n" +
-            " average time = " + str(avg_time) + "\n" + 
-            " average failures = " + str(avg_failures) + "\n" + 
-            " failure rate = " + str(failure_rate) + "\n" +
-            " min failures = " + str(min_failures) + "\n" +
-            " max failures = " + str(max_failures) + "\n" + 
-            " average clustering coefficient = " + str(avg_cc) + "\n" + 
-            " change in clustering coefficient = " + str(delta_cc) + "\n" +
-            " clique eigenvector centrality = " + str(centrality) + "\n" +
-            " change in clique eigenvector centrality = " + str(delta_clique_centrality) + "\n" + 
-            " edit simpliciality = " + str(es) + "\n" +
-            " change in edit simpliciality = " + str(delta_es) + "\n")
-        
-        # Appends results to the latex lists, these produce printed latex that can be copied into a latex document
-        latex_list_one.append(
-            datasets[index] + " & " +
-            str(es) + " & " +
-            str(delta_es) + " & " +
-            str(avg_time) + " & " + 
-            str(avg_failures) + " & " +
-            str(failure_rate) + " & " +
-            str(min_failures) + " & " +
-            str(max_failures) + " & " +
-            str(num_max_hyperedges) +
+    # Calculates averages and does necessary rounding
+    avg_time = round(total_time / trials, 2)
+    total_failures = rewiring_times * trials - total_success
+    avg_failures = total_failures / trials
+    failure_rate = round((avg_failures / rewiring_times), 5)
+    avg_cc = round((total_cc / len(graphs[index].nodes)) / trials, 5)
+    delta_cc = round((avg_cc - og_cc), 5)
+    centrality = round(centrality / len(graphs[index].nodes), 5)
+    delta_clique_centrality = round(og_clique_centrality - centrality, 5)
+
+    # Prints results of each dataset
+    print( Fore.LIGHTGREEN_EX + str(datasets[index]) + ": \n" +
+        " average time = " + str(avg_time) + "\n" + 
+        " average failures = " + str(avg_failures) + "\n" + 
+        " failure rate = " + str(failure_rate) + "\n" +
+        " min failures = " + str(min_failures) + "\n" +
+        " max failures = " + str(max_failures) + "\n" + 
+        " average clustering coefficient = " + str(avg_cc) + "\n" +
+        #" number of edges that meet requirements = " + str(num_max_hyperedges) + "\n" +
+        #" average number missing subfaces = " + str(avg_num_missing_subfaces) + "\n" +
+        " average clustering coefficient = " + str(avg_cc) + "\n" + 
+        " change in clustering coefficient = " + str(delta_cc) + "\n" +
+        " clique eigenvector centrality = " + str(centrality) + "\n" +
+        " change in clique eigenvector centrality = " + str(delta_clique_centrality))
+
+    # Appends results to the latex lists, these produce printed latex that can be copied into a latex document
+    latex_list.append(
+        datasets[index] + " & " +
+        str(avg_time) + " & " + 
+        str(avg_failures) + " & " +
+        str(failure_rate) + " & " +
+        str(min_failures) + " & " +
+        str(max_failures) + " & " +
+        str(num_max_hyperedges) + " & " +
+        str(avg_cc) + " & " +
+        str(delta_cc) + " & " +
+        str(centrality) +
         " \\\\")
-        latex_list_one.append("\hline") 
+    latex_list.append("\hline")   
 
-        latex_list_two.append(
-            datasets[index] + " & " +
-            str(avg_cc) + " & " +
-            str(delta_cc) + " & " +
-            str(centrality) + " & " +
-            str(delta_clique_centrality) +
-            " \\\\")
-        latex_list_two.append("\hline") 
-   
 """
+Process_Dataset
 main
 Arguments: 
     1. trials: how many trials do you want
@@ -217,47 +203,40 @@ if __name__ == "__main__":
         sys.exit()
     print("Starting edge rewiring experiments...")
     #Initializes graphs and needed values
+    global graphs
+    graphs = []
     max_size = 11
     min_size = 2
     datasets_size = 10
-    
+    latex_list = []
     trials = int(sys.argv[1])
     rewiring_times = int(sys.argv[2])
 
-    # Uses manager to do multiprocessing
-    with Manager() as manager:
-        latex_list_one = manager.list()
-        latex_list_two = manager.list()
-        graphs = manager.list() 
-        for i in range (datasets_size):
-            graphs.append(xgi.load_xgi_data(datasets[i], max_order=max_size))
-            graphs[i].cleanup(singletons=True)
+    # For all of the datasets
+    for i in range (datasets_size):
+        # Uploads datasets
+        graphs.append(xgi.load_xgi_data(datasets[i], max_order=max_size))
+        # Removes any singletons
+        graphs[i].cleanup(singletons=True)
 
     # Create threads to run the algorithm in parallel
-        processes = []
+    threads = []
 
-        # For all datasets
-        for i in range(datasets_size): 
-            # Gets original values
-            og_cc = sum(list(xgi.clustering_coefficient(graphs[i]).values())) / len(graphs[i].nodes)
-            og_clique_centrality = sum(list(xgi.clique_eigenvector_centrality(graphs[i]).values())) / len(graphs[i].nodes)
-            og_es = edit_simpliciality(graphs[i], min_size=min_size)      
-            # Threads process_dataset so each process runs in parallel
-            p = Process(target=process_dataset, args=(i, trials, rewiring_times, min_size, max_size, latex_list_one, latex_list_two, graphs, og_cc, og_clique_centrality, og_es))
-            processes.append(p)
-            p.start()              
+    # For all datasets
+    for i in range(1):       
+        # Threads process_dataset so each process runs in parallel
+        thread = threading.Thread(target=process_dataset, args=(i, trials, rewiring_times, min_size, max_size, latex_list))
+        og_cc = sum(list(xgi.clustering_coefficient(graphs[i]).values())) / len(graphs[i].nodes)
+        og_clique_centrality = sum(list(xgi.clique_eigenvector_centrality(graphs[i]).values())) / len(graphs[i].nodes)
+        thread = threading.Thread(target=process_dataset, args=(i, trials, rewiring_times, min_size, max_size, latex_list, og_cc, og_clique_centrality))
+        threads.append(thread)
+        thread.start()              
 
-        # For all threads, joins them to syncronize    
-        for p in processes:
-            p.join()
+    # For all threads, joins them to syncronize    
+    for thread in threads:
+        thread.join()
 
-        # Prints the results of the experiments
-        print(colored("All threads finished!", 'red'))
-        print(*latex_list_one, sep="\n")
-        print("\n\n\n*****\n\n\n")
-        print(*latex_list_two, sep="\n")
-
-    # Calculates time
+    # Prints the results of the experiments
     end = time.time()
     total_time = end - start
     print(colored("\n Done! - Time:" + str(total_time), "red"))

@@ -3023,3 +3023,29 @@ edges_searching_time: 0.002
 rewiring_time: 0.000
 num_missing_subface: 25
 --------------------------------------------------
+dataset: diseasome
+round: 0
+num_maximal_hyperedge: 70
+max_to_rewire: 1
+success_update: 1
+num_same_size: 1
+total_time: 0.048
+edges_searching_time: 0.048
+rewiring_time: 0.000
+avg_missing_subface: 188.53333333333333
+num_candidates: 15
+selected_idx: 6
+--------------------------------------------------
+dataset: diseasome
+round: 0
+num_maximal_hyperedge: 70
+max_to_rewire: 1
+success_update: 1
+num_same_size: 0
+total_time: 0.119
+edges_searching_time: 0.113
+rewiring_time: 0.006
+avg_missing_subface: 188.53333333333333
+num_candidates: 15
+selected_idx: 12
+--------------------------------------------------
