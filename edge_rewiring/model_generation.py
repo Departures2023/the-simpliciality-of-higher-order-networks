@@ -677,10 +677,11 @@ def final_edge_adjustment_sf(H, maximal_edge_is_simplex, maximal_edge_not_simple
 # NOTE THAT THE UPPER BOUND THIS FUNCTION RETURN IS POSSIBLE TO BE A LITTLE SMALLER THAN THE ACTUAL UPPER BOUND (IT DIDN'T CONSIDER OVERLAPPING MAXIMAL HYPEREDGES)
 # Function to approximate the upper bound of |C| of a hypergraph with a given edit simpliciality, number of maximal hyperedges, and number of nodes
 def approximate_C_upperbound(num_node, min_size, max_size, num_max_hyperedge):
+    
     # Case 1: size of maximal hyperedge is not limited by max_size
     if max_size is None or max_size > num_node:
         # Upper bound is the case to form a maximal hyperedge with largest size possible, while other maximal hyperedges are of size min_size
-        C_big_edge = possible_combinations((num_node - 2*(num_max_hyperedge - 1)), min_size)
+        C_big_edge = possible_combinations((num_node - min_size*(num_max_hyperedge - 1)), min_size)
         C_upperbound = C_big_edge + (num_max_hyperedge - 1)
         return C_upperbound
     else:
@@ -689,16 +690,19 @@ def approximate_C_upperbound(num_node, min_size, max_size, num_max_hyperedge):
         # except the last one, which is of size num_node % max_size (takes the rest of the possible nodes)
         C_upperbound = 0
         # Calculate the sum of combinations for sizes from min_size to max_size (maximal hyperedges of size max_size)
-        while ((num_node - max_size) >= 2*num_max_hyperedge) and (num_max_hyperedge > 0):
+        while ((num_node - max_size) >= min_size*num_max_hyperedge) and (num_max_hyperedge > 0):
             C_big_edge = possible_combinations(max_size, min_size)
             C_upperbound+= C_big_edge
             num_node -= max_size
             num_max_hyperedge -= 1
         # If there are still maximal hyperedges to form, form them with the rest of the possible nodes
-        if num_max_hyperedge > 0:
+        if num_max_hyperedge > 1:
+            # -1 from num_max_hyperedge because we need 1 edge to form a maximal hyperedge with the rest of the possible nodes
             C_upperbound += num_max_hyperedge - 1
-            num_node -= 2*(num_max_hyperedge - 1)
-            C_upperbound += possible_combinations(min(num_node, max_size), min_size)
+            # Considering overlap of maximal hyperedges, 2 edge -> at least 3 nodes, 3 edges -> at least 4 nodes, etc.
+            num_node -= (num_max_hyperedge - 1) + 1
+        # Add the case to form a maximal hyperedge with the rest of the possible nodes
+        C_upperbound += possible_combinations(min(num_node, max_size), min_size)
         return C_upperbound
 
 # Test function to verify no duplicate edges are generated
