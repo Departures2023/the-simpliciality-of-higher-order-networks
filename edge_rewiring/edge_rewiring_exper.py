@@ -158,7 +158,7 @@ def process_dataset (index, trials, rewiring_times, min_size, max_size, latex_li
         delta_cc = round((avg_cc - og_cc), 5)
         centrality = round(centrality / len(graphs[index].nodes), 5)
         delta_clique_centrality = round(og_clique_centrality - centrality, 5)
-        es = round((total_es / trials), 5)
+        es = (total_es / trials)
         delta_es = round((es - og_es), 5)
 
         # Prints results of each dataset
@@ -173,6 +173,7 @@ def process_dataset (index, trials, rewiring_times, min_size, max_size, latex_li
             " clique eigenvector centrality = " + str(centrality) + "\n" +
             " change in clique eigenvector centrality = " + str(delta_clique_centrality) + "\n" + 
             " edit simpliciality = " + str(es) + "\n" +
+            " og edit simpliciality = " + str(og_es) + "\n" +
             " change in edit simpliciality = " + str(delta_es) + "\n")
         
         # Appends results to the latex lists, these produce printed latex that can be copied into a latex document
@@ -230,17 +231,17 @@ if __name__ == "__main__":
         latex_list_two = manager.list()
         graphs = manager.list() 
         for i in range (datasets_size):
-            graphs.append(xgi.load_xgi_data(datasets[i], max_order=max_size))
+            graphs.append(xgi.load_xgi_data(datasets[1], max_order=max_size))
             graphs[i].cleanup(singletons=True)
 
     # Create threads to run the algorithm in parallel
         processes = []
 
         # For all datasets
-        for i in range(datasets_size): 
+        for i in range(1): 
             # Gets original values
-            og_cc = sum(list(xgi.clustering_coefficient(graphs[i]).values())) / len(graphs[i].nodes)
-            og_clique_centrality = sum(list(xgi.clique_eigenvector_centrality(graphs[i]).values())) / len(graphs[i].nodes)
+            og_cc = round((sum(list(xgi.clustering_coefficient(graphs[i]).values())) / len(graphs[i].nodes)), 5)
+            og_clique_centrality = round((sum(list(xgi.clique_eigenvector_centrality(graphs[i]).values())) / len(graphs[i].nodes)), 5)
             og_es = edit_simpliciality(graphs[i], min_size=min_size)      
             # Threads process_dataset so each process runs in parallel
             p = Process(target=process_dataset, args=(i, trials, rewiring_times, min_size, max_size, latex_list_one, latex_list_two, graphs, og_cc, og_clique_centrality, og_es))

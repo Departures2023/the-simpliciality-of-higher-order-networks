@@ -3243,3 +3243,81 @@ edges_searching_time: 0.000
 rewiring_time: 0.000
 num_missing_subface: 501
 --------------------------------------------------
+dataset: disgenenet
+round: 0
+num_maximal_hyperedge: 488
+max_to_rewire: 1
+success_update: 1
+num_same_size: 0
+total_time: 3.010
+edges_searching_time: 3.005
+rewiring_time: 0.005
+avg_missing_subface: 659.3904761904762
+num_candidates: 105
+selected_idx: 46
+--------------------------------------------------
+dataset: disgenenet
+round: 0
+num_maximal_hyperedge: 488
+max_to_rewire: 1
+success_update: 1
+num_same_size: 0
+total_time: 3.949
+edges_searching_time: 3.945
+rewiring_time: 0.004
+avg_missing_subface: 659.3904761904762
+num_candidates: 105
+selected_idx: 56
+--------------------------------------------------
+dataset: disgenenet
+round: 0
+num_maximal_hyperedge: 488
+max_to_rewire: 1
+success_update: 1
+num_same_size: 0
+total_time: 3.389
+edges_searching_time: 3.385
+rewiring_time: 0.004
+avg_missing_subface: 659.3904761904762
+num_candidates: 105
+selected_idx: 56
+--------------------------------------------------
+dataset: disgenenet
+round: 0
+num_maximal_hyperedge: 488
+max_to_rewire: 1
+success_update: 1
+num_same_size: 0
+total_time: 3.603
+edges_searching_time: 3.600
+rewiring_time: 0.003
+avg_missing_subface: 659.3904761904762
+num_candidates: 105
+selected_idx: 58
+--------------------------------------------------
+dataset: disgenenet
+round: 0
+num_maximal_hyperedge: 488
+max_to_rewire: 1
+success_update: 1
+num_same_size: 1
+total_time: 3.892
+edges_searching_time: 3.885
+rewiring_time: 0.005
+avg_missing_subface: 659.3904761904762
+num_candidates: 105
+selected_idx: 99
+--------------------------------------------------
+dataset: disgenenet
+round: 0
+num_maximal_hyperedge: 488
+max_to_rewire: 1
+success_update: 1
+num_same_size: 1
+total_time: 3.639
+edges_searching_time: 3.635
+rewiring_time: 0.004
+avg_missing_subface: 659.3904761904762
+num_candidates: 105
+selected_idx: 94
+--------------------------------------------------
