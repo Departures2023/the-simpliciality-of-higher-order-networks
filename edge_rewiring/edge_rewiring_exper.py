@@ -65,9 +65,6 @@ def Construct_New_Graph(index, iter, min_size, max_size, total):
     num_missing_subfaces = 0
     # Makes a second graph
     G = graph.copy()
-    print("hi", index, edit_simpliciality(G, min_size))
-    G.cleanup(singletons=True)
-    print("hello", index, edit_simpliciality(G, min_size))
     #For given number of iterations, we do an edge rewiring
     for i in range(iter):       
         # Runs rewiring, saving it as H and the statistics in stats
