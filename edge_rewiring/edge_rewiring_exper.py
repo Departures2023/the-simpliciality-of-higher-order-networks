@@ -226,6 +226,7 @@ if __name__ == "__main__":
     latex_list_two = []
     trials = int(sys.argv[1])
     rewiring_times = int(sys.argv[2])
+    times = int(sys.argv[3])
 
     # For all of the datasets
     for i in range (datasets_size):
@@ -238,7 +239,7 @@ if __name__ == "__main__":
     threads = []
 
     # For all datasets
-    for i in range(1):       
+    for i in range(times):       
         # Threads process_dataset so each process runs in parallel
         thread = threading.Thread(target=process_dataset, args=(i, trials, rewiring_times, min_size, max_size, latex_list_one, latex_list_two))
         og_cc = sum(list(xgi.clustering_coefficient(graphs[i]).values())) / len(graphs[i].nodes)
