@@ -35,7 +35,7 @@ def has_powerlaw(H, p_value = 0.10) :
     fit = powerlaw.Fit(filtered_degrees)
 
     R, p = fit.distribution_compare('truncated_power_law', 'exponential')
-    print(f"  R = {R:.4f}, p = {p:.4f}")
+    # print(f"  R = {R:.4f}, p = {p:.4f}")
     # plt.figure(figsize=(8, 6))
     # powerlaw.plot_pdf(filtered_degrees, color='b', label='Empirical Data')
     # fit.power_law.plot_pdf(color='r', linestyle='--', label='Power-law Fit')
