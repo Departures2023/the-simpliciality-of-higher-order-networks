@@ -132,7 +132,7 @@ trials_per_setting = 10
 # Parameter grid to test
 approx_C_values = [500, 600, 700, 800, 900]
 node_sizes = [600, 800, 1000]
-hyperedge_counts = [50, 100, 150]
+hyperedge_counts = [150, 200, 250, 300]
 max_sizes = [5, 10, 20]
 
 # Create parameter combinations
