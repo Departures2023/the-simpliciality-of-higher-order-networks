@@ -3067,3 +3067,55 @@ edges_searching_time: 0.734
 rewiring_time: 0.000
 num_missing_subface: 2034
 --------------------------------------------------
+dataset: ndc-substances
+round: 0
+num_maximal_hyperedge: 2646
+max_to_rewire: 1
+success_update: 1
+num_same_size: 1
+total_time: 15.599
+edges_searching_time: 15.583
+rewiring_time: 0.016
+avg_missing_subface: 902.0712933753944
+num_candidates: 1585
+selected_idx: 227
+--------------------------------------------------
+dataset: ndc-substances
+round: 0
+num_maximal_hyperedge: 2646
+max_to_rewire: 1
+success_update: 1
+num_same_size: 0
+total_time: 15.753
+edges_searching_time: 15.737
+rewiring_time: 0.016
+avg_missing_subface: 902.0712933753944
+num_candidates: 1585
+selected_idx: 971
+--------------------------------------------------
+dataset: ndc-substances
+round: 1
+num_maximal_hyperedge: 2646
+max_to_rewire: 2
+success_update: 1
+num_same_size: 0
+total_time: 18.963
+edges_searching_time: 18.948
+rewiring_time: 0.016
+avg_missing_subface: 903.190145293746
+num_candidates: 1583
+selected_idx: 923
+--------------------------------------------------
+dataset: ndc-substances
+round: 1
+num_maximal_hyperedge: 2646
+max_to_rewire: 1
+success_update: 1
+num_same_size: 0
+total_time: 18.979
+edges_searching_time: 18.979
+rewiring_time: 0.000
+avg_missing_subface: 903.4797724399494
+num_candidates: 1582
+selected_idx: 699
+--------------------------------------------------

@@ -179,7 +179,6 @@ def process_dataset (index, trials, rewiring_times, min_size, max_size, latex_li
             " average clustering coefficient = " + str(avg_cc) + "\n" + 
             " change in clustering coefficient = " + str(delta_cc) + "\n" +
             " clique eigenvector centrality = " + str(centrality) + "\n" +
-            " og clique eigenvector centrality = " + str(og_clique_centrality) + "\n" +
             " change in clique eigenvector centrality = " + str(delta_clique_centrality) + "\n" + 
             " edit simpliciality = " + str(es) + "\n" +
             " change in edit simpliciality = " + str(delta_es) + "\n")

@@ -3243,3 +3243,55 @@ edges_searching_time: 0.000
 rewiring_time: 0.000
 num_missing_subface: 501
 --------------------------------------------------
+dataset: disgenenet
+round: 0
+num_maximal_hyperedge: 463
+max_to_rewire: 1
+success_update: 1
+num_same_size: 0
+total_time: 0.524
+edges_searching_time: 0.524
+rewiring_time: 0.000
+avg_missing_subface: 660.2871287128713
+num_candidates: 101
+selected_idx: 37
+--------------------------------------------------
+dataset: disgenenet
+round: 0
+num_maximal_hyperedge: 463
+max_to_rewire: 1
+success_update: 1
+num_same_size: 0
+total_time: 0.528
+edges_searching_time: 0.528
+rewiring_time: 0.000
+avg_missing_subface: 660.2871287128713
+num_candidates: 101
+selected_idx: 81
+--------------------------------------------------
+dataset: disgenenet
+round: 1
+num_maximal_hyperedge: 463
+max_to_rewire: 1
+success_update: 1
+num_same_size: 1
+total_time: 0.569
+edges_searching_time: 0.569
+rewiring_time: 0.000
+avg_missing_subface: 660.2871287128713
+num_candidates: 101
+selected_idx: 55
+--------------------------------------------------
+dataset: disgenenet
+round: 1
+num_maximal_hyperedge: 463
+max_to_rewire: 1
+success_update: 1
+num_same_size: 0
+total_time: 0.520
+edges_searching_time: 0.520
+rewiring_time: 0.000
+avg_missing_subface: 686.752688172043
+num_candidates: 93
+selected_idx: 84
+--------------------------------------------------
