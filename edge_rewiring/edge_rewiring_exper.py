@@ -89,10 +89,10 @@ def Construct_New_Graph(index, iter, min_size, max_size, total, graph):
         total["min_failures"] = failures
 
     # Updates statistics  
-    total["total_cc"] += sum(list(xgi.xgi.clustering_coefficient(G).values()))
+    total["total_cc"] += sum(list(xgi.clustering_coefficient(G).values()))
     es = edit_simpliciality(G, min_size)
     total["total_es"] += es    
-    total["centrality"] += sum(list(clique_eigenvector_centrality(G).values()))
+    total["centrality"] += sum(list(xgi.clique_eigenvector_centrality(G).values()))
     total["total_success"] += success
     total["total_time"] += time
     total["total_num_missing_subfaces"] += num_missing_subfaces
