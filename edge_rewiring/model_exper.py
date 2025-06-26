@@ -127,13 +127,13 @@ random.seed(42)
 np.random.seed(42)
 
 es = 0.3
-trials_per_setting = 10
+trials_per_setting = 100
 
 # Parameter grid to test
-approx_C_values = [500, 600, 700, 800, 900]
+approx_C_values = [850, 875, 900, 925]
 node_sizes = [600, 800, 1000]
 hyperedge_counts = [150, 200, 250, 300]
-max_sizes = [5, 10, 20]
+max_sizes = [18, 19, 20, 21, 22]
 
 # Create parameter combinations
 param_grid = [
