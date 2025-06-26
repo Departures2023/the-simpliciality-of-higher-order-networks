@@ -1,6 +1,7 @@
 import matplotlib.pyplot as plt
 import re
 import numpy as np
+import os
 from matplotlib.ticker import MultipleLocator, AutoMinorLocator
 from matplotlib.font_manager import FontProperties
 
@@ -68,7 +69,7 @@ def extract_cumulative_data(filename):
     
     return data
 
-def create_plots(data):
+def create_plots(data, output_dir):
     """Create all the requested plots"""
     
     # Set up the plotting style
@@ -88,7 +89,7 @@ def create_plots(data):
     plt.legend()
     plt.grid(True, alpha=0.3)
     plt.tight_layout()
-    plt.savefig('local_cluster_coefficient_vs_es.png', dpi=300, bbox_inches='tight')
+    plt.savefig(os.path.join(output_dir, 'local_cluster_coefficient_vs_es.png'), dpi=300, bbox_inches='tight')
     plt.show()
     
     # 2. Connected components vs es
@@ -102,7 +103,7 @@ def create_plots(data):
     plt.legend()
     plt.grid(True, alpha=0.3)
     plt.tight_layout()
-    plt.savefig('connected_components_vs_es.png', dpi=300, bbox_inches='tight')
+    plt.savefig(os.path.join(output_dir, 'connected_components_vs_es.png'), dpi=300, bbox_inches='tight')
     plt.show()
     
     # 3. Simplicial fraction vs es
@@ -116,7 +117,7 @@ def create_plots(data):
     plt.legend()
     plt.grid(True, alpha=0.3)
     plt.tight_layout()
-    plt.savefig('simplicial_fraction_vs_es.png', dpi=300, bbox_inches='tight')
+    plt.savefig(os.path.join(output_dir, 'simplicial_fraction_vs_es.png'), dpi=300, bbox_inches='tight')
     plt.show()
     
     # 4. Edit simpliciality vs es
@@ -130,7 +131,7 @@ def create_plots(data):
     plt.legend()
     plt.grid(True, alpha=0.3)
     plt.tight_layout()
-    plt.savefig('edit_simpliciality_vs_es.png', dpi=300, bbox_inches='tight')
+    plt.savefig(os.path.join(output_dir, 'edit_simpliciality_vs_es.png'), dpi=300, bbox_inches='tight')
     plt.show()
     
     # 5. Face edit simpliciality vs es
@@ -144,7 +145,7 @@ def create_plots(data):
     plt.legend()
     plt.grid(True, alpha=0.3)
     plt.tight_layout()
-    plt.savefig('face_edit_simpliciality_vs_es.png', dpi=300, bbox_inches='tight')
+    plt.savefig(os.path.join(output_dir, 'face_edit_simpliciality_vs_es.png'), dpi=300, bbox_inches='tight')
     plt.show()
     
     # 6. Density vs es
@@ -158,7 +159,7 @@ def create_plots(data):
     plt.legend()
     plt.grid(True, alpha=0.3)
     plt.tight_layout()
-    plt.savefig('density_vs_es.png', dpi=300, bbox_inches='tight')
+    plt.savefig(os.path.join(output_dir, 'density_vs_es.png'), dpi=300, bbox_inches='tight')
     plt.show()
     
     # 7. Degree count vs es (avg and median)
@@ -171,7 +172,7 @@ def create_plots(data):
     plt.legend()
     plt.grid(True, alpha=0.3)
     plt.tight_layout()
-    plt.savefig('degree_count_vs_es.png', dpi=300, bbox_inches='tight')
+    plt.savefig(os.path.join(output_dir, 'degree_count_vs_es.png'), dpi=300, bbox_inches='tight')
     plt.show()
     
     # 8. Number of nodes vs es (comprehensive)
@@ -188,7 +189,7 @@ def create_plots(data):
     plt.legend()
     plt.grid(True, alpha=0.3)
     plt.tight_layout()
-    plt.savefig('num_node_vs_es.png', dpi=300, bbox_inches='tight')
+    plt.savefig(os.path.join(output_dir, 'num_node_vs_es.png'), dpi=300, bbox_inches='tight')
     plt.show()
     
     # 9. Number of edges vs es (comprehensive)
@@ -205,7 +206,7 @@ def create_plots(data):
     plt.legend()
     plt.grid(True, alpha=0.3)
     plt.tight_layout()
-    plt.savefig('num_edge_vs_es.png', dpi=300, bbox_inches='tight')
+    plt.savefig(os.path.join(output_dir, 'num_edge_vs_es.png'), dpi=300, bbox_inches='tight')
     plt.show()
     
     # 10. Evaluation time vs es
@@ -219,7 +220,7 @@ def create_plots(data):
     plt.legend()
     plt.grid(True, alpha=0.3)
     plt.tight_layout()
-    plt.savefig('evaluation_time_vs_es.png', dpi=300, bbox_inches='tight')
+    plt.savefig(os.path.join(output_dir, 'evaluation_time_vs_es.png'), dpi=300, bbox_inches='tight')
     plt.show()
     
     # 11. Graph generation time vs es
@@ -233,7 +234,7 @@ def create_plots(data):
     plt.legend()
     plt.grid(True, alpha=0.3)
     plt.tight_layout()
-    plt.savefig('graph_generation_time_vs_es.png', dpi=300, bbox_inches='tight')
+    plt.savefig(os.path.join(output_dir, 'graph_generation_time_vs_es.png'), dpi=300, bbox_inches='tight')
     plt.show()
     
     # 12. Cumulative edit simpliciality diff vs es
@@ -244,7 +245,7 @@ def create_plots(data):
     plt.title('Cumulative Edit Simpliciality Difference vs Expected ES')
     plt.grid(True, alpha=0.3)
     plt.tight_layout()
-    plt.savefig('cumulative_edit_simpliciality_diff_vs_es.png', dpi=300, bbox_inches='tight')
+    plt.savefig(os.path.join(output_dir, 'cumulative_edit_simpliciality_diff_vs_es.png'), dpi=300, bbox_inches='tight')
     plt.show()
     
     # 13. Degree assortativity vs es
@@ -258,10 +259,10 @@ def create_plots(data):
     plt.legend()
     plt.grid(True, alpha=0.3)
     plt.tight_layout()
-    plt.savefig('degree_assortativity_vs_es.png', dpi=300, bbox_inches='tight')
+    plt.savefig(os.path.join(output_dir, 'degree_assortativity_vs_es.png'), dpi=300, bbox_inches='tight')
     plt.show()
 
-def create_summary_plot(data):
+def create_summary_plot(data, output_dir):
     """Create a summary plot with multiple subplots"""
     fig, axes = plt.subplots(3, 4, figsize=(20, 15))
     fig.suptitle('Summary: All Metrics vs Expected ES', fontsize=16)
@@ -311,13 +312,18 @@ def create_summary_plot(data):
         ax.tick_params(labelsize=8)
     
     plt.tight_layout()
-    plt.savefig('summary_all_metrics_vs_es.png', dpi=300, bbox_inches='tight')
+    plt.savefig(os.path.join(output_dir, 'summary_all_metrics_vs_es.png'), dpi=300, bbox_inches='tight')
     plt.show()
 
 # Main execution
 if __name__ == "__main__":
     # File path
     file_path = r'experiment_result\model_generation_es\cumulative_data.txt'
+    
+    # Create output directory
+    output_dir = r'experiment_result\model_generation_es\fig'
+    os.makedirs(output_dir, exist_ok=True)
+    print(f"Output directory created: {output_dir}")
     
     # Extract data
     print("Extracting data from cumulative_data.txt...")
@@ -329,10 +335,10 @@ if __name__ == "__main__":
     
     # Create individual plots
     print("Creating individual plots...")
-    create_plots(data)
+    create_plots(data, output_dir)
     
     # Create summary plot
     print("Creating summary plot...")
-    create_summary_plot(data)
+    create_summary_plot(data, output_dir)
     
     print("All plots have been generated and saved!")
