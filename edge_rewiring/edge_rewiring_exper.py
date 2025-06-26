@@ -13,6 +13,7 @@ from colorama import init
 from termcolor import colored
 from multiprocessing import Process, Manager, Queue
 import time
+import time
 
 datasets = [
     "contact-primary-school",
@@ -63,6 +64,8 @@ def Construct_New_Graph(index, iter, min_size, max_size, total, graph):
     failures = 0
     time = 0
     num_missing_subfaces = 0
+    # Makes a second graph
+    G = graph[0].copy()
     # Makes a second graph
     G = graph[0].copy()
     #For given number of iterations, we do an edge rewiring
@@ -117,6 +120,8 @@ For a single dataset, runs Construct_New_Graph the given number of trials
 """     
 def process_dataset (index, trials, rewiring_times, min_size, max_size, latex_list_one, 
                      latex_list_two, og_cc, og_clique_centrality, og_es):   
+def process_dataset (index, trials, rewiring_times, min_size, max_size, latex_list_one, 
+                     latex_list_two, og_cc, og_clique_centrality, og_es):   
     
     with Manager() as manager:
         graph = manager.list()
@@ -130,13 +135,19 @@ def process_dataset (index, trials, rewiring_times, min_size, max_size, latex_li
             'total_cc': 0,
             'centrality': 0,
             'total_es': 0
+            'max_failures': 0,
+            'total_cc': 0,
+            'centrality': 0,
+            'total_es': 0
             })
         graph.append(graphs[index])
     # Create threads to run the algorithm in parallel
         processes = []
         graph[0].cleanup(singletons = True)
+        graph[0].cleanup(singletons = True)
         # Where trials is the number of processes we want to run
         for i in range(trials):     
+            graph[0].cleanup(singletons = True)
             graph[0].cleanup(singletons = True)
             # Runs Construct_New_Graph in its own thread      
             p = Process(target=Construct_New_Graph, args=(index, rewiring_times, min_size, 
@@ -154,6 +165,9 @@ def process_dataset (index, trials, rewiring_times, min_size, max_size, latex_li
         max_failures = total["max_failures"]
         min_failures = total["min_failures"]
         num_max_hyperedges = total["num_max_hyperedges"]
+        total_cc = total["total_cc"]
+        centrality = total["centrality"]
+        total_es = total["total_es"]
         total_cc = total["total_cc"]
         centrality = total["centrality"]
         total_es = total["total_es"]
@@ -187,7 +201,10 @@ def process_dataset (index, trials, rewiring_times, min_size, max_size, latex_li
         
         # Appends results to the latex lists, these produce printed latex that can be copied into a latex document
         latex_list_one.append(
+        latex_list_one.append(
             datasets[index] + " & " +
+            str(es) + " & " +
+            str(delta_es) + " & " +
             str(es) + " & " +
             str(delta_es) + " & " +
             str(avg_time) + " & " + 
@@ -205,7 +222,19 @@ def process_dataset (index, trials, rewiring_times, min_size, max_size, latex_li
             str(delta_cc) + " & " +
             str(centrality) + " & " +
             str(delta_clique_centrality) +
+            str(num_max_hyperedges) +
+        " \\\\")
+        latex_list_one.append("\hline") 
+
+        latex_list_two.append(
+            datasets[index] + " & " +
+            str(avg_cc) + " & " +
+            str(delta_cc) + " & " +
+            str(centrality) + " & " +
+            str(delta_clique_centrality) +
             " \\\\")
+        latex_list_two.append("\hline") 
+   
         latex_list_two.append("\hline") 
    
 """
@@ -221,14 +250,18 @@ Runs Process_Dataset for each dataset in parallel, the given number of times.
 """ 
 if __name__ == "__main__":
     start = time.time()
+    start = time.time()
     # Checks if arguments are given, if not prints error and exits
     if len(sys.argv) < 3:
+        print("Usage Error: <processes> <rewiring_times> <the number of first dataset> <the number of the end + 1> \ncontact-primary-school, contact-high-school, hospital-lyon, \nemail-enron, email-eu, ndc-substances, \ndiseasome, disgenenet, congress-bills, \ntags-ask-ubuntu")
         print("Usage Error: <processes> <rewiring_times> <the number of first dataset> <the number of the end + 1> \ncontact-primary-school, contact-high-school, hospital-lyon, \nemail-enron, email-eu, ndc-substances, \ndiseasome, disgenenet, congress-bills, \ntags-ask-ubuntu")
         sys.exit()
     print("Starting edge rewiring experiments...")
     #Initializes graphs and needed values
     max_size = 11
     min_size = 2
+    begin_dataset = int(sys.argv[3])
+    end_dataset = int(sys.argv[4])
     begin_dataset = int(sys.argv[3])
     end_dataset = int(sys.argv[4])
     trials = int(sys.argv[1])
@@ -244,9 +277,21 @@ if __name__ == "__main__":
             graphs.append(0)
         else:
             graphs.append(xgi.load_xgi_data(datasets[i], max_order=max_size))              
+    global graphs
+    graphs = []
+    latex_list_one = []
+    latex_list_two = []
+          
+    for i in range (10):
+        if (i < begin_dataset or i >= end_dataset):
+            graphs.append(0)
+        else:
+            graphs.append(xgi.load_xgi_data(datasets[i], max_order=max_size))              
             graphs[i].cleanup(singletons=True)
             
+            
     # Create threads to run the algorithm in parallel
+    threads = []
     threads = []
 
     # For all datasets
