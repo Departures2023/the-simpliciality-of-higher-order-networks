@@ -267,6 +267,6 @@ if __name__ == "__main__":
     end = time.time()
     total_time = end - start
     print(colored("\n Done! - Time:" + str(total_time) + "\n", "red"))
-    print(latex_list_one)
+    print(*latex_list_one, sep="\n")
     print("\n\n\n ***** \n\n\n")
-    print(latex_list_two)
+    print(*latex_list_two, sep="\n")
