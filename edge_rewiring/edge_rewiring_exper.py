@@ -90,10 +90,10 @@ def Construct_New_Graph(index, iter, min_size, max_size, total, graph):
         total["min_failures"] = failures
 
     # Updates statistics  
-    total["total_cc"] += sum(list(xgi.clique_eigenvector_centrality(G).values()))
+    total["total_cc"] += sum(list(xgi.clustering_coefficient(G).values()))
     es = edit_simpliciality(G, min_size)
     total["total_es"] += es    
-    total["centrality"] += sum(list(xgi.clustering_coefficient(G).values()))
+    total["centrality"] += sum(list(xgi.clique_eigenvector_centrality(G).values()))
     total["total_success"] += success
     total["total_time"] += time
     total["total_num_missing_subfaces"] += num_missing_subfaces
@@ -163,7 +163,7 @@ def process_dataset (index, trials, rewiring_times, min_size, max_size, latex_li
         failure_rate = round((avg_failures / rewiring_times), 5)
         avg_cc = round((total_cc / len(graphs[index].nodes)) / trials, 5)
         delta_cc = round((avg_cc - og_cc), 5)
-        centrality = round(centrality / len(graphs[index].nodes), 5)
+        centrality = round(((centrality / len(graphs[index].nodes)) / trials), 5)
         delta_clique_centrality = round(og_clique_centrality - centrality, 5)
         es = round((total_es / trials), 5)
         delta_es = round((es - og_es), 5)
@@ -275,6 +275,6 @@ if __name__ == "__main__":
     end = time.time()
     total_time = end - start
     print(colored("\n Done! - Time:" + str(total_time) + "\n", "red"))
-    print(latex_list_one)
+    print(*latex_list_one, sep="\n")
     print("\n\n\n ***** \n\n\n")
-    print(latex_list_two)
+    print(*latex_list_two, sep="\n")
