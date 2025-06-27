@@ -13,6 +13,7 @@ from colorama import init
 from termcolor import colored
 from multiprocessing import Process, Manager, Queue
 import time
+from concurrent.futures import ThreadPoolExecutor
 
 datasets = [
     "contact-primary-school",
@@ -64,7 +65,7 @@ def Construct_New_Graph(index, iter, min_size, max_size, total, graph):
     time = 0
     num_missing_subfaces = 0
     # Makes a second graph
-    G = graph[0].copy()
+    G = graph[0]
     #For given number of iterations, we do an edge rewiring
     for i in range(iter):
         # Runs rewiring, saving it as H and the statistics in stats
@@ -134,10 +135,8 @@ def process_dataset (index, trials, rewiring_times, min_size, max_size, latex_li
         graph.append(graphs[index])
     # Create threads to run the algorithm in parallel
         processes = []
-        graph[0].cleanup(singletons = True)
         # Where trials is the number of processes we want to run
         for i in range(trials):     
-            graph[0].cleanup(singletons = True)
             # Runs Construct_New_Graph in its own thread      
             p = Process(target=Construct_New_Graph, args=(index, rewiring_times, min_size, 
                                                                     max_size, total, graph))
@@ -243,25 +242,34 @@ if __name__ == "__main__":
         else:
             graphs.append(xgi.load_xgi_data(datasets[i], max_order=max_size))              
             graphs[i].cleanup(singletons=True)
-            
-    # Create threads to run the algorithm in parallel
-    threads = []
 
-    # For all datasets
-    for i in range(begin_dataset, end_dataset):       
-        # Threads process_dataset so each process runs in parallel
-        thread = threading.Thread(target=process_dataset, args=(i, trials, rewiring_times, min_size, max_size, latex_list_one, latex_list_two))
-        og_cc = sum(list(xgi.clustering_coefficient(graphs[i]).values())) / len(graphs[i].nodes)
-        og_clique_centrality = sum(list(xgi.clique_eigenvector_centrality(graphs[i]).values())) / len(graphs[i].nodes)
-        og_es = edit_simpliciality(graphs[i], min_size=min_size)    
-        thread = threading.Thread(target=process_dataset, args=(i, trials, rewiring_times, min_size, max_size, latex_list_one, 
-                                                                latex_list_two, og_cc, og_clique_centrality, og_es))
-        threads.append(thread)
-        thread.start()  
-        
-    # For all threads, joins them to syncronize    
-    for thread in threads:
-        thread.join()
+    with ThreadPoolExecutor(max_workers= min(4, os.cpu_count())) as executor:
+        futures = []
+        for i in range(begin_dataset, end_dataset):     
+            og_cc = sum(list(xgi.clustering_coefficient(graphs[i]).values())) / len(graphs[i].nodes)
+            og_clique_centrality = sum(list(xgi.clique_eigenvector_centrality(graphs[i]).values())) / len(graphs[i].nodes)
+            og_es = edit_simpliciality(graphs[i], min_size=min_size)
+
+            futures.append(
+                executor.submit(
+                    process_dataset,
+                    i,
+                    trials,
+                    rewiring_times,
+                    min_size,
+                    max_size,
+                    latex_list_one,
+                    latex_list_two,
+                    og_cc,
+                    og_clique_centrality,
+                    og_es
+                )
+            )
+
+    # Wait for all to complete (optional since exiting the with block does this too)
+    for future in futures:
+        future.result()
+
 
      # Prints the results of the experiments
     end = time.time()
