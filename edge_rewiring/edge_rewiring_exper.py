@@ -6,12 +6,11 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'e
 from edge_rewiring import edge_rewiring_alg
 from sod import *
 from sod.simpliciality import edit_simpliciality
-import threading
 from colorama import Fore
 from edge_rewiring import *
 from colorama import init
 from termcolor import colored
-from multiprocessing import Process, Manager, Queue
+from multiprocessing import Process, Manager
 import time
 
 
@@ -48,7 +47,6 @@ Inputs:
     min size - minimum size used in main 
     max size - maximum size used in main
     total - dictionary of statistics
-    graph_placeholder - placeholder containing the index
 
 Output:
     Updates total successes
@@ -59,16 +57,21 @@ Output:
 Runs one trial of the edge rewiring algorithm on the given dataset, where iter is the number of
  edge rewirings we want.
 """
-def Construct_New_Graph(index, iter, min_size, max_size, total, graph_placeholder):
+def Construct_New_Graph(index, iter, min_size, max_size, total):
     # Initialize variables to keep track of statistics
     success = 0
     failures = 0
-    time = 0
+    total_time_taken = 0
     num_missing_subfaces = 0
     
-    # Load a fresh copy of the graph for this process
-    import copy
-    G = copy.deepcopy(graphs[index])
+    # Load the graph directly in this process
+    try:
+        import xgi
+        G = xgi.load_xgi_data(datasets[index], max_order=max_size)
+        G.cleanup(singletons=True)
+    except Exception as e:
+        print(f"Error loading dataset {datasets[index]}: {e}")
+        return
     
     #For given number of iterations, we do an edge rewiring
     for i in range(iter):
@@ -84,7 +87,7 @@ def Construct_New_Graph(index, iter, min_size, max_size, total, graph_placeholde
         success += stats["success_update"]
         if stats["success_update"] == 0:
             failures += 1
-        time += stats["total_time"]
+        total_time_taken += stats["total_time"]
         #print(colored(datasets[index], 'blue'), stats)
 
     # Checks min and max failures, updates total values
@@ -99,7 +102,7 @@ def Construct_New_Graph(index, iter, min_size, max_size, total, graph_placeholde
     total["total_es"] += es    
     total["centrality"] += sum(list(xgi.clique_eigenvector_centrality(G).values()))
     total["total_success"] += success
-    total["total_time"] += time
+    total["total_time"] += total_time_taken
     total["total_num_missing_subfaces"] += num_missing_subfaces
     total["num_max_hyperedges"] = stats["num_maximal_hyperedge"]
 
@@ -123,9 +126,6 @@ For a single dataset, runs Construct_New_Graph the given number of trials
 def process_dataset (index, trials, rewiring_times, min_size, max_size, latex_list_one, 
                      latex_list_two, og_cc, og_clique_centrality, og_es):   
     
-    # Create a copy of the graph for each trial to avoid sharing large objects through Manager
-    import copy
-    
     with Manager() as manager:
         total = manager.dict({
             'total_success': 0,
@@ -139,21 +139,17 @@ def process_dataset (index, trials, rewiring_times, min_size, max_size, latex_li
             'total_es': 0
             })
         
-        # Create a shared list that will just contain indices, not the actual graph
-        graph_placeholder = manager.list()
-        graph_placeholder.append(index)  # Just store the index
-        
-        # Create threads to run the algorithm in parallel
+        # Create processes to run the algorithm in parallel
         processes = []
         # Where trials is the number of processes we want to run
         for i in range(trials):     
-            # Runs Construct_New_Graph in its own thread      
+            # Runs Construct_New_Graph in its own process      
             p = Process(target=Construct_New_Graph, args=(index, rewiring_times, min_size, 
-                                                                    max_size, total, graph_placeholder))
+                                                                    max_size, total))
             processes.append(p)
             p.start()
 
-        # For all threads, joins them to syncronize    
+        # For all processes, joins them to synchronize    
         for p in processes:
             p.join()           
     
@@ -221,26 +217,54 @@ main
 Arguments: 
     1. trials: how many trials do you want
     2. rewiring times: how many rewirings do you want do
+    3. start_dataset_index: index of first dataset to process
+    4. end_dataset_index: index after last dataset to process
 
 Output:
     Prints Latex Code for the results of the experiments
 
-Runs Process_Dataset for each dataset in parallel, the given number of times.
+Processes datasets sequentially, running trials in parallel for each dataset.
 """ 
 if __name__ == "__main__":
     start = time.time()
     # Checks if arguments are given, if not prints error and exits
-    if len(sys.argv) < 3:
-        print("Usage Error: <processes> <rewiring_times> <the number of first dataset> <the number of the end + 1> \ncontact-primary-school, contact-high-school, hospital-lyon, \nemail-enron, email-eu, ndc-substances, \ndiseasome, disgenenet, congress-bills, \ntags-ask-ubuntu")
+    if len(sys.argv) < 5:
+        print("Usage: python edge_rewiring_exper.py <trials> <rewiring_times> <start_dataset_index> <end_dataset_index>")
+        print("  trials: number of parallel trials per dataset")
+        print("  rewiring_times: number of rewirings per trial")
+        print("  start_dataset_index: index of first dataset (0-9)")
+        print("  end_dataset_index: index after last dataset (1-10)")
+        print("\nDatasets (by index):")
+        for i, dataset in enumerate(datasets):
+            print(f"  {i}: {dataset}")
         sys.exit()
     print("Starting edge rewiring experiments...")
     #Initializes graphs and needed values
     max_size = 11
     min_size = 2
-    begin_dataset = int(sys.argv[3])
-    end_dataset = int(sys.argv[4])
-    trials = int(sys.argv[1])
-    rewiring_times = int(sys.argv[2])
+    
+    # Parse and validate arguments
+    try:
+        trials = int(sys.argv[1])
+        rewiring_times = int(sys.argv[2])
+        begin_dataset = int(sys.argv[3])
+        end_dataset = int(sys.argv[4])
+    except ValueError:
+        print("Error: All arguments must be integers")
+        sys.exit(1)
+    
+    if trials <= 0:
+        print("Error: trials must be positive")
+        sys.exit(1)
+    if rewiring_times <= 0:
+        print("Error: rewiring_times must be positive")
+        sys.exit(1)
+    if begin_dataset < 0 or begin_dataset >= len(datasets):
+        print(f"Error: start_dataset_index must be between 0 and {len(datasets)-1}")
+        sys.exit(1)
+    if end_dataset <= begin_dataset or end_dataset > len(datasets):
+        print(f"Error: end_dataset_index must be between {begin_dataset+1} and {len(datasets)}")
+        sys.exit(1)
 
     global graphs
     graphs = []
