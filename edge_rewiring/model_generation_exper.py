@@ -161,12 +161,12 @@ def model_generation_es_exper(trial, es, approx_num_C, num_max_hyperedge, num_no
     graph_generation_time_lst.clear()
     
     # Clear the files at the beginning of each experiment (Uncomment to clear the files)
-    os.makedirs(os.path.dirname(dir["general_data"]), exist_ok=True)
-    os.makedirs(os.path.dirname(dir["cumulative_data"]), exist_ok=True)
-    with open(dir["general_data"], 'w') as f:
-        f.write("")  # Clear the file
-    with open(dir["cumulative_data"], 'w') as f:
-        f.write("")  # Clear the file
+    # os.makedirs(os.path.dirname(dir["general_data"]), exist_ok=True)
+    # os.makedirs(os.path.dirname(dir["cumulative_data"]), exist_ok=True)
+    # with open(dir["general_data"], 'w') as f:
+    #     f.write("")  # Clear the file
+    # with open(dir["cumulative_data"], 'w') as f:
+    #     f.write("")  # Clear the file
     
     for i in range(trial):
         # Initialize statistics
