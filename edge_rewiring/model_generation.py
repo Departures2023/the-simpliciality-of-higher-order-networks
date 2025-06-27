@@ -274,13 +274,13 @@ def model_generation_es(es, approx_num_C, num_max_hyperedge, num_node, min_size=
         
         # Avoid adding repeating nodes and make sure the selected nodes are not a subset of any existing maximal hyperedge
         # Fixed logic: use OR instead of AND, and fix subset comparison
-        while (selected_nodes_set in edge_to_exclude or selected_nodes_set.issubset(maximal_edge_set)):
+        while (selected_nodes_set in edge_to_exclude or any(selected_nodes_set.issubset(existing_edge) for existing_edge in maximal_edge_set)):
             selected_nodes = random.sample(nodes, maximal_edge_size_list[i])
             selected_nodes_set = frozenset(selected_nodes)
             
         # Add the maximal hyperedge to the hypergraph
         H.add_edge(selected_nodes)
-        maximal_edge_set.update(selected_nodes)
+        maximal_edge_set.add(selected_nodes_set)
         edge_to_exclude.add(selected_nodes_set)
 
         # Generate the powerset of the selected nodes (possible edges to add for adjustment)
@@ -321,6 +321,12 @@ def model_generation_es(es, approx_num_C, num_max_hyperedge, num_node, min_size=
     # Final adjustment of the hypergraph
     
     edges = H.edges.filterby("size", min_size, "geq").members()
+    print("edges:", len(edges))
+    print("maximal_edge_set:", len(maximal_edge_set))
+    # Exclude the maximal hyperedges (edges constructed from selected_nodes)
+    edges = [edge for edge in edges if frozenset(edge) not in maximal_edge_set]
+    print("new edges:", len(edges))
+    
     H = final_edge_adjustment_es(
         H, 
         edges, 
@@ -351,14 +357,18 @@ def final_edge_adjustment_es(H, edges, final_possible_edge_list, edge_to_exclude
                         return H
     elif curr_es > expected_es:
         # Remove edges from the hypergraph untul the edit simpliciality is equal to the expected value
-        while curr_es > expected_es:
-            tmp_remove = edges[random.randint(0, len(edges) - 1)]
+        while curr_es > expected_es and len(edges) > 0:
+            tmp_remove_idx = random.randint(0, len(edges) - 1)
+            tmp_remove = edges[tmp_remove_idx]
             for id, edge in H.edges.members(dtype=dict).items():
                     if (edge == tmp_remove):
                         H.remove_edge(id)
+                        # Remove the edge from the edges list to avoid trying to remove it again
+                        edges.pop(tmp_remove_idx)
                         curr_es = edit_simpliciality(H, min_size=2)
         return H
     else:
+        print(f"❌ Warning: Input parameters are not good, please check the input parameters")
         return H
                     
 
