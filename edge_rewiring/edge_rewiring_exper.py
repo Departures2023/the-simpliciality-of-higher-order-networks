@@ -6,13 +6,14 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'e
 from edge_rewiring import edge_rewiring_alg
 from sod import *
 from sod.simpliciality import edit_simpliciality
+import threading
 from colorama import Fore
 from edge_rewiring import *
 from colorama import init
 from termcolor import colored
-from multiprocessing import Process, Manager
+from multiprocessing import Process, Manager, Queue
 import time
-
+from concurrent.futures import ThreadPoolExecutor
 
 datasets = [
     "contact-primary-school",
@@ -57,22 +58,14 @@ Output:
 Runs one trial of the edge rewiring algorithm on the given dataset, where iter is the number of
  edge rewirings we want.
 """
-def Construct_New_Graph(index, iter, min_size, max_size, total):
+def Construct_New_Graph(index, iter, min_size, max_size, total, graph):
     # Initialize variables to keep track of statistics
     success = 0
     failures = 0
-    total_time_taken = 0
+    time = 0
     num_missing_subfaces = 0
-    
-    # Load the graph directly in this process
-    try:
-        import xgi
-        G = xgi.load_xgi_data(datasets[index], max_order=max_size)
-        G.cleanup(singletons=True)
-    except Exception as e:
-        print(f"Error loading dataset {datasets[index]}: {e}")
-        return
-    
+    # Makes a second graph
+    G = graph[0]
     #For given number of iterations, we do an edge rewiring
     for i in range(iter):
         # Runs rewiring, saving it as H and the statistics in stats
@@ -87,7 +80,7 @@ def Construct_New_Graph(index, iter, min_size, max_size, total):
         success += stats["success_update"]
         if stats["success_update"] == 0:
             failures += 1
-        total_time_taken += stats["total_time"]
+        time += stats["total_time"]
         #print(colored(datasets[index], 'blue'), stats)
 
     # Checks min and max failures, updates total values
@@ -102,7 +95,7 @@ def Construct_New_Graph(index, iter, min_size, max_size, total):
     total["total_es"] += es    
     total["centrality"] += sum(list(xgi.clique_eigenvector_centrality(G).values()))
     total["total_success"] += success
-    total["total_time"] += total_time_taken
+    total["total_time"] += time
     total["total_num_missing_subfaces"] += num_missing_subfaces
     total["num_max_hyperedges"] = stats["num_maximal_hyperedge"]
 
@@ -127,6 +120,7 @@ def process_dataset (index, trials, rewiring_times, min_size, max_size, latex_li
                      latex_list_two, og_cc, og_clique_centrality, og_es):   
     
     with Manager() as manager:
+        graph = manager.list()
         total = manager.dict({
             'total_success': 0,
             'total_time': 0,
@@ -138,18 +132,18 @@ def process_dataset (index, trials, rewiring_times, min_size, max_size, latex_li
             'centrality': 0,
             'total_es': 0
             })
-        
-        # Create processes to run the algorithm in parallel
+        graph.append(graphs[index])
+    # Create threads to run the algorithm in parallel
         processes = []
         # Where trials is the number of processes we want to run
         for i in range(trials):     
-            # Runs Construct_New_Graph in its own process      
+            # Runs Construct_New_Graph in its own thread      
             p = Process(target=Construct_New_Graph, args=(index, rewiring_times, min_size, 
-                                                                    max_size, total))
+                                                                    max_size, total, graph))
             processes.append(p)
             p.start()
 
-        # For all processes, joins them to synchronize    
+        # For all threads, joins them to syncronize    
         for p in processes:
             p.join()           
     
@@ -211,60 +205,32 @@ def process_dataset (index, trials, rewiring_times, min_size, max_size, latex_li
             str(delta_clique_centrality) +
             " \\\\")
         latex_list_two.append("\hline") 
-
+   
 """
 main
 Arguments: 
     1. trials: how many trials do you want
     2. rewiring times: how many rewirings do you want do
-    3. start_dataset_index: index of first dataset to process
-    4. end_dataset_index: index after last dataset to process
 
 Output:
     Prints Latex Code for the results of the experiments
 
-Processes datasets sequentially, running trials in parallel for each dataset.
+Runs Process_Dataset for each dataset in parallel, the given number of times.
 """ 
 if __name__ == "__main__":
     start = time.time()
     # Checks if arguments are given, if not prints error and exits
-    if len(sys.argv) < 5:
-        print("Usage: python edge_rewiring_exper.py <trials> <rewiring_times> <start_dataset_index> <end_dataset_index>")
-        print("  trials: number of parallel trials per dataset")
-        print("  rewiring_times: number of rewirings per trial")
-        print("  start_dataset_index: index of first dataset (0-9)")
-        print("  end_dataset_index: index after last dataset (1-10)")
-        print("\nDatasets (by index):")
-        for i, dataset in enumerate(datasets):
-            print(f"  {i}: {dataset}")
+    if len(sys.argv) < 3:
+        print("Usage Error: <processes> <rewiring_times> <the number of first dataset> <the number of the end + 1> \ncontact-primary-school, contact-high-school, hospital-lyon, \nemail-enron, email-eu, ndc-substances, \ndiseasome, disgenenet, congress-bills, \ntags-ask-ubuntu")
         sys.exit()
     print("Starting edge rewiring experiments...")
     #Initializes graphs and needed values
     max_size = 11
     min_size = 2
-    
-    # Parse and validate arguments
-    try:
-        trials = int(sys.argv[1])
-        rewiring_times = int(sys.argv[2])
-        begin_dataset = int(sys.argv[3])
-        end_dataset = int(sys.argv[4])
-    except ValueError:
-        print("Error: All arguments must be integers")
-        sys.exit(1)
-    
-    if trials <= 0:
-        print("Error: trials must be positive")
-        sys.exit(1)
-    if rewiring_times <= 0:
-        print("Error: rewiring_times must be positive")
-        sys.exit(1)
-    if begin_dataset < 0 or begin_dataset >= len(datasets):
-        print(f"Error: start_dataset_index must be between 0 and {len(datasets)-1}")
-        sys.exit(1)
-    if end_dataset <= begin_dataset or end_dataset > len(datasets):
-        print(f"Error: end_dataset_index must be between {begin_dataset+1} and {len(datasets)}")
-        sys.exit(1)
+    begin_dataset = int(sys.argv[3])
+    end_dataset = int(sys.argv[4])
+    trials = int(sys.argv[1])
+    rewiring_times = int(sys.argv[2])
 
     global graphs
     graphs = []
@@ -278,12 +244,34 @@ if __name__ == "__main__":
             graphs.append(xgi.load_xgi_data(datasets[i], max_order=max_size))              
             graphs[i].cleanup(singletons=True)
 
-    for i in range(begin_dataset, end_dataset):     
-        og_cc = sum(list(xgi.clustering_coefficient(graphs[i]).values())) / len(graphs[i].nodes)
-        og_clique_centrality = sum(list(xgi.clique_eigenvector_centrality(graphs[i]).values())) / len(graphs[i].nodes)
-        og_es = edit_simpliciality(graphs[i], min_size=min_size)
+    # Start the thread pool executor to run the process_dataset function in parallel  
+    with ThreadPoolExecutor(max_workers= min(4, os.cpu_count())) as executor:
+        futures = []
+        for i in range(begin_dataset, end_dataset):     
+            og_cc = sum(list(xgi.clustering_coefficient(graphs[i]).values())) / len(graphs[i].nodes)
+            og_clique_centrality = sum(list(xgi.clique_eigenvector_centrality(graphs[i]).values())) / len(graphs[i].nodes)
+            og_es = edit_simpliciality(graphs[i], min_size=min_size)
 
-        process_dataset(i, trials, rewiring_times, min_size, max_size, latex_list_one, latex_list_two, og_cc, og_clique_centrality, og_es)
+            futures.append(
+                executor.submit(
+                    process_dataset,
+                    i,
+                    trials,
+                    rewiring_times,
+                    min_size,
+                    max_size,
+                    latex_list_one,
+                    latex_list_two,
+                    og_cc,
+                    og_clique_centrality,
+                    og_es
+                )
+            )
+
+    # Wait for all to complete 
+    for future in futures:
+        future.result()
+
 
     # Prints the results of the experiments
     end = time.time()
