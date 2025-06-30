@@ -244,6 +244,7 @@ if __name__ == "__main__":
             graphs.append(xgi.load_xgi_data(datasets[i], max_order=max_size))              
             graphs[i].cleanup(singletons=True)
 
+    # Start the thread pool executor to run the process_dataset function in parallel  
     with ThreadPoolExecutor(max_workers= min(4, os.cpu_count())) as executor:
         futures = []
         for i in range(begin_dataset, end_dataset):     
@@ -267,12 +268,12 @@ if __name__ == "__main__":
                 )
             )
 
-    # Wait for all to complete (optional since exiting the with block does this too)
+    # Wait for all to complete 
     for future in futures:
         future.result()
 
 
-     # Prints the results of the experiments
+    # Prints the results of the experiments
     end = time.time()
     total_time = end - start
     print(colored("\n Done! - Time:" + str(total_time) + "\n", "red"))
