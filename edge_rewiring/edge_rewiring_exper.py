@@ -14,7 +14,6 @@ from termcolor import colored
 from multiprocessing import Process, Manager, Queue
 import time
 from concurrent.futures import ThreadPoolExecutor
-from concurrent.futures import ThreadPoolExecutor
 
 datasets = [
     "contact-primary-school",
@@ -67,8 +66,6 @@ def Construct_New_Graph(index, iter, min_size, max_size, total, graph):
     num_missing_subfaces = 0
     # Makes a second graph
     G = graph[0]
-    # Makes a second graph
-    G = graph[0]
     #For given number of iterations, we do an edge rewiring
     for i in range(iter):
         # Runs rewiring, saving it as H and the statistics in stats
@@ -92,11 +89,6 @@ def Construct_New_Graph(index, iter, min_size, max_size, total, graph):
     if (failures < total["min_failures"]):
         total["min_failures"] = failures
 
-    # Updates statistics  
-    total["total_cc"] += sum(list(xgi.clustering_coefficient(G).values()))
-    es = edit_simpliciality(G, min_size)
-    total["total_es"] += es    
-    total["centrality"] += sum(list(xgi.clique_eigenvector_centrality(G).values()))
     # Updates statistics  
     total["total_cc"] += sum(list(xgi.clustering_coefficient(G).values()))
     es = edit_simpliciality(G, min_size)
@@ -180,7 +172,6 @@ def process_dataset (index, trials, rewiring_times, min_size, max_size, latex_li
         avg_cc = round((total_cc / len(graphs[index].nodes)) / trials, 5)
         delta_cc = round((avg_cc - og_cc), 5)
         centrality = round(((centrality / len(graphs[index].nodes)) / trials), 5)
-        centrality = round(((centrality / len(graphs[index].nodes)) / trials), 5)
         delta_clique_centrality = round(og_clique_centrality - centrality, 5)
         es = (total_es / trials)
         delta_es = round((es - og_es), 5)
@@ -249,7 +240,6 @@ if __name__ == "__main__":
     # Checks if arguments are given, if not prints error and exits
     if len(sys.argv) < 3:
         print("Usage Error: <processes> <rewiring_times> <the number of first dataset> <the number of the end + 1> \ncontact-primary-school, contact-high-school, hospital-lyon, \nemail-enron, email-eu, ndc-substances, \ndiseasome, disgenenet, congress-bills, \ntags-ask-ubuntu")
-        print("Usage Error: <processes> <rewiring_times> <the number of first dataset> <the number of the end + 1> \ncontact-primary-school, contact-high-school, hospital-lyon, \nemail-enron, email-eu, ndc-substances, \ndiseasome, disgenenet, congress-bills, \ntags-ask-ubuntu")
         sys.exit()
     print("Starting edge rewiring experiments...")
     #Initializes graphs and needed values
@@ -257,21 +247,9 @@ if __name__ == "__main__":
     min_size = 2
     begin_dataset = int(sys.argv[3])
     end_dataset = int(sys.argv[4])
-    begin_dataset = int(sys.argv[3])
-    end_dataset = int(sys.argv[4])
     trials = int(sys.argv[1])
     rewiring_times = int(sys.argv[2])
 
-    global graphs
-    graphs = []
-    latex_list_one = []
-    latex_list_two = []
-          
-    for i in range (10):
-        if (i < begin_dataset or i >= end_dataset):
-            graphs.append(0)
-        else:
-            graphs.append(xgi.load_xgi_data(datasets[i], max_order=max_size))              
     global graphs
     graphs = []
     latex_list_one = []
@@ -318,13 +296,8 @@ if __name__ == "__main__":
 
 
     # Prints the results of the experiments
-    # Prints the results of the experiments
     end = time.time()
     total_time = end - start
-    print(colored("\n Done! - Time:" + str(total_time) + "\n", "red"))
-    print(*latex_list_one, sep="\n")
-    print("\n\n\n ***** \n\n\n")
-    print(*latex_list_two, sep="\n")
     print(colored("\n Done! - Time:" + str(total_time) + "\n", "red"))
     print(*latex_list_one, sep="\n")
     print("\n\n\n ***** \n\n\n")
