@@ -14,7 +14,7 @@ from termcolor import colored
 from multiprocessing import Process, Manager, Queue
 import time
 from concurrent.futures import ThreadPoolExecutor
-
+import matplotlib.pyplot as plt
 datasets = [
     "contact-primary-school",
     "contact-high-school",
@@ -81,6 +81,10 @@ def Construct_New_Graph(index, iter, min_size, max_size, total, graph):
         if stats["success_update"] == 0:
             failures += 1
         time += stats["total_time"]
+        og_edges = {frozenset(graph[0].edges.members(edge_id)) for edge_id in graph[0].edges}
+        cur_edges = {frozenset(G.edges.members(edge_id)) for edge_id in G.edges}
+        jaccard = jaccard_similarity(cur_edges, og_edges)
+        total["Jaccard"].append((i + 1, jaccard))
         #print(colored(datasets[index], 'blue'), stats)
 
     # Checks min and max failures, updates total values
@@ -89,7 +93,7 @@ def Construct_New_Graph(index, iter, min_size, max_size, total, graph):
     if (failures < total["min_failures"]):
         total["min_failures"] = failures
 
-    # Updates statistics  
+    # Updates statistics 
     total["total_cc"] += sum(list(xgi.clustering_coefficient(G).values()))
     es = edit_simpliciality(G, min_size)
     total["total_es"] += es    
@@ -117,7 +121,7 @@ Output:
 For a single dataset, runs Construct_New_Graph the given number of trials
 """     
 def process_dataset (index, trials, rewiring_times, min_size, max_size, latex_list_one, 
-                     latex_list_two, og_cc, og_clique_centrality, og_es):   
+                     latex_list_two, og_cc, og_clique_centrality, og_es, jaccard_index):   
     
     with Manager() as manager:
         graph = manager.list()
@@ -130,8 +134,8 @@ def process_dataset (index, trials, rewiring_times, min_size, max_size, latex_li
             'max_failures': 0,
             'total_cc': 0,
             'centrality': 0,
-            'total_es': 0
-            })
+            'total_es': 0,
+            'Jaccard': manager.list()})
         graph.append(graphs[index])
     # Create threads to run the algorithm in parallel
         processes = []
@@ -167,7 +171,9 @@ def process_dataset (index, trials, rewiring_times, min_size, max_size, latex_li
         delta_clique_centrality = round(og_clique_centrality - centrality, 5)
         es = (total_es / trials)
         delta_es = round((es - og_es), 5)
-
+        avg_Jaccard = round(sum(total["Jaccard"]) / trials, 5)
+        jaccard_index = total["Jaccard"]
+        
         # Prints results of each dataset
         print( Fore.LIGHTGREEN_EX + str(datasets[index]) + ": \n" +
             " average time = " + str(avg_time) + "\n" + 
@@ -181,7 +187,8 @@ def process_dataset (index, trials, rewiring_times, min_size, max_size, latex_li
             " change in clique eigenvector centrality = " + str(delta_clique_centrality) + "\n" + 
             " edit simpliciality = " + str(es) + "\n" +
             " og edit simpliciality = " + str(og_es) + "\n" +
-            " change in edit simpliciality = " + str(delta_es) + "\n")
+            " change in edit simpliciality = " + str(delta_es) + "\n"+
+            " Jaccard Index = " + str(avg_Jaccard) + "\n")
         
         # Appends results to the latex lists, these produce printed latex that can be copied into a latex document
         latex_list_one.append(
@@ -204,7 +211,22 @@ def process_dataset (index, trials, rewiring_times, min_size, max_size, latex_li
             str(centrality) + " & " +
             str(delta_clique_centrality) +
             " \\\\")
-        latex_list_two.append("\hline") 
+        latex_list_two.append("\hline")  
+   
+'''Calculates the Jaccard similarity between two sets.
+Args:
+    set1: First set.
+    set2: Second set.
+Returns:
+    Jaccard similarity as a float.
+'''  
+def jaccard_similarity(set1, set2):
+    # intersection of two sets
+    intersection = len(set1.intersection(set2))
+    # Unions of two sets
+    union = len(set1.union(set2))
+    
+    return intersection / union
    
 """
 main
@@ -231,6 +253,7 @@ if __name__ == "__main__":
     end_dataset = int(sys.argv[4])
     trials = int(sys.argv[1])
     rewiring_times = int(sys.argv[2])
+    jaccard_index = []
 
     global graphs
     graphs = []
@@ -264,7 +287,8 @@ if __name__ == "__main__":
                     latex_list_two,
                     og_cc,
                     og_clique_centrality,
-                    og_es
+                    og_es,
+                    jaccard_index
                 )
             )
 
@@ -276,6 +300,21 @@ if __name__ == "__main__":
     # Prints the results of the experiments
     end = time.time()
     total_time = end - start
+    
+    # Extract x (rewiring times) and y (Jaccard) values
+    x_vals = [x for x, _ in jaccard_index]
+    y_vals = [y for _, y in jaccard_index]
+
+    # Plotting
+    plt.figure(figsize=(8, 5))
+    plt.plot(x_vals, y_vals, marker='o', linestyle='-')
+    plt.title(f'Jaccard Index vs Rewiring Iterations for {datasets[0]}')
+    plt.xlabel('Rewiring Iteration')
+    plt.ylabel('Jaccard Index')
+    plt.grid(True)
+    plt.tight_layout()
+    plt.savefig(f'jaccard_vs_rewiring_{datasets[0]}.png') 
+    plt.close()  # Close the plot to free memory        
     print(colored("\n Done! - Time:" + str(total_time) + "\n", "red"))
     print(*latex_list_one, sep="\n")
     print("\n\n\n ***** \n\n\n")

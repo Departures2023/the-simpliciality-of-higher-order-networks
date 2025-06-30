@@ -44,7 +44,7 @@ def rewire_Alg1(H, min_size=2, max_size=None):
         if (len(set_missing) != 0) and (len(edges_remove) != 0):
             set_missing_list.append(set_missing)
             edge_remove_list.append(edges_remove)
-            weight.append(1 / (len(edges_remove) * len(set_missing)))
+            weight.append(len(edges_remove) * len(set_missing))
     
     # Check if we have any candidates for rewiring
     if len(set_missing_list) == 0:
@@ -195,7 +195,7 @@ def rewire_Alg1_expr(H, min_size=2, max_size=None):
         if (len(set_missing) != 0) and (len(edges_remove) != 0):
             set_missing_list.append(set_missing)
             edge_remove_list.append(edges_remove)
-            weight.append(1 / (len(edges_remove) * len(set_missing)))
+            weight.append(len(edges_remove) * len(set_missing))
             # Update the average number of missing subfaces
             stats["avg_missing_subface"] += len(set_missing)
 
