@@ -352,6 +352,8 @@ def model_generation_es(es, approx_num_C, num_max_hyperedge, num_node, min_size=
 def final_edge_adjustment_es(H, edges, final_possible_edge_list, edge_to_exclude, expected_es):
     # Calculate the current edit simpliciality
     curr_es = edit_simpliciality(H, min_size=2)
+    # Use count to increase efficiency
+    count = 0
     # Split to cases to add or remove edges respectively
     if curr_es < expected_es:
         # Add edges to the hypergraph
@@ -364,10 +366,14 @@ def final_edge_adjustment_es(H, edges, final_possible_edge_list, edge_to_exclude
                 if edge_set not in edge_to_exclude:
                     H.add_edge(list(edge_set))
                     edge_to_exclude.add(edge_set)  # Track the added edge
-            curr_es = edit_simpliciality(H, min_size=2)
-            # if curr_es >= expected_es:
-            if (curr_es >= expected_es) or (abs(curr_es - expected_es) < 0.002):
-                return H, curr_es
+            count += 1
+            # Check if the edit simpliciality is close to the expected value only every 2 iterations
+            if count == 2:
+                count = 0
+                curr_es = edit_simpliciality(H, min_size=2)
+                # if curr_es >= expected_es:
+                if (curr_es >= expected_es) or (abs(curr_es - expected_es) < 0.002):
+                    return H, curr_es
     elif curr_es > expected_es:
         # Remove edges from the hypergraph untul the edit simpliciality is equal to the expected value
         # curr_es > expected_es
@@ -380,7 +386,10 @@ def final_edge_adjustment_es(H, edges, final_possible_edge_list, edge_to_exclude
             H.remove_edge(edge_id_map[frozenset(tmp_remove)])
             # Remove the edge from the edges list to avoid trying to remove it again
             edges.pop(tmp_remove_idx)
-            curr_es = edit_simpliciality(H, min_size=2)
+            count += 1
+            if count == 2:
+                count = 0
+                curr_es = edit_simpliciality(H, min_size=2)
         return H, curr_es
     else:
         print(f"❌ Warning: Input parameters are not good, please check the input parameters")
