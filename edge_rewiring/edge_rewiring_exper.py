@@ -96,7 +96,7 @@ def Construct_New_Graph(index, iter, min_size, max_size, total, graph):
     if (failures < total["min_failures"]):
         total["min_failures"] = failures
 
-    # Updates statistics 
+    # Updates statistics  
     total["total_cc"] += sum(list(xgi.clustering_coefficient(G).values()))
     es = edit_simpliciality(G, min_size)
     total["total_es"] += es    
@@ -137,17 +137,23 @@ def process_dataset (index, trials, rewiring_times, min_size, max_size, latex_li
             'max_failures': 0,
             'total_cc': 0,
             'centrality': 0,
-            'total_es': 0,
-            'Jaccard': manager.list()})
+            'total_es': 0
+            })
         graph.append(graphs[index])
+    # Create threads to run the algorithm in parallel
+        processes = []
+        # Where trials is the number of processes we want to run
+        for i in range(trials):     
+            # Runs Construct_New_Graph in its own thread      
+            p = Process(target=Construct_New_Graph, args=(index, rewiring_times, min_size, 
+                                                                    max_size, total, graph))
+            processes.append(p)
+            p.start()
 
-        with ProcessPoolExecutor(max_workers=min(trials, os.cpu_count())) as pool:     
-            # Submits Construct_New_Graph to the pool for each trial 
-            futures = [pool.submit(Construct_New_Graph, index, rewiring_times, min_size, max_size, total, graph)
-                    for _ in range(trials)]
-        # Waits for all futures to complete
-        for f in futures:
-            f.result()   
+        # For all threads, joins them to syncronize    
+        for p in processes:
+            p.join()           
+    
         # Updates statistics
         total_success = total["total_success"]
         total_time = total["total_time"]
@@ -289,9 +295,9 @@ if __name__ == "__main__":
                 )
             )
 
-    # Wait for all to complete and collect results
+    # Wait for all to complete 
     for future in futures:
-        result = future.result()
+        future.result()
     # Prints the results of the experiments
     end = time.time()
     total_time = end - start
@@ -311,6 +317,7 @@ if __name__ == "__main__":
     plt.tight_layout()
     plt.savefig(f'jaccard_vs_rewiring_{datasets[6]}.png') 
     plt.close()  # Close the plot to free memory        
+    # Prints the results of the experiments
     print(colored("\n Done! - Time:" + str(total_time) + "\n", "red"))
     print(*latex_list_one, sep="\n")
     print("\n\n\n ***** \n\n\n")
