@@ -110,6 +110,8 @@ def Construct_New_Graph(index, iter, min_size, max_size, total, graph):
     total["total_sf"] += sf
     fes = face_edit_simpliciality(G, min_size)
     total["total_fes"] += fes
+    total["total_degree_assortativity"] += xgi.degree_assortativity(G)
+    total["total_degree_count"] += sum(xgi.degree_counts(G))
 
 """
 Process_Dataset
@@ -129,7 +131,7 @@ Output:
 For a single dataset, runs Construct_New_Graph the given number of trials
 """     
 def process_dataset (index, trials, rewiring_times, min_size, max_size, latex_list_one, 
-                     latex_list_two, og_cc, og_clique_centrality, og_es, og_sf, og_fes):   
+                     latex_list_two, latex_list_three, og_cc, og_clique_centrality, og_es, og_sf, og_fes, og_da, og_dc):   
     
     with Manager() as manager:
         graph = manager.list()
@@ -144,7 +146,9 @@ def process_dataset (index, trials, rewiring_times, min_size, max_size, latex_li
             'centrality': 0,
             'total_es': 0,
             'total_sf': 0,
-            'total_fes': 0
+            'total_fes': 0,
+            'total_degree_assortativity': 0,
+            'total_degree_count': 0
             })
         graph.append(graphs[index])
     # Create threads to run the algorithm in parallel
@@ -172,6 +176,8 @@ def process_dataset (index, trials, rewiring_times, min_size, max_size, latex_li
         total_es = total["total_es"]
         total_sf = total["total_sf"]
         total_fes = total["total_fes"]
+        total_deg_assort = total["total_degree_assortativity"]
+        total_degree_count = total["total_degree_count"]
         # Calculates averages and does necessary rounding
         avg_time = round(total_time / trials, 2)
         total_failures = rewiring_times * trials - total_success
@@ -189,6 +195,10 @@ def process_dataset (index, trials, rewiring_times, min_size, max_size, latex_li
         delta_sf = round((sf - og_sf), 5)
         fes = (total_fes / trials)
         delta_fes = round((fes - og_fes), 5)
+        degree_assortativity = round((total_deg_assort / trials), 5)
+        delta_da = round(degree_assortativity - og_da, 5)
+        avg_degree = round((total_degree_count / trials), 5)
+        delta_avg_degree = round((avg_degree - og_dc), 5)
 
 
         # Prints results of each dataset
@@ -208,7 +218,13 @@ def process_dataset (index, trials, rewiring_times, min_size, max_size, latex_li
             " change in simplicial fraction = " + str(delta_sf) + "\n" +
             " face edit simpliciality = " + str(fes) + "\n" +
             " og face edit simpliciality = " + str(og_fes) + "\n" +
-            " change in face edit simpliciality = " + str(delta_fes) + "\n")
+            " change in face edit simpliciality = " + str(delta_fes) + "\n" + 
+            " degree assortativity = " + str(degree_assortativity) + "\n" +
+            " og degree assortativity = " + str(og_da) + "\n" +
+            " change in degree assortativity = " + str(round(degree_assortativity - og_da, 5)) + "\n" + 
+            " average degree count = " + str(avg_degree) + "\n" + 
+            " og average degree count = " + str(og_dc) + "\n" + 
+            " change in average degree count = " + str(delta_avg_degree))
                
         # Appends results to the latex lists, these produce printed latex that can be copied into a latex document
         latex_list_one.append(
@@ -232,8 +248,16 @@ def process_dataset (index, trials, rewiring_times, min_size, max_size, latex_li
             str(centrality) + " & " +
             str(delta_clique_centrality) +
             " \\\\")
-        latex_list_two.append("\hline")  
-        
+        latex_list_two.append("\hline") 
+
+        latex_list_three.append(
+            datasets[index] + " & " +
+            str(degree_assortativity) + " & " +
+            str(delta_da) + " & " +
+            str(avg_degree) + " & " + 
+            str(delta_avg_degree) +
+            " \\\\")
+        latex_list_three.append("\hline")
     
    
 '''Calculates the Jaccard similarity between two sets.
@@ -250,6 +274,7 @@ def jaccard_similarity(set1, set2):
     union = len(set1.union(set2))
     
     return intersection / union
+        
    
 """
 main
@@ -282,6 +307,7 @@ if __name__ == "__main__":
     graphs = []
     latex_list_one = []
     latex_list_two = []
+    latex_list_three = []
           
     for i in range (10):
         if (i < begin_dataset or i >= end_dataset):
@@ -299,8 +325,11 @@ if __name__ == "__main__":
         og_es = edit_simpliciality(graphs[i], min_size)
         og_sf = simplicial_fraction(graphs[i], min_size)
         og_fes = face_edit_simpliciality(graphs[i], min_size)
+        og_da = xgi.degree_assortativity(graphs[i])
+        og_dc = (sum(xgi.degree_counts(graphs[i])))
+        print(str(xgi.degree_counts(graphs[i])))
 
-        with ThreadPoolExecutor(max_workers=1) as executor:
+        with ThreadPoolExecutor(min(32, os.cpu_count() + 4)) as executor:
             future = executor.submit(
                 process_dataset,
                 i,
@@ -310,14 +339,17 @@ if __name__ == "__main__":
                 max_size,
                 latex_list_one,
                 latex_list_two,
+                latex_list_three,
                 og_cc,
                 og_clique_centrality,
                 og_es, 
                 og_sf,
-                og_fes
+                og_fes, 
+                og_da, 
+                og_dc
             )
             future.result()
-        # free's memory
+        # frees memory hopefully
         del graphs[i]
         gc.collect()
 
@@ -345,3 +377,5 @@ if __name__ == "__main__":
     print(*latex_list_one, sep="\n")
     print("\n\n\n ***** \n\n\n")
     print(*latex_list_two, sep="\n")
+    print("\n\n\n ***** \n\n\n")
+    print(*latex_list_three, sep="\n")
