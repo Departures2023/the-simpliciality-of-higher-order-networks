@@ -184,7 +184,7 @@ def all_possible_edges(arr_node):
 
 
 # Function to generate a hypergraph with a given edit simpliciality, number of maximal hyperedges, and number of nodes
-def model_generation_es(es, approx_num_C, num_max_hyperedge, num_node, min_size=2, max_size=None, adjust_es=False):
+def model_generation_es(es, approx_num_C, num_max_hyperedge, num_node, min_size=2, max_size=None, adjust_es=False, compare_interval_smaller_case=2, compare_interval_bigger_case=2):
     # Checking if input parameters are valid
     if max_size is None:
         max_size = num_node
@@ -333,8 +333,8 @@ def model_generation_es(es, approx_num_C, num_max_hyperedge, num_node, min_size=
         final_possible_edge_list, 
         edge_to_exclude=edge_to_exclude,
         expected_es=es,
-        compare_interval_smaller_case=2,
-        compare_interval_bigger_case=2
+        compare_interval_smaller_case=compare_interval_smaller_case,
+        compare_interval_bigger_case=compare_interval_bigger_case
     )
     return H
     
