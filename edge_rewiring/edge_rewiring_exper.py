@@ -14,8 +14,12 @@ from termcolor import colored
 from multiprocessing import Process, Manager, Queue
 import time
 from concurrent.futures import ThreadPoolExecutor
+<<<<<<< HEAD
 from concurrent.futures import ProcessPoolExecutor
 import matplotlib.pyplot as plt
+=======
+
+>>>>>>> 5e190ba (final simpliciality update)
 datasets = [
     "contact-primary-school",
     "contact-high-school",
@@ -67,9 +71,12 @@ def Construct_New_Graph(index, iter, min_size, max_size, total, graph):
     num_missing_subfaces = 0
     # Makes a second graph
     G = graph[0]
+<<<<<<< HEAD
     
     og_edges = {frozenset(graph[0].edges.members(edge_id)) for edge_id in graph[0].edges}
     
+=======
+>>>>>>> 5e190ba (final simpliciality update)
     #For given number of iterations, we do an edge rewiring
     for i in range(iter):
         # Runs rewiring, saving it as H and the statistics in stats
@@ -276,8 +283,12 @@ if __name__ == "__main__":
     trials = int(sys.argv[1])
     rewiring_times = int(sys.argv[2])
 
+<<<<<<< HEAD
     global graphs, jaccard_index
     jaccard_index = []
+=======
+    global graphs
+>>>>>>> 5e190ba (final simpliciality update)
     graphs = []
     latex_list_one = []
     latex_list_two = []
@@ -320,6 +331,8 @@ if __name__ == "__main__":
     # Wait for all to complete 
     for future in futures:
         future.result()
+
+
     # Prints the results of the experiments
     end = time.time()
     total_time = end - start
