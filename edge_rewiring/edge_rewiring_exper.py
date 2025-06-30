@@ -14,12 +14,9 @@ from termcolor import colored
 from multiprocessing import Process, Manager, Queue
 import time
 from concurrent.futures import ThreadPoolExecutor
-<<<<<<< HEAD
 from concurrent.futures import ProcessPoolExecutor
 import matplotlib.pyplot as plt
-=======
-
->>>>>>> 5e190ba (final simpliciality update)
+import gc
 datasets = [
     "contact-primary-school",
     "contact-high-school",
@@ -71,12 +68,9 @@ def Construct_New_Graph(index, iter, min_size, max_size, total, graph):
     num_missing_subfaces = 0
     # Makes a second graph
     G = graph[0]
-<<<<<<< HEAD
     
     og_edges = {frozenset(graph[0].edges.members(edge_id)) for edge_id in graph[0].edges}
     
-=======
->>>>>>> 5e190ba (final simpliciality update)
     #For given number of iterations, we do an edge rewiring
     for i in range(iter):
         # Runs rewiring, saving it as H and the statistics in stats
@@ -283,12 +277,8 @@ if __name__ == "__main__":
     trials = int(sys.argv[1])
     rewiring_times = int(sys.argv[2])
 
-<<<<<<< HEAD
     global graphs, jaccard_index
     jaccard_index = []
-=======
-    global graphs
->>>>>>> 5e190ba (final simpliciality update)
     graphs = []
     latex_list_one = []
     latex_list_two = []
@@ -301,37 +291,35 @@ if __name__ == "__main__":
             graphs[i].cleanup(singletons=True)
 
     # Start the thread pool executor to run the process_dataset function in parallel  
-    with ThreadPoolExecutor(max_workers= min(4, os.cpu_count())) as executor:
-        futures = []
-        for i in range(begin_dataset, end_dataset):     
-            og_cc = sum(list(xgi.clustering_coefficient(graphs[i]).values())) / len(graphs[i].nodes)
-            og_clique_centrality = sum(list(xgi.clique_eigenvector_centrality(graphs[i]).values())) / len(graphs[i].nodes)
-            og_es = edit_simpliciality(graphs[i], min_size)
-            og_sf = simplicial_fraction(graphs[i], min_size)
-            og_fes = face_edit_simpliciality(graphs[i], min_size)
+    
+    # Instead of submitting all at once, process one at a time
+    for i in range(begin_dataset, end_dataset):
+        og_cc = sum(list(xgi.clustering_coefficient(graphs[i]).values())) / len(graphs[i].nodes)
+        og_clique_centrality = sum(list(xgi.clique_eigenvector_centrality(graphs[i]).values())) / len(graphs[i].nodes)
+        og_es = edit_simpliciality(graphs[i], min_size)
+        og_sf = simplicial_fraction(graphs[i], min_size)
+        og_fes = face_edit_simpliciality(graphs[i], min_size)
 
-            futures.append(
-                executor.submit(
-                    process_dataset,
-                    i,
-                    trials,
-                    rewiring_times,
-                    min_size,
-                    max_size,
-                    latex_list_one,
-                    latex_list_two,
-                    og_cc,
-                    og_clique_centrality,
-                    og_es, 
-                    og_sf,
-                    og_fes
-                )
+        with ThreadPoolExecutor(max_workers=1) as executor:
+            future = executor.submit(
+                process_dataset,
+                i,
+                trials,
+                rewiring_times,
+                min_size,
+                max_size,
+                latex_list_one,
+                latex_list_two,
+                og_cc,
+                og_clique_centrality,
+                og_es, 
+                og_sf,
+                og_fes
             )
-
-    # Wait for all to complete 
-    for future in futures:
-        future.result()
-
+            future.result()
+        # free's memory
+        del graphs[i]
+        gc.collect()
 
     # Prints the results of the experiments
     end = time.time()
