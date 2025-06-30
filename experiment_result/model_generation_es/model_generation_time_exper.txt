@@ -1,0 +1,178 @@
+expected_es: 0.1
+preparation_time: 0.03394
+edge_adding_time: 0.11679
+final_adj_time: 3.60210
+==================================================
+expected_es: 0.19444444444444445
+preparation_time: 0.06347
+edge_adding_time: 0.13380
+final_adj_time: 18.51893
+==================================================
+expected_es: 0.28888888888888886
+preparation_time: 0.10568
+edge_adding_time: 0.11180
+final_adj_time: 47.51813
+==================================================
+expected_es: 0.3833333333333333
+preparation_time: 0.14486
+edge_adding_time: 0.11440
+final_adj_time: 84.82779
+==================================================
+expected_es: 0.47777777777777775
+preparation_time: 0.19137
+edge_adding_time: 0.11860
+final_adj_time: 130.55842
+==================================================
+expected_es: 0.5722222222222222
+preparation_time: 0.21655
+edge_adding_time: 0.12140
+final_adj_time: 194.54969
+==================================================
+expected_es: 0.6666666666666666
+preparation_time: 0.26011
+edge_adding_time: 0.14480
+final_adj_time: 263.06100
+==================================================
+expected_es: 0.7611111111111111
+preparation_time: 0.30131
+edge_adding_time: 0.14741
+final_adj_time: 333.21345
+==================================================
+expected_es: 0.1
+preparation_time: 0.02760
+edge_adding_time: 0.10220
+final_adj_time: 3.01322
+==================================================
+expected_es: 0.19444444444444445
+preparation_time: 0.06358
+edge_adding_time: 0.10660
+final_adj_time: 20.16813
+==================================================
+expected_es: 0.28888888888888886
+preparation_time: 0.10565
+edge_adding_time: 0.09560
+final_adj_time: 44.33277
+==================================================
+expected_es: 0.1
+preparation_time: 0.02860
+edge_adding_time: 0.10380
+final_adj_time: 2.90023
+==================================================
+expected_es: 0.19444444444444445
+preparation_time: 0.06960
+edge_adding_time: 0.09520
+final_adj_time: 20.33300
+==================================================
+expected_es: 0.28888888888888886
+preparation_time: 0.10935
+edge_adding_time: 0.12400
+final_adj_time: 48.93620
+==================================================
+expected_es: 0.1
+es_diff: 0.00095
+preparation_time: 0.02900
+edge_adding_time: 0.09020
+final_adj_time: 4.19661
+==================================================
+expected_es: 0.19444444444444445
+es_diff: 0.00174
+preparation_time: 0.06762
+edge_adding_time: 0.13500
+final_adj_time: 21.39463
+==================================================
+expected_es: 0.1
+es_diff: 0.00136
+preparation_time: 0.02660
+edge_adding_time: 0.10040
+final_adj_time: 0.11158
+==================================================
+expected_es: 0.19444444444444445
+es_diff: 0.00142
+preparation_time: 0.07060
+edge_adding_time: 0.09280
+final_adj_time: 0.58761
+==================================================
+expected_es: 0.28888888888888886
+es_diff: 0.00135
+preparation_time: 0.10780
+edge_adding_time: 0.11140
+final_adj_time: 1.40960
+==================================================
+expected_es: 0.3833333333333333
+es_diff: 0.00125
+preparation_time: 0.14007
+edge_adding_time: 0.11300
+final_adj_time: 2.66362
+==================================================
+expected_es: 0.47777777777777775
+es_diff: 0.00115
+preparation_time: 0.18200
+edge_adding_time: 0.12057
+final_adj_time: 4.59550
+==================================================
+expected_es: 0.5722222222222222
+es_diff: 0.00111
+preparation_time: 0.21840
+edge_adding_time: 0.15404
+final_adj_time: 7.21230
+==================================================
+expected_es: 0.6666666666666666
+es_diff: 0.00119
+preparation_time: 0.25693
+edge_adding_time: 0.14200
+final_adj_time: 10.78500
+==================================================
+expected_es: 0.7611111111111111
+es_diff: 0.00120
+preparation_time: 0.31104
+edge_adding_time: 0.11580
+final_adj_time: 17.46802
+==================================================
+expected_es: 0.8555555555555555
+es_diff: 0.00119
+preparation_time: 0.35323
+edge_adding_time: 0.15401
+final_adj_time: 24.11940
+==================================================
+expected_es: 0.95
+es_diff: 0.00123
+preparation_time: 0.40538
+edge_adding_time: 0.18620
+final_adj_time: 37.71541
+==================================================
+expected_es: 0.1
+es_diff: 0.00293
+preparation_time: 0.02880
+edge_adding_time: 0.10293
+final_adj_time: 0.08880
+==================================================
+expected_es: 0.19444444444444445
+es_diff: 0.00255
+preparation_time: 0.06460
+edge_adding_time: 0.10940
+final_adj_time: 0.33780
+==================================================
+expected_es: 0.28888888888888886
+es_diff: 0.00228
+preparation_time: 0.10647
+edge_adding_time: 0.15724
+final_adj_time: 0.86181
+==================================================
+expected_es: 0.3833333333333333
+es_diff: 0.00235
+preparation_time: 0.13800
+edge_adding_time: 0.10280
+final_adj_time: 1.40640
+==================================================
+expected_es: 0.47777777777777775
+es_diff: 0.00197
+preparation_time: 0.18687
+edge_adding_time: 0.10548
+final_adj_time: 2.62416
+==================================================
+expected_es: 0.5722222222222222
+es_diff: 0.00197
+preparation_time: 0.22060
+edge_adding_time: 0.10700
+final_adj_time: 3.74879
+==================================================
