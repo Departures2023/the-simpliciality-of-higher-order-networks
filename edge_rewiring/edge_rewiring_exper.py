@@ -14,6 +14,7 @@ from termcolor import colored
 from multiprocessing import Process, Manager, Queue
 import time
 from concurrent.futures import ThreadPoolExecutor
+import gc
 
 datasets = [
     "contact-primary-school",
@@ -96,8 +97,12 @@ def Construct_New_Graph(index, iter, min_size, max_size, total, graph):
     total["centrality"] += sum(list(xgi.clique_eigenvector_centrality(G).values()))
     total["total_success"] += success
     total["total_time"] += time
-    total["total_num_missing_subfaces"] += num_missing_subfaces
-    total["num_max_hyperedges"] = stats["num_maximal_hyperedge"]
+    total["total_num_missing_subfaces"] += num_missing_subfaces 
+    total["num_max_hyperedges"] = stats["num_maximal_hyperedge"] #only equal as number doesn't change
+    sf = simplicial_fraction(G, min_size)
+    total["total_sf"] += sf
+    fes = face_edit_simpliciality(G, min_size)
+    total["total_fes"] += fes
 
 """
 Process_Dataset
@@ -117,7 +122,7 @@ Output:
 For a single dataset, runs Construct_New_Graph the given number of trials
 """     
 def process_dataset (index, trials, rewiring_times, min_size, max_size, latex_list_one, 
-                     latex_list_two, og_cc, og_clique_centrality, og_es):   
+                     latex_list_two, og_cc, og_clique_centrality, og_es, og_sf, og_fes):   
     
     with Manager() as manager:
         graph = manager.list()
@@ -130,7 +135,9 @@ def process_dataset (index, trials, rewiring_times, min_size, max_size, latex_li
             'max_failures': 0,
             'total_cc': 0,
             'centrality': 0,
-            'total_es': 0
+            'total_es': 0,
+            'total_sf': 0,
+            'total_fes': 0
             })
         graph.append(graphs[index])
     # Create threads to run the algorithm in parallel
@@ -156,6 +163,8 @@ def process_dataset (index, trials, rewiring_times, min_size, max_size, latex_li
         total_cc = total["total_cc"]
         centrality = total["centrality"]
         total_es = total["total_es"]
+        total_sf = total["total_sf"]
+        total_fes = total["total_fes"]
         # Calculates averages and does necessary rounding
         avg_time = round(total_time / trials, 2)
         total_failures = rewiring_times * trials - total_success
@@ -167,38 +176,48 @@ def process_dataset (index, trials, rewiring_times, min_size, max_size, latex_li
         delta_clique_centrality = round(og_clique_centrality - centrality, 5)
         es = (total_es / trials)
         delta_es = round((es - og_es), 5)
+        sf = (total_sf / trials)
+        delta_sf = round((sf - og_sf), 5)
+        fes = (total_fes / trials)
+        delta_fes = round((fes - og_fes), 5)
+
 
         # Prints results of each dataset
         print( Fore.LIGHTGREEN_EX + str(datasets[index]) + ": \n" +
             " average time = " + str(avg_time) + "\n" + 
-            " average failures = " + str(avg_failures) + "\n" + 
-            " failure rate = " + str(failure_rate) + "\n" +
-            " min failures = " + str(min_failures) + "\n" +
-            " max failures = " + str(max_failures) + "\n" + 
+            " failure rate = " + str(failure_rate) + "\n" + 
+            " edges fit requirements = " + str(num_max_hyperedges) + "\n" +
             " average clustering coefficient = " + str(avg_cc) + "\n" + 
             " change in clustering coefficient = " + str(delta_cc) + "\n" +
             " clique eigenvector centrality = " + str(centrality) + "\n" +
             " change in clique eigenvector centrality = " + str(delta_clique_centrality) + "\n" + 
             " edit simpliciality = " + str(es) + "\n" +
             " og edit simpliciality = " + str(og_es) + "\n" +
-            " change in edit simpliciality = " + str(delta_es) + "\n")
-        
+            " change in edit simpliciality = " + str(delta_es) + "\n" + 
+            " simplicial fraction = " + str(sf) + "\n" +
+            " og simplicial fraction = " + str(og_sf) + "\n" +
+            " change in simplicial fraction = " + str(delta_sf) + "\n" +
+            " face edit simpliciality = " + str(fes) + "\n" +
+            " og face edit simpliciality = " + str(og_fes) + "\n" +
+            " change in face edit simpliciality = " + str(delta_fes) + "\n")
+               
         # Appends results to the latex lists, these produce printed latex that can be copied into a latex document
         latex_list_one.append(
             datasets[index] + " & " +
-            str(es) + " & " +
-            str(delta_es) + " & " +
             str(avg_time) + " & " + 
-            str(avg_failures) + " & " +
             str(failure_rate) + " & " +
-            str(min_failures) + " & " +
-            str(max_failures) + " & " +
-            str(num_max_hyperedges) +
+            str(round(es, 5)) + " & " +
+            str(delta_es) + " & " +
+            str(round(sf, 5)) + " & " +
+            str(delta_sf) + " & " +
+            str(round(fes, 5)) + " & " +
+            str(delta_fes) + 
         " \\\\")
         latex_list_one.append("\hline") 
 
         latex_list_two.append(
             datasets[index] + " & " +
+            str(num_max_hyperedges) + " & " +
             str(avg_cc) + " & " +
             str(delta_cc) + " & " +
             str(centrality) + " & " +
@@ -245,33 +264,35 @@ if __name__ == "__main__":
             graphs[i].cleanup(singletons=True)
 
     # Start the thread pool executor to run the process_dataset function in parallel  
-    with ThreadPoolExecutor(max_workers= min(4, os.cpu_count())) as executor:
-        futures = []
-        for i in range(begin_dataset, end_dataset):     
-            og_cc = sum(list(xgi.clustering_coefficient(graphs[i]).values())) / len(graphs[i].nodes)
-            og_clique_centrality = sum(list(xgi.clique_eigenvector_centrality(graphs[i]).values())) / len(graphs[i].nodes)
-            og_es = edit_simpliciality(graphs[i], min_size=min_size)
+    
+    # Instead of submitting all at once, process one at a time
+    for i in range(begin_dataset, end_dataset):
+        og_cc = sum(list(xgi.clustering_coefficient(graphs[i]).values())) / len(graphs[i].nodes)
+        og_clique_centrality = sum(list(xgi.clique_eigenvector_centrality(graphs[i]).values())) / len(graphs[i].nodes)
+        og_es = edit_simpliciality(graphs[i], min_size)
+        og_sf = simplicial_fraction(graphs[i], min_size)
+        og_fes = face_edit_simpliciality(graphs[i], min_size)
 
-            futures.append(
-                executor.submit(
-                    process_dataset,
-                    i,
-                    trials,
-                    rewiring_times,
-                    min_size,
-                    max_size,
-                    latex_list_one,
-                    latex_list_two,
-                    og_cc,
-                    og_clique_centrality,
-                    og_es
-                )
+        with ThreadPoolExecutor(max_workers=1) as executor:
+            future = executor.submit(
+                process_dataset,
+                i,
+                trials,
+                rewiring_times,
+                min_size,
+                max_size,
+                latex_list_one,
+                latex_list_two,
+                og_cc,
+                og_clique_centrality,
+                og_es, 
+                og_sf,
+                og_fes
             )
-
-    # Wait for all to complete 
-    for future in futures:
-        future.result()
-
+            future.result()
+        # free's memory
+        del graphs[i]
+        gc.collect()
 
     # Prints the results of the experiments
     end = time.time()
