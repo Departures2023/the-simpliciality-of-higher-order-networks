@@ -140,3 +140,39 @@ preparation_time: 0.40538
 edge_adding_time: 0.18620
 final_adj_time: 37.71541
 ==================================================
+expected_es: 0.1
+es_diff: 0.00293
+preparation_time: 0.02880
+edge_adding_time: 0.10293
+final_adj_time: 0.08880
+==================================================
+expected_es: 0.19444444444444445
+es_diff: 0.00255
+preparation_time: 0.06460
+edge_adding_time: 0.10940
+final_adj_time: 0.33780
+==================================================
+expected_es: 0.28888888888888886
+es_diff: 0.00228
+preparation_time: 0.10647
+edge_adding_time: 0.15724
+final_adj_time: 0.86181
+==================================================
+expected_es: 0.3833333333333333
+es_diff: 0.00235
+preparation_time: 0.13800
+edge_adding_time: 0.10280
+final_adj_time: 1.40640
+==================================================
+expected_es: 0.47777777777777775
+es_diff: 0.00197
+preparation_time: 0.18687
+edge_adding_time: 0.10548
+final_adj_time: 2.62416
+==================================================
+expected_es: 0.5722222222222222
+es_diff: 0.00197
+preparation_time: 0.22060
+edge_adding_time: 0.10700
+final_adj_time: 3.74879
+==================================================
