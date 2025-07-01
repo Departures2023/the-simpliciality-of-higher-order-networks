@@ -133,6 +133,7 @@ def process_dataset (index, trials, rewiring_times, min_size, max_size, latex_li
     
     with Manager() as manager:
         graph = manager.list()
+        graph.append(graphs[index])
         total = manager.dict({
             'total_success': 0,
             'total_time': 0,
@@ -148,7 +149,6 @@ def process_dataset (index, trials, rewiring_times, min_size, max_size, latex_li
             'total_degree_assortativity': 0,
             'total_degree_count': 0
             })
-        graph.append(graphs[index])
     # Create threads to run the algorithm in parallel
         processes = []
         # Where trials is the number of processes we want to run
@@ -220,7 +220,7 @@ def process_dataset (index, trials, rewiring_times, min_size, max_size, latex_li
             " change in degree assortativity = " + str(round(degree_assortativity - og_da, 5)) + "\n" + 
             " average degree count = " + str(avg_degree) + "\n" + 
             " og average degree count = " + str(og_dc) + "\n" + 
-            " change in average degree count = " + str(delta_avg_degree))
+            " change in average degree count = " + str(delta_avg_degree) + "\n")
                
         # Appends results to the latex lists, these produce printed latex that can be copied into a latex document
         latex_list_one.append(
@@ -288,14 +288,12 @@ if __name__ == "__main__":
     latex_list_three = []
           
     for i in range (10):
-        if (i < begin_dataset or i >= end_dataset):
-            graphs.append(0)
-        else:
+        if(i >= begin_dataset and i <= end_dataset):
             graphs.append(xgi.load_xgi_data(datasets[i], max_order=max_size))              
             graphs[i].cleanup(singletons=True)
-
+        else: 
+            graphs.append(0)
     # Start the thread pool executor to run the process_dataset function in parallel  
-    
     # Instead of submitting all at once, process one at a time
     for i in range(begin_dataset, end_dataset):
         og_cc = sum(list(xgi.clustering_coefficient(graphs[i]).values())) / len(graphs[i].nodes)
@@ -332,8 +330,6 @@ if __name__ == "__main__":
             )
             future.result()
         # frees memory hopefully
-        del graphs[i]
-        gc.collect()
 
     # Prints the results of the experiments
     end = time.time()
