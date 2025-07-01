@@ -104,7 +104,12 @@ def Construct_New_Graph(index, iter, min_size, max_size, total, graph):
     fes = face_edit_simpliciality(G, min_size)
     total["total_fes"] += fes
     total["total_degree_assortativity"] += xgi.degree_assortativity(G)
-    total["total_degree_count"] += sum(xgi.degree_counts(G))
+    deg_list = list(xgi.degree_counts(G))
+    degrees = []
+    for degree_val, count in enumerate(deg_list):
+        degree = count * degree_val
+        degrees.append(degree)
+    total["total_degree_count"] += (sum(degrees)) / len(degrees)
 
 """
 Process_Dataset
@@ -299,7 +304,12 @@ if __name__ == "__main__":
         og_sf = simplicial_fraction(graphs[i], min_size)
         og_fes = face_edit_simpliciality(graphs[i], min_size)
         og_da = xgi.degree_assortativity(graphs[i])
-        og_dc = (sum(xgi.degree_counts(graphs[i])))
+        deg_list = list(xgi.degree_counts(graphs[i]))
+        degrees = []
+        for degree_val, count in enumerate(deg_list):
+            degree = count * degree_val
+            degrees.append(degree)
+        og_dc = (sum(degrees)) / len(degrees)
 
         with ThreadPoolExecutor(min(32, os.cpu_count() + 4)) as executor:
             future = executor.submit(
