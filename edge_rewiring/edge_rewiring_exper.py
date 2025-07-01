@@ -14,6 +14,7 @@ from termcolor import colored
 from multiprocessing import Process, Manager, Queue
 import time
 from concurrent.futures import ThreadPoolExecutor
+from concurrent.futures import ProcessPoolExecutor
 import matplotlib.pyplot as plt
 datasets = [
     "contact-primary-school",
@@ -66,6 +67,9 @@ def Construct_New_Graph(index, iter, min_size, max_size, total, graph):
     num_missing_subfaces = 0
     # Makes a second graph
     G = graph[0]
+    
+    og_edges = {frozenset(graph[0].edges.members(edge_id)) for edge_id in graph[0].edges}
+    
     #For given number of iterations, we do an edge rewiring
     for i in range(iter):
         # Runs rewiring, saving it as H and the statistics in stats
@@ -81,7 +85,6 @@ def Construct_New_Graph(index, iter, min_size, max_size, total, graph):
         if stats["success_update"] == 0:
             failures += 1
         time += stats["total_time"]
-        og_edges = {frozenset(graph[0].edges.members(edge_id)) for edge_id in graph[0].edges}
         cur_edges = {frozenset(G.edges.members(edge_id)) for edge_id in G.edges}
         jaccard = jaccard_similarity(cur_edges, og_edges)
         total["Jaccard"].append((i + 1, jaccard))
@@ -137,20 +140,14 @@ def process_dataset (index, trials, rewiring_times, min_size, max_size, latex_li
             'total_es': 0,
             'Jaccard': manager.list()})
         graph.append(graphs[index])
-    # Create threads to run the algorithm in parallel
-        processes = []
-        # Where trials is the number of processes we want to run
-        for i in range(trials):     
-            # Runs Construct_New_Graph in its own thread      
-            p = Process(target=Construct_New_Graph, args=(index, rewiring_times, min_size, 
-                                                                    max_size, total, graph))
-            processes.append(p)
-            p.start()
 
-        # For all threads, joins them to syncronize    
-        for p in processes:
-            p.join()           
-    
+        with ProcessPoolExecutor(max_workers=min(trials, os.cpu_count())) as pool:     
+            # Submits Construct_New_Graph to the pool for each trial 
+            futures = [pool.submit(Construct_New_Graph, index, rewiring_times, min_size, max_size, total, graph)
+                    for _ in range(trials)]
+        # Waits for all futures to complete
+        for f in futures:
+            f.result()   
         # Updates statistics
         total_success = total["total_success"]
         total_time = total["total_time"]
@@ -171,8 +168,9 @@ def process_dataset (index, trials, rewiring_times, min_size, max_size, latex_li
         delta_clique_centrality = round(og_clique_centrality - centrality, 5)
         es = (total_es / trials)
         delta_es = round((es - og_es), 5)
-        avg_Jaccard = round(sum(total["Jaccard"]) / trials, 5)
+        #avg_Jaccard = round(sum(total["Jaccard"]) / trials, 5)
         jaccard_index = total["Jaccard"]
+        print("Jaccard Index:", jaccard_index)
         
         # Prints results of each dataset
         print( Fore.LIGHTGREEN_EX + str(datasets[index]) + ": \n" +
@@ -187,8 +185,8 @@ def process_dataset (index, trials, rewiring_times, min_size, max_size, latex_li
             " change in clique eigenvector centrality = " + str(delta_clique_centrality) + "\n" + 
             " edit simpliciality = " + str(es) + "\n" +
             " og edit simpliciality = " + str(og_es) + "\n" +
-            " change in edit simpliciality = " + str(delta_es) + "\n"+
-            " Jaccard Index = " + str(avg_Jaccard) + "\n")
+            " change in edit simpliciality = " + str(delta_es) + "\n")
+            #" Jaccard Index = " + str(avg_Jaccard) + "\n")
         
         # Appends results to the latex lists, these produce printed latex that can be copied into a latex document
         latex_list_one.append(
@@ -253,9 +251,9 @@ if __name__ == "__main__":
     end_dataset = int(sys.argv[4])
     trials = int(sys.argv[1])
     rewiring_times = int(sys.argv[2])
-    jaccard_index = []
 
-    global graphs
+    global graphs, jaccard_index
+    jaccard_index = []
     graphs = []
     latex_list_one = []
     latex_list_two = []
