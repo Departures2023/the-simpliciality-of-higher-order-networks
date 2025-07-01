@@ -327,7 +327,6 @@ if __name__ == "__main__":
         og_fes = face_edit_simpliciality(graphs[i], min_size)
         og_da = xgi.degree_assortativity(graphs[i])
         og_dc = (sum(xgi.degree_counts(graphs[i])))
-        print(str(xgi.degree_counts(graphs[i])))
 
         with ThreadPoolExecutor(min(32, os.cpu_count() + 4)) as executor:
             future = executor.submit(
