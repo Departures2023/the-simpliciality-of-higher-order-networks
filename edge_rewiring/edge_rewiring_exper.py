@@ -124,7 +124,7 @@ Output:
 For a single dataset, runs Construct_New_Graph the given number of trials
 """     
 def process_dataset (index, trials, rewiring_times, min_size, max_size, latex_list_one, 
-                     latex_list_two, og_cc, og_clique_centrality, og_es, jaccard_index):   
+                     latex_list_two, og_cc, og_clique_centrality, og_es):   
     
     with Manager() as manager:
         graph = manager.list()
@@ -171,7 +171,7 @@ def process_dataset (index, trials, rewiring_times, min_size, max_size, latex_li
         #avg_Jaccard = round(sum(total["Jaccard"]) / trials, 5)
         jaccard_index = total["Jaccard"]
         print("Jaccard Index:", jaccard_index)
-        
+        jaccard_index.extend(total["Jaccard"])
         # Prints results of each dataset
         print( Fore.LIGHTGREEN_EX + str(datasets[index]) + ": \n" +
             " average time = " + str(avg_time) + "\n" + 
@@ -210,6 +210,8 @@ def process_dataset (index, trials, rewiring_times, min_size, max_size, latex_li
             str(delta_clique_centrality) +
             " \\\\")
         latex_list_two.append("\hline")  
+        
+    
    
 '''Calculates the Jaccard similarity between two sets.
 Args:
@@ -285,23 +287,20 @@ if __name__ == "__main__":
                     latex_list_two,
                     og_cc,
                     og_clique_centrality,
-                    og_es,
-                    jaccard_index
+                    og_es
                 )
             )
 
-    # Wait for all to complete 
+    # Wait for all to complete and collect results
     for future in futures:
-        future.result()
-
-
+        result = future.result()
     # Prints the results of the experiments
     end = time.time()
     total_time = end - start
-    
-    # Extract x (rewiring times) and y (Jaccard) values
+    print(jaccard_index)
     x_vals = [x for x, _ in jaccard_index]
     y_vals = [y for _, y in jaccard_index]
+
 
     # Plotting
     plt.figure(figsize=(8, 5))
