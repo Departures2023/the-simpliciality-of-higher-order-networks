@@ -185,7 +185,7 @@ def process_dataset (index, trials, rewiring_times, min_size, max_size, latex_li
         delta_cc = round((avg_cc - og_cc), 5)
         centrality = round(((centrality / len(graphs[index].nodes)) / trials), 5)
         delta_clique_centrality = round(og_clique_centrality - centrality, 5)
-        es = (total_es / trials)
+        es = round((total_es / trials), 5)
         delta_es = round((es - og_es), 5)
         sf = (total_sf / trials)
         delta_sf = round((sf - og_sf), 5)
@@ -298,7 +298,7 @@ if __name__ == "__main__":
     for i in range(begin_dataset, end_dataset):
         og_cc = sum(list(xgi.clustering_coefficient(graphs[i]).values())) / len(graphs[i].nodes)
         og_clique_centrality = sum(list(xgi.clique_eigenvector_centrality(graphs[i]).values())) / len(graphs[i].nodes)
-        og_es = edit_simpliciality(graphs[i], min_size)
+        og_es = round((edit_simpliciality(graphs[i], min_size)), 5)
         og_sf = simplicial_fraction(graphs[i], min_size)
         og_fes = face_edit_simpliciality(graphs[i], min_size)
         og_da = xgi.degree_assortativity(graphs[i])
