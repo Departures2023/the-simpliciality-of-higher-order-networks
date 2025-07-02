@@ -170,7 +170,6 @@ def process_dataset (index, trials, rewiring_times, min_size, max_size, latex_li
         delta_es = round((es - og_es), 5)
         #avg_Jaccard = round(sum(total["Jaccard"]) / trials, 5)        
         jaccard_index.extend(total["Jaccard"])
-        print("Jaccard Index:", jaccard_index)
         # Prints results of each dataset
         print( Fore.LIGHTGREEN_EX + str(datasets[index]) + ": \n" +
             " average time = " + str(avg_time) + "\n" + 
@@ -296,7 +295,8 @@ if __name__ == "__main__":
     # Prints the results of the experiments
     end = time.time()
     total_time = end - start
-    print(jaccard_index)
+
+    # Prepare data for plotting        
     x_vals = [x for x, _ in jaccard_index]
     y_vals = [y for _, y in jaccard_index]
 
