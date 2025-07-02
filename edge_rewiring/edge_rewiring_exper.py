@@ -168,10 +168,9 @@ def process_dataset (index, trials, rewiring_times, min_size, max_size, latex_li
         delta_clique_centrality = round(og_clique_centrality - centrality, 5)
         es = (total_es / trials)
         delta_es = round((es - og_es), 5)
-        #avg_Jaccard = round(sum(total["Jaccard"]) / trials, 5)
-        jaccard_index = total["Jaccard"]
-        print("Jaccard Index:", jaccard_index)
+        #avg_Jaccard = round(sum(total["Jaccard"]) / trials, 5)        
         jaccard_index.extend(total["Jaccard"])
+        print("Jaccard Index:", jaccard_index)
         # Prints results of each dataset
         print( Fore.LIGHTGREEN_EX + str(datasets[index]) + ": \n" +
             " average time = " + str(avg_time) + "\n" + 
@@ -305,12 +304,12 @@ if __name__ == "__main__":
     # Plotting
     plt.figure(figsize=(8, 5))
     plt.plot(x_vals, y_vals, marker='o', linestyle='-')
-    plt.title(f'Jaccard Index vs Rewiring Iterations for {datasets[0]}')
+    plt.title(f'Jaccard Index vs Rewiring Iterations for {datasets[6]}')
     plt.xlabel('Rewiring Iteration')
     plt.ylabel('Jaccard Index')
     plt.grid(True)
     plt.tight_layout()
-    plt.savefig(f'jaccard_vs_rewiring_{datasets[0]}.png') 
+    plt.savefig(f'jaccard_vs_rewiring_{datasets[6]}.png') 
     plt.close()  # Close the plot to free memory        
     print(colored("\n Done! - Time:" + str(total_time) + "\n", "red"))
     print(*latex_list_one, sep="\n")
