@@ -326,7 +326,7 @@ if __name__ == "__main__":
             )
             future.result()
         # frees memory hopefully
-        del graphs[i - begin_dataset]
+        del graphs[i]
         gc.collect()
 
     # Prints the results of the experiments
