@@ -1,36 +1,7 @@
 import xgi
 import numpy as np
-import sys
-import os
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..')))
-from sod.simpliciality import edit_simpliciality, face_edit_simpliciality, simplicial_fraction
 import matplotlib.pyplot as plt
-from edge_rewiring import model_generation
-from multiprocessing import Process, Manager
-def es_new (es, approx_num_C, num_max_hyperedge, num_node, min_size, max_size, lst):
-    H_es = model_generation.model_generation_es(es, approx_num_C, num_max_hyperedge, num_node, min_size, max_size)
-    es = edit_simpliciality(H_es, min_size=2)
-    lst.append(es)
-    
-
-if __name__ == "__main__":
-    with Manager() as manager:
-        lst = manager.list()   
-        processes = []
-        for i in range(1, 200, 10): 
-            p = Process(target=es_new, args=(0.4, 30, i, 200, 2, 10, lst))
-            processes.append(p)
-            p.start() 
-            
-        for p in processes:
-            p.join()  
-            
-        print(lst)
-        
-        plt.plot(range(1, 200, 10), lst, marker='o')
-        plt.show()
-        
-
+import multiprocessing
 import sys
 import os
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
@@ -330,9 +301,59 @@ def model_generation_es_exper(trial, es, approx_num_C, num_max_hyperedge, num_no
     
     save_cumulative_data(trial, es, cumulative_stats, dir["cumulative_data"])
     
-
-if __name__ == "__main__":
-    es_lst = np.linspace(0.1, 0.95, num=50)
-    for es in es_lst:
-        model_generation_es_exper(5, es, 9000, 300, 1000, 2, 11, False)
+'''Calculates the Jaccard similarity between two sets.
+Args:
+    set1: First set.
+    set2: Second set.
+Returns:
+    Jaccard similarity as a float.
+'''  
+def jaccard_similarity(set1, set2):
+    # intersection of two sets
+    intersection = len(set1.intersection(set2))
+    # Unions of two sets
+    union = len(set1.union(set2))
     
+    return intersection / union
+
+def jaccard_test(jaccard_index, i, es, approx_num_C, num_max_hyperedge, num_node, og_edges, min_size=2, max_size=11):   
+    H_es = model_generation_es(es, approx_num_C, num_max_hyperedge, num_node, min_size=2, max_size=11)
+    cur_edges = {frozenset(H_es.edges.members(edge_id)) for edge_id in H_es.edges}
+    jaccard = jaccard_similarity(cur_edges, og_edges)
+    jaccard_index.append((i, jaccard))
+    
+if __name__ == "__main__":
+    manager = multiprocessing.Manager()
+    jaccard_index = manager.list()
+    es = float(sys.argv[1]) 
+    approx_num_C = int(sys.argv[2])
+    num_max_hyperedge = int(sys.argv[3])
+    num_node = int(sys.argv[4])
+    min_size=2
+    max_size=11
+    H_es = model_generation_es(es, approx_num_C, num_max_hyperedge, num_node, min_size, max_size)
+    og_edges = {frozenset(H_es.edges.members(edge_id)) for edge_id in H_es.edges}
+    with multiprocessing.Pool(processes= min(32, os.cpu_count())) as pool:
+        for i in range(1000000):
+            pool.apply_async(jaccard_test, args=(jaccard_index, i, es, approx_num_C, num_max_hyperedge, num_node, og_edges, min_size, max_size))
+
+        pool.close()
+        pool.join() 
+            
+        print("Jaccard Indexes:", list(jaccard_index))
+        
+        # Prepare data for plotting        
+        x_vals = [x for x, _ in jaccard_index]
+        y_vals = [y for _, y in jaccard_index]
+
+
+        # Plotting
+        plt.figure(figsize=(8, 5))
+        plt.plot(x_vals, y_vals, marker='o', linestyle='-')
+        plt.title(f'Jaccard Index vs Graph Generation Trial for es={es}, approx_num_C={approx_num_C}, num_max_hyperedge={num_max_hyperedge}, num_node={num_node}')
+        plt.xlabel('Graph Generation Trial')
+        plt.ylabel('Jaccard Index')
+        plt.grid(True)
+        plt.tight_layout()
+        plt.savefig(f'Jaccard Index vs Graph Generation Trial for es={es}.png') 
+        plt.close() 

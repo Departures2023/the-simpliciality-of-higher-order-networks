@@ -246,7 +246,7 @@ def model_generation_es(es, approx_num_C, num_max_hyperedge, num_node, min_size=
         target_sum=C_total
     )
     # Print statements for debugging
-    print("C_distribution:", C_distribution)
+    #print("C_distribution:", C_distribution)
     
     # Generate the distribution of numbers of edges actually connected
     edge_distribution  = generate_edge_distribution(
@@ -321,11 +321,11 @@ def model_generation_es(es, approx_num_C, num_max_hyperedge, num_node, min_size=
     # Final adjustment of the hypergraph
     
     edges = H.edges.filterby("size", min_size, "geq").members()
-    print("edges:", len(edges))
-    print("maximal_edge_set:", len(maximal_edge_set))
+    '''print("edges:", len(edges))
+    print("maximal_edge_set:", len(maximal_edge_set))'''
     # Exclude the maximal hyperedges (edges constructed from selected_nodes)
     edges = [edge for edge in edges if frozenset(edge) not in maximal_edge_set]
-    print("new edges:", len(edges))
+    '''print("new edges:", len(edges))'''
     
     H = final_edge_adjustment_es(
         H, 
@@ -430,9 +430,9 @@ def model_generation_sf(sf, approx_num_E, num_node, min_size=2, max_size=None):
     edge_to_exclude = set()  # Track all edges to avoid duplicates
     final_possible_edge_list = []
     
-    print(f"Target simplicial fraction: {sf}")
+    '''print(f"Target simplicial fraction: {sf}")
     print(f"Target total edges: {edge_total}")
-    print(f"Target simplicial edges: {S_total}")
+    print(f"Target simplicial edges: {S_total}")'''
     
     # Phase 1: Add simplices to the hypergraph until the total number of simplices reaches S_total
     simplicial_edges_added = 0
@@ -486,13 +486,13 @@ def model_generation_sf(sf, approx_num_E, num_node, min_size=2, max_size=None):
         if len(new_simplicial_edges) == 0:
             break
     
-    print(f"Added {simplicial_edges_added} simplicial edges")
+    #print(f"Added {simplicial_edges_added} simplicial edges")
     
     # Phase 2: Add non-simplicial edges to reach the target total number of edges
     current_edge_count = len(H.edges.filterby("size", min_size, "geq"))
     remaining_edges_needed = edge_total - current_edge_count
     
-    print(f"Current edges: {current_edge_count}, Need {remaining_edges_needed} more edges")
+    #print(f"Current edges: {current_edge_count}, Need {remaining_edges_needed} more edges")
     
     while remaining_edges_needed > 0:
         # current number of edges in the hypergraph
