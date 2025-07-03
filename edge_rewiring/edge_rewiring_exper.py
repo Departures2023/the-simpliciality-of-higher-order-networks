@@ -288,14 +288,15 @@ if __name__ == "__main__":
         #appends only the graphs we need
         graphs.append(xgi.load_xgi_data(datasets[i], max_order=max_size))              
 
+    for i in range(len(graphs)):
         #Calculates all of the statistics for the original graph
-        og_cc = sum(list(xgi.clustering_coefficient(graphs[i - begin_dataset]).values())) / len(graphs[i - begin_dataset].nodes)
-        og_clique_centrality = sum(list(xgi.clique_eigenvector_centrality(graphs[i - begin_dataset]).values())) / len(graphs[i - begin_dataset].nodes)
-        og_es = round((edit_simpliciality(graphs[i - begin_dataset], min_size)), 5)
-        og_sf = simplicial_fraction(graphs[i - begin_dataset], min_size)
-        og_fes = face_edit_simpliciality(graphs[i - begin_dataset], min_size)
-        og_da = xgi.degree_assortativity(graphs[i - begin_dataset])
-        deg_list = list(xgi.degree_counts(graphs[i - begin_dataset]))
+        og_cc = sum(list(xgi.clustering_coefficient(graphs[i]).values())) / len(graphs[i].nodes)
+        og_clique_centrality = sum(list(xgi.clique_eigenvector_centrality(graphs[i]).values())) / len(graphs[i].nodes)
+        og_es = round((edit_simpliciality(graphs[i], min_size)), 5)
+        og_sf = simplicial_fraction(graphs[i], min_size)
+        og_fes = face_edit_simpliciality(graphs[i], min_size)
+        og_da = xgi.degree_assortativity(graphs[i])
+        deg_list = list(xgi.degree_counts(graphs[i]))
         degrees = []
         for degree_val, count in enumerate(deg_list):
             degree = count * degree_val
@@ -306,7 +307,7 @@ if __name__ == "__main__":
         with ThreadPoolExecutor(min(32, os.cpu_count() + 4)) as executor:
             future = executor.submit(
                 process_dataset,
-                graphs[i - begin_dataset],
+                graphs[i],
                 i,
                 trials,
                 rewiring_times,
