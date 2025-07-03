@@ -128,12 +128,12 @@ Output:
 
 For a single dataset, runs Construct_New_Graph the given number of trials
 """     
-def process_dataset (index, trials, rewiring_times, min_size, max_size, latex_list_one, 
+def process_dataset ( index, trials, rewiring_times, min_size, max_size, latex_list_one, 
                      latex_list_two, latex_list_three, og_cc, og_clique_centrality, og_es, og_sf, og_fes, og_da, og_dc):   
     
     with Manager() as manager:
         graph = manager.list()
-        graph.append(graphs[index])
+        #graph.append(graphs[index])
         total = manager.dict({
             'total_success': 0,
             'total_time': 0,
@@ -287,22 +287,26 @@ if __name__ == "__main__":
     latex_list_two = []
     latex_list_three = []
           
-    for i in range (10):
-        if(i >= begin_dataset and i <= end_dataset):
-            graphs.append(xgi.load_xgi_data(datasets[i], max_order=max_size))              
-            graphs[i].cleanup(singletons=True)
-        else: 
-            graphs.append(0)
+    #for i in range (10):
+    #    if(i >= begin_dataset and i <= end_dataset):
+    #        graphs.append(xgi.load_xgi_data(datasets[i], max_order=max_size))              
+    #        graphs[i].cleanup(singletons=True)
+    #    else: 
+    #        graphs.append(0)
     # Start the thread pool executor to run the process_dataset function in parallel  
     # Instead of submitting all at once, process one at a time
     for i in range(begin_dataset, end_dataset):
-        og_cc = sum(list(xgi.clustering_coefficient(graphs[i]).values())) / len(graphs[i].nodes)
-        og_clique_centrality = sum(list(xgi.clique_eigenvector_centrality(graphs[i]).values())) / len(graphs[i].nodes)
-        og_es = round((edit_simpliciality(graphs[i], min_size)), 5)
-        og_sf = simplicial_fraction(graphs[i], min_size)
-        og_fes = face_edit_simpliciality(graphs[i], min_size)
-        og_da = xgi.degree_assortativity(graphs[i])
-        deg_list = list(xgi.degree_counts(graphs[i]))
+        graphs.append(xgi.load_xgi_data(datasets[i], max_order=max_size))              
+        #graphs[i - 1].cleanup(singletons=True)
+        print(i)
+        print(len(graphs))
+        og_cc = sum(list(xgi.clustering_coefficient(graphs[i - begin_dataset]).values())) / len(graphs[i - begin_dataset].nodes)
+        og_clique_centrality = sum(list(xgi.clique_eigenvector_centrality(graphs[i - begin_dataset]).values())) / len(graphs[i - begin_dataset].nodes)
+        og_es = round((edit_simpliciality(graphs[i - begin_dataset], min_size)), 5)
+        og_sf = simplicial_fraction(graphs[i - begin_dataset], min_size)
+        og_fes = face_edit_simpliciality(graphs[i - begin_dataset], min_size)
+        og_da = xgi.degree_assortativity(graphs[i - begin_dataset])
+        deg_list = list(xgi.degree_counts(graphs[i - begin_dataset]))
         degrees = []
         for degree_val, count in enumerate(deg_list):
             degree = count * degree_val
