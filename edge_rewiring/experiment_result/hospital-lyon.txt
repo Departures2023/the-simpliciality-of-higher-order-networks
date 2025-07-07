@@ -9357,3 +9357,29 @@ avg_missing_subface: 1.90625
 num_candidates: 32
 selected_idx: 6
 --------------------------------------------------
+dataset: hospital-lyon
+round: 0
+num_maximal_hyperedge: 210
+max_to_rewire: 2
+success_update: 1
+num_same_size: 0
+total_time: 0.086
+edges_searching_time: 0.082
+rewiring_time: 0.004
+avg_missing_subface: 2.462068965517241
+num_candidates: 145
+selected_idx: 1
+--------------------------------------------------
+dataset: hospital-lyon
+round: 0
+num_maximal_hyperedge: 210
+max_to_rewire: 1
+success_update: 1
+num_same_size: 0
+total_time: 0.106
+edges_searching_time: 0.102
+rewiring_time: 0.004
+avg_missing_subface: 2.462068965517241
+num_candidates: 145
+selected_idx: 28
+--------------------------------------------------

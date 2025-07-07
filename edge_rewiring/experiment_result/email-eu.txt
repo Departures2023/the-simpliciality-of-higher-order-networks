@@ -4649,3 +4649,29 @@ avg_missing_subface: 360.6583850931677
 num_candidates: 161
 selected_idx: 29
 --------------------------------------------------
+dataset: email-eu
+round: 0
+num_maximal_hyperedge: 162
+max_to_rewire: 4
+success_update: 1
+num_same_size: 0
+total_time: 0.144
+edges_searching_time: 0.141
+rewiring_time: 0.003
+avg_missing_subface: 360.6583850931677
+num_candidates: 161
+selected_idx: 98
+--------------------------------------------------
+dataset: email-eu
+round: 0
+num_maximal_hyperedge: 162
+max_to_rewire: 2
+success_update: 1
+num_same_size: 0
+total_time: 0.372
+edges_searching_time: 0.371
+rewiring_time: 0.001
+avg_missing_subface: 360.6583850931677
+num_candidates: 161
+selected_idx: 135
+--------------------------------------------------

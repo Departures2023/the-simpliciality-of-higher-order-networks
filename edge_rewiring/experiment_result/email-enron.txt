@@ -8013,3 +8013,29 @@ avg_missing_subface: 2.545098039215686
 num_candidates: 255
 selected_idx: 113
 --------------------------------------------------
+dataset: email-enron
+round: 0
+num_maximal_hyperedge: 60
+max_to_rewire: 1
+success_update: 1
+num_same_size: 0
+total_time: 0.014
+edges_searching_time: 0.014
+rewiring_time: 0.000
+avg_missing_subface: 1.90625
+num_candidates: 32
+selected_idx: 21
+--------------------------------------------------
+dataset: email-enron
+round: 0
+num_maximal_hyperedge: 60
+max_to_rewire: 1
+success_update: 1
+num_same_size: 0
+total_time: 0.016
+edges_searching_time: 0.016
+rewiring_time: 0.000
+avg_missing_subface: 1.90625
+num_candidates: 32
+selected_idx: 28
+--------------------------------------------------

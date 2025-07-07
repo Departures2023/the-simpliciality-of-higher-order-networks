@@ -83,17 +83,25 @@ def Construct_New_Graph(graph, iter, min_size, max_size, total):
             failures += 1
         time += stats["total_time"]
 
-    # Checks min and max failures, updates total values
-    if (failures > total["max_failures"]):
-        total["max_failures"] = failures
-    if (failures < total["min_failures"]):
-        total["min_failures"] = failures
-
     # Updates statistics        
     total["total_success"] += success
     total["total_time"] += time
     total["total_num_missing_subfaces"] += num_missing_subfaces
     total["num_max_hyperedges"] = stats["num_maximal_hyperedge"]
+    total["total_cc"] = sum(list(xgi.clustering_coefficient(graph).values()))
+    total["total_centrality"] = sum(list(xgi.clique_eigenvector_centrality(graph).values()))
+    total["total_es"] = edit_simpliciality(graph, min_size=min_size) 
+    total["total_sf"] = simplicial_fraction(graph, min_size=min_size)    
+    total["total_fes"] = face_edit_simpliciality(graph, min_size=min_size)    
+    total["total_degree_assortativity"] = xgi.degree_assortativity(graph)
+    deg_list = list(xgi.degree_counts(graph))
+    degrees = []
+    for degree_val, count in enumerate(deg_list):
+        degree = count * degree_val
+        degrees.append(degree)
+    total["total_degree_count"] = (sum(degrees)) / len(degrees)
+
+
 
 """
 Process_Dataset
@@ -118,8 +126,13 @@ def process_dataset (graph, dataset_index, trials, rewiring_times, min_size, max
             'total_time': 0,
             'total_num_missing_subfaces': 0,
             'num_max_hyperedges': 0,
-            'min_failures': rewiring_times,
-            'max_failures': 0
+            'total_cc': 0,
+            'total_centrality': 0,
+            'total_es': 0,
+            'total_sf': 0,
+            'total_fes': 0,
+            'total_degree_assortativity': 0,
+            'total_degree_count': 0
         }
 
     # Create threads to run the algorithm in parallel
@@ -137,39 +150,23 @@ def process_dataset (graph, dataset_index, trials, rewiring_times, min_size, max
         thread.join()
 
     # Updates statistics
-    total_success = total["total_success"]
-    total_time = total["total_time"]
-    num_max_hyperedges = total["num_max_hyperedges"]
-    total_cc = sum(list(xgi.clustering_coefficient(graph).values()))
-    total_centrality = sum(list(xgi.clique_eigenvector_centrality(graph).values()))
-    total_es = edit_simpliciality(graph, min_size=min_size)    
-    total_sf = simplicial_fraction(graph, min_size=min_size)    
-    total_fes = face_edit_simpliciality(graph, min_size=min_size)    
-    total_degree_assortativity = xgi.degree_assortativity(graph)
-    deg_list = list(xgi.degree_counts(graph))
-    degrees = []
-    for degree_val, count in enumerate(deg_list):
-        degree = count * degree_val
-        degrees.append(degree)
-    total_degree_count = (sum(degrees)) / len(degrees)
-
-    avg_time = round(total_time / trials, 2)
-    avg_cc = round((total_cc / trials) / len(graph.nodes), 5)
-    total_failures = rewiring_times * trials - total_success
+    avg_time = round(total["total_time"] / trials, 2)
+    avg_cc = round((total["total_cc"] / trials) / len(graph.nodes), 5)
+    total_failures = rewiring_times * trials - total["total_success"]
     avg_failures = total_failures / trials
     failure_rate = round((avg_failures / rewiring_times), 5)  
     delta_cc = round((avg_cc - og_cc), 5)
-    centrality = round((total_centrality / trials) / len(graph.nodes), 5)
+    centrality = round((total["total_centrality"] / trials) / len(graph.nodes), 5)
     delta_clique_centrality = round(og_clique_centrality - centrality, 5)
     es = round((total_es / trials), 5)
     delta_es = round((es - og_es), 5)
-    sf = (total_sf / trials)
+    sf = (total["total_sf"] / trials)
     delta_sf = round((sf - og_sf), 5)
-    fes = (total_fes / trials)
+    fes = (total["total_fes"] / trials)
     delta_fes = round((fes - og_fes), 5)
-    degree_assortativity = round((total_degree_assortativity / trials), 5)
+    degree_assortativity = round((total["total_degree_assortativity"] / trials), 5)
     delta_da = round(degree_assortativity - og_da, 5)
-    avg_degree = round((total_degree_count / trials), 5)
+    avg_degree = round((total["total_degree_count"] / trials), 5)
     delta_avg_degree = round((avg_degree - og_dc), 5)
 
      # Prints results of each dataset
@@ -185,14 +182,14 @@ def process_dataset (graph, dataset_index, trials, rewiring_times, min_size, max
         " face edit simpliciality = " + str(fes) + "\n" +
         " og face edit simpliciality = " + str(og_fes) + "\n" +
         " change in face edit simpliciality = " + str(delta_fes) + "\n" + 
-        " edges fit requirements = " + str(num_max_hyperedges) + "\n" +
+        " edges fit requirements = " + str(total["num_max_hyperedges"]) + "\n" +
         " average clustering coefficient = " + str(avg_cc) + "\n" + 
         " change in clustering coefficient = " + str(delta_cc) + "\n" +
         " clique eigenvector centrality = " + str(centrality) + "\n" +
         " change in clique eigenvector centrality = " + str(delta_clique_centrality) + "\n" + 
         " degree assortativity = " + str(degree_assortativity) + "\n" +
         " og degree assortativity = " + str(og_da) + "\n" +
-        " change in degree assortativity = " + str(round(degree_assortativity - og_da, 5)) + "\n" + 
+        " change in degree assortativity = " + str(delta_da) + "\n" + 
         " average degree count = " + str(avg_degree) + "\n" + 
         " og average degree count = " + str(og_dc) + "\n" + 
         " change in average degree count = " + str(delta_avg_degree) + "\n")
@@ -213,7 +210,7 @@ def process_dataset (graph, dataset_index, trials, rewiring_times, min_size, max
 
     latex_list_two.append(
         datasets[dataset_index] + " & " +
-        str(num_max_hyperedges) + " & " +
+        str(total["num_max_hyperedges"]) + " & " +
         str(avg_cc) + " & " +
         str(delta_cc) + " & " +
         str(centrality) + " & " +
