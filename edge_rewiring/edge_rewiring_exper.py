@@ -112,7 +112,7 @@ Output:
 
 For a single dataset, runs Construct_New_Graph the given number of trials
 """     
-def process_dataset (index, trials, rewiring_times, min_size, max_size, latex_list_one, latex_list_two, og_cc, og_clique_centrality, og_es):
+def process_dataset (index, trials, rewiring_times, min_size, max_size, latex_list_one, latex_list_two, latex_list_three, og_cc, og_clique_centrality, og_es, og_sf, og_fes, og_da, og_dc):
     total = {
             'total_success': 0,
             'total_time': 0,
@@ -139,12 +139,19 @@ def process_dataset (index, trials, rewiring_times, min_size, max_size, latex_li
     # Updates statistics
     total_success = total["total_success"]
     total_time = total["total_time"]
-    max_failures = total["max_failures"]
-    min_failures = total["min_failures"]
     num_max_hyperedges = total["num_max_hyperedges"]
     total_cc = sum(list(xgi.clustering_coefficient(graphs[index]).values()))
     centrality = sum(list(xgi.clique_eigenvector_centrality(graphs[index]).values()))
     total_es = edit_simpliciality(graphs[index], min_size=min_size)    
+    total_sf = simplicial_fraction(graphs[index], min_size=min_size)    
+    total_fes = face_edit_simpliciality(graphs[index], min_size=min_size)    
+    total_degree_assortativity = xgi.degree_assortativity(graphs[index])
+    deg_list = list(xgi.degree_counts(graphs[index]))
+    degrees = []
+    for degree_val, count in enumerate(deg_list):
+        degree = count * degree_val
+        degrees.append(degree)
+    total_degree_count = (sum(degrees)) / len(degrees),
 
     # Calculates averages and does necessary rounding
     avg_time = round(total_time / trials, 2)
@@ -155,50 +162,77 @@ def process_dataset (index, trials, rewiring_times, min_size, max_size, latex_li
     delta_cc = round((avg_cc - og_cc), 5)
     centrality = round(centrality / len(graphs[index].nodes), 5)
     delta_clique_centrality = round(og_clique_centrality - centrality, 5)
-    avg_es = total_es
-    delta_es = (og_es - avg_es)
+    es = total_es
+    delta_es = (og_es - es)
+    sf = total_sf
+    delta_sf = (og_sf - sf)
+    fes = total_fes
+    delta_fes = (og_fes - fes)
+    degree_assortativity = round((total_degree_assortativity / trials), 5)
+    delta_da = (round(degree_assortativity - og_da, 5))
+    avg_degree = round((total_degree_count / trials), 5)
+    delta_avg_degree = round((avg_degree - og_dc), 5)
 
 
-    # Prints results of each dataset
+     # Prints results of each dataset
     print( Fore.LIGHTGREEN_EX + str(datasets[index]) + ": \n" +
         " average time = " + str(avg_time) + "\n" + 
-        " average failures = " + str(avg_failures) + "\n" + 
-        " failure rate = " + str(failure_rate) + "\n" +
-        " min failures = " + str(min_failures) + "\n" +
-        " max failures = " + str(max_failures) + "\n" + 
+        " failure rate = " + str(failure_rate) + "\n" + 
+        " edit simpliciality = " + str(es) + "\n" +
+        " og edit simpliciality = " + str(og_es) + "\n" +
+        " change in edit simpliciality = " + str(delta_es) + "\n" + 
+        " simplicial fraction = " + str(sf) + "\n" +
+        " og simplicial fraction = " + str(og_sf) + "\n" +
+        " change in simplicial fraction = " + str(delta_sf) + "\n" +
+        " face edit simpliciality = " + str(fes) + "\n" +
+        " og face edit simpliciality = " + str(og_fes) + "\n" +
+        " change in face edit simpliciality = " + str(delta_fes) + "\n" + 
+        " edges fit requirements = " + str(num_max_hyperedges) + "\n" +
         " average clustering coefficient = " + str(avg_cc) + "\n" + 
         " change in clustering coefficient = " + str(delta_cc) + "\n" +
         " clique eigenvector centrality = " + str(centrality) + "\n" +
-        " change in clique eigenvector centrality = " + str(delta_clique_centrality) + "\n" +
-        " original ES = " + str(og_es) + "\n" +
-        " new ES = " + str(avg_es) + "\n" +
-        " change in ES = " + str(delta_es))
-
+        " change in clique eigenvector centrality = " + str(delta_clique_centrality) + "\n" + 
+        " degree assortativity = " + str(degree_assortativity) + "\n" +
+        " og degree assortativity = " + str(og_da) + "\n" +
+        " change in degree assortativity = " + str(round(degree_assortativity - og_da, 5)) + "\n" + 
+        " average degree count = " + str(avg_degree) + "\n" + 
+        " og average degree count = " + str(og_dc) + "\n" + 
+        " change in average degree count = " + str(delta_avg_degree) + "\n")
+               
     # Appends results to the latex lists, these produce printed latex that can be copied into a latex document
     latex_list_one.append(
         datasets[index] + " & " +
-        str(avg_es) + " & " +
-        str(delta_es) + " & " +
         str(avg_time) + " & " + 
-        str(avg_failures) + " & " +
         str(failure_rate) + " & " +
-        str(min_failures) + " & " +
-        str(max_failures) + " & " +
-        str(num_max_hyperedges) +
+        str(round(es, 5)) + " & " +
+        str(delta_es) + " & " +
+        str(round(sf, 5)) + " & " +
+        str(delta_sf) + " & " +
+        str(round(fes, 5)) + " & " +
+        str(delta_fes) + 
     " \\\\")
     latex_list_one.append("\hline") 
 
     latex_list_two.append(
         datasets[index] + " & " +
+        str(num_max_hyperedges) + " & " +
         str(avg_cc) + " & " +
         str(delta_cc) + " & " +
         str(centrality) + " & " +
         str(delta_clique_centrality) +
         " \\\\")
-    latex_list_two.append("\hline")
+    latex_list_two.append("\hline") 
 
+    latex_list_three.append(
+        datasets[index] + " & " +
+        str(degree_assortativity) + " & " +
+        str(delta_da) + " & " +
+        str(avg_degree) + " & " + 
+        str(delta_avg_degree) +
+        " \\\\")
+    latex_list_three.append("\hline")
+   
 """
-Process_Dataset
 main
 Arguments: 
     1. trials: how many trials do you want
@@ -209,6 +243,7 @@ Output:
 
 Runs Process_Dataset for each dataset in parallel, the given number of times.
 """ 
+
 if __name__ == "__main__":
     start = time.time()
     # Checks if arguments are given, if not prints error and exits
@@ -224,9 +259,11 @@ if __name__ == "__main__":
     datasets_size = 10
     latex_list_one = []
     latex_list_two = []
+    latex_list_three = []
     trials = int(sys.argv[1])
     rewiring_times = int(sys.argv[2])
-    times = int(sys.argv[3])
+    begin_dataset = int(sys.argv[3])
+    end_dataset = int(sys.argv[4])
 
     # For all of the datasets
     for i in range (datasets_size):
@@ -238,14 +275,28 @@ if __name__ == "__main__":
     # Create threads to run the algorithm in parallel
     threads = []
 
+    for i in range(begin_dataset, end_dataset):
+        #appends only the graphs we need
+        graphs.append(xgi.load_xgi_data(datasets[i], max_order=max_size))              
+
+
     # For all datasets
-    for i in range(times):       
+    for i in range(len(graphs)):       
         # Threads process_dataset so each process runs in parallel
-        thread = threading.Thread(target=process_dataset, args=(i, trials, rewiring_times, min_size, max_size, latex_list_one, latex_list_two))
         og_cc = sum(list(xgi.clustering_coefficient(graphs[i]).values())) / len(graphs[i].nodes)
         og_clique_centrality = sum(list(xgi.clique_eigenvector_centrality(graphs[i]).values())) / len(graphs[i].nodes)
-        og_es = edit_simpliciality(graphs[i], min_size=min_size)    
-        thread = threading.Thread(target=process_dataset, args=(i, trials, rewiring_times, min_size, max_size, latex_list_one, latex_list_two, og_cc, og_clique_centrality, og_es))
+        og_es = round((edit_simpliciality(graphs[i], min_size)), 5)
+        og_sf = simplicial_fraction(graphs[i], min_size)
+        og_fes = face_edit_simpliciality(graphs[i], min_size)
+        og_da = xgi.degree_assortativity(graphs[i])
+        deg_list = list(xgi.degree_counts(graphs[i]))
+        degrees = []
+        for degree_val, count in enumerate(deg_list):
+            degree = count * degree_val
+            degrees.append(degree)
+        og_dc = (sum(degrees)) / len(degrees)
+
+        thread = threading.Thread(target=process_dataset, args=(i, trials, rewiring_times, min_size, max_size, latex_list_one, latex_list_two, latex_list_three, og_cc, og_clique_centrality, og_es, og_sf, og_fes, og_da, og_dc))
         threads.append(thread)
         thread.start()              
 
@@ -257,6 +308,8 @@ if __name__ == "__main__":
     end = time.time()
     total_time = end - start
     print(colored("\n Done! - Time:" + str(total_time) + "\n", "red"))
-    print(latex_list_one)
+    print(*latex_list_one, sep="\n")
     print("\n\n\n ***** \n\n\n")
-    print(latex_list_two)
+    print(*latex_list_two, sep="\n")
+    print("\n\n\n ***** \n\n\n")
+    print(*latex_list_three, sep="\n")
