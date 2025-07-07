@@ -69,7 +69,7 @@ def extract_cumulative_data(filename):
     
     return data
 
-def create_plots(data, output_dir):
+def create_plots_es(data, output_dir):
     """Create all the requested plots"""
     
     # Set up the plotting style
@@ -106,61 +106,67 @@ def create_plots(data, output_dir):
     plt.savefig(os.path.join(output_dir, 'connected_components_vs_es.png'), dpi=300, bbox_inches='tight')
     plt.show()
     
-    # 3. Simplicial fraction vs es
-    plt.figure(figsize=fig_size)
-    plt.errorbar(expected_es, data['simplicial_fraction_avg'], 
-                yerr=data['simplicial_fraction_std'], 
-                marker='o', capsize=5, capthick=2, label='Average ± Std')
-    plt.xlabel('Expected ES')
-    plt.ylabel('Simplicial Fraction')
-    plt.title('Simplicial Fraction vs Expected ES')
-    plt.legend()
-    plt.grid(True, alpha=0.3)
-    plt.tight_layout()
-    plt.savefig(os.path.join(output_dir, 'simplicial_fraction_vs_es.png'), dpi=300, bbox_inches='tight')
-    plt.show()
+    # # 3. Simplicial fraction vs es
+    # plt.figure(figsize=fig_size)
+    # plt.errorbar(expected_es, data['simplicial_fraction_avg'], 
+    #             yerr=data['simplicial_fraction_std'], 
+    #             marker='o', capsize=5, capthick=2, label='Average ± Std')
+    # plt.xlabel('Expected ES')
+    # plt.ylabel('Simplicial Fraction')
+    # plt.title('Simplicial Fraction vs Expected ES')
+    # plt.legend()
+    # plt.grid(True, alpha=0.3)
+    # plt.tight_layout()
+    # plt.savefig(os.path.join(output_dir, 'simplicial_fraction_vs_es.png'), dpi=300, bbox_inches='tight')
+    # plt.show()
     
     # 4. Edit simpliciality vs es
     plt.figure(figsize=fig_size)
+    plt.errorbar(expected_es, data['simplicial_fraction_avg'], 
+            yerr=data['simplicial_fraction_std'], color='red',
+            marker='o', capsize=5, capthick=2, label='SF ± Std')
     plt.errorbar(expected_es, data['edit_simpliciality_avg'], 
-                yerr=data['edit_simpliciality_std'], 
-                marker='o', capsize=5, capthick=2, label='Average ± Std')
+                yerr=data['edit_simpliciality_std'], color='blue',
+                marker='o', capsize=5, capthick=2, label='ES ± Std')
+    plt.errorbar(expected_es, data['face_edit_simpliciality_avg'], 
+                yerr=data['face_edit_simpliciality_std'], color='green',
+                marker='o', capsize=5, capthick=2, label='FES ± Std')
     plt.xlabel('Expected ES')
-    plt.ylabel('Edit Simpliciality')
-    plt.title('Edit Simpliciality vs Expected ES')
-    plt.legend()
+    plt.ylabel('Simpliciality')
+    plt.title('Simpliciality vs Expected ES')
+    plt.legend(['SF_Avg', 'ES_Avg', 'FES_Avg'])
     plt.grid(True, alpha=0.3)
     plt.tight_layout()
     plt.savefig(os.path.join(output_dir, 'edit_simpliciality_vs_es.png'), dpi=300, bbox_inches='tight')
     plt.show()
     
-    # 5. Face edit simpliciality vs es
-    plt.figure(figsize=fig_size)
-    plt.errorbar(expected_es, data['face_edit_simpliciality_avg'], 
-                yerr=data['face_edit_simpliciality_std'], 
-                marker='o', capsize=5, capthick=2, label='Average ± Std')
-    plt.xlabel('Expected ES')
-    plt.ylabel('Face Edit Simpliciality')
-    plt.title('Face Edit Simpliciality vs Expected ES')
-    plt.legend()
-    plt.grid(True, alpha=0.3)
-    plt.tight_layout()
-    plt.savefig(os.path.join(output_dir, 'face_edit_simpliciality_vs_es.png'), dpi=300, bbox_inches='tight')
-    plt.show()
+    # # 5. Face edit simpliciality vs es
+    # plt.figure(figsize=fig_size)
+    # plt.errorbar(expected_es, data['face_edit_simpliciality_avg'], 
+    #             yerr=data['face_edit_simpliciality_std'], 
+    #             marker='o', capsize=5, capthick=2, label='Average ± Std')
+    # plt.xlabel('Expected ES')
+    # plt.ylabel('Face Edit Simpliciality')
+    # plt.title('Face Edit Simpliciality vs Expected ES')
+    # plt.legend()
+    # plt.grid(True, alpha=0.3)
+    # plt.tight_layout()
+    # plt.savefig(os.path.join(output_dir, 'face_edit_simpliciality_vs_es.png'), dpi=300, bbox_inches='tight')
+    # plt.show()
     
-    # 6. Density vs es
-    plt.figure(figsize=fig_size)
-    plt.errorbar(expected_es, data['density_avg'], 
-                yerr=data['density_std'], 
-                marker='o', capsize=5, capthick=2, label='Average ± Std')
-    plt.xlabel('Expected ES')
-    plt.ylabel('Density')
-    plt.title('Density vs Expected ES')
-    plt.legend()
-    plt.grid(True, alpha=0.3)
-    plt.tight_layout()
-    plt.savefig(os.path.join(output_dir, 'density_vs_es.png'), dpi=300, bbox_inches='tight')
-    plt.show()
+    # # 6. Density vs es
+    # plt.figure(figsize=fig_size)
+    # plt.errorbar(expected_es, data['density_avg'], 
+    #             yerr=data['density_std'], 
+    #             marker='o', capsize=5, capthick=2, label='Average ± Std')
+    # plt.xlabel('Expected ES')
+    # plt.ylabel('Density')
+    # plt.title('Density vs Expected ES')
+    # plt.legend()
+    # plt.grid(True, alpha=0.3)
+    # plt.tight_layout()
+    # plt.savefig(os.path.join(output_dir, 'density_vs_es.png'), dpi=300, bbox_inches='tight')
+    # plt.show()
     
     # 7. Degree count vs es (avg and median)
     plt.figure(figsize=fig_size)
@@ -261,6 +267,161 @@ def create_plots(data, output_dir):
     plt.tight_layout()
     plt.savefig(os.path.join(output_dir, 'degree_assortativity_vs_es.png'), dpi=300, bbox_inches='tight')
     plt.show()
+    
+
+def create_plots_num_node(data, output_dir):
+    """Create all the requested plots"""
+    
+    # Set up the plotting style
+    plt.style.use('default')
+    fig_size = (10, 6)
+    
+    num_node = np.linspace(620, 1000, num=30)
+    
+    # 1. Local cluster coefficient vs es
+    plt.figure(figsize=fig_size)
+    plt.errorbar(num_node, data['local_cluster_coefficient_avg'], 
+                yerr=data['local_cluster_coefficient_std'], 
+                marker='o', capsize=5, capthick=2, label='Average ± Std')
+    plt.xlabel('Number of Nodes')
+    plt.ylabel('Local Cluster Coefficient')
+    plt.title('Local Cluster Coefficient vs Number of Nodes')
+    plt.legend()
+    plt.grid(True, alpha=0.3)
+    plt.tight_layout()
+    plt.savefig(os.path.join(output_dir, 'local_cluster_coefficient_vs_num_node.png'), dpi=300, bbox_inches='tight')
+    plt.show()
+    
+    # 2. Connected components vs es
+    plt.figure(figsize=fig_size)
+    plt.errorbar(num_node, data['connected_components_avg'], 
+                yerr=data['connected_components_std'], 
+                marker='o', capsize=5, capthick=2, label='Average ± Std')
+    plt.xlabel('Number of Nodes')
+    plt.ylabel('Connected Components')
+    plt.title('Connected Components vs Number of Nodes')
+    plt.legend()
+    plt.grid(True, alpha=0.3)
+    plt.tight_layout()
+    plt.savefig(os.path.join(output_dir, 'connected_components_vs_num_node.png'), dpi=300, bbox_inches='tight')
+    plt.show()
+    
+    # 4. Edit simpliciality vs es
+    plt.figure(figsize=fig_size)
+    plt.errorbar(num_node, data['simplicial_fraction_avg'], 
+            yerr=data['simplicial_fraction_std'], color='red',
+            marker='o', capsize=5, capthick=2, label='SF ± Std')
+    plt.errorbar(num_node, data['edit_simpliciality_avg'], 
+                yerr=data['edit_simpliciality_std'], color='blue',
+                marker='o', capsize=5, capthick=2, label='ES ± Std')
+    plt.errorbar(num_node, data['face_edit_simpliciality_avg'], 
+                yerr=data['face_edit_simpliciality_std'], color='green',
+                marker='o', capsize=5, capthick=2, label='FES ± Std')
+    plt.xlabel('Number of Nodes')
+    plt.ylabel('Simpliciality')
+    plt.title('Simpliciality vs Number of Nodes')
+    plt.legend(['SF_Avg', 'ES_Avg', 'FES_Avg'])
+    plt.grid(True, alpha=0.3)
+    plt.tight_layout()
+    plt.savefig(os.path.join(output_dir, 'edit_simpliciality_vs_num_node.png'), dpi=300, bbox_inches='tight')
+    plt.show()
+    
+    # 7. Degree count vs es (avg and median)
+    plt.figure(figsize=fig_size)
+    plt.plot(num_node, data['degree_count_avg'], 'o-', label='Average', linewidth=2)
+    plt.plot(num_node, data['degree_count_median'], 's-', label='Median', linewidth=2)
+    plt.xlabel('Number of Nodes')
+    plt.ylabel('Degree Count')
+    plt.title('Degree Count vs Number of Nodes')
+    plt.legend()
+    plt.grid(True, alpha=0.3)
+    plt.tight_layout()
+    plt.savefig(os.path.join(output_dir, 'degree_count_vs_num_node.png'), dpi=300, bbox_inches='tight')
+    plt.show()
+    
+    # 8. Number of nodes vs es (comprehensive)
+    plt.figure(figsize=fig_size)
+    plt.errorbar(num_node, data['num_node_avg'], 
+                yerr=data['num_node_std'], 
+                marker='o', capsize=5, capthick=2, label='Average ± Std')
+    plt.plot(num_node, data['num_node_median'], 's-', label='Median', alpha=0.7)
+    plt.xlabel('Number of Nodes')
+    plt.ylabel('Number of Nodes')
+    plt.title('Number of Nodes vs Number of Nodes')
+    plt.legend()
+    plt.grid(True, alpha=0.3)
+    plt.tight_layout()
+    plt.savefig(os.path.join(output_dir, 'num_node_vs_num_node.png'), dpi=300, bbox_inches='tight')
+    plt.show()
+    
+    # 9. Number of edges vs es (comprehensive)
+    plt.figure(figsize=fig_size)
+    plt.errorbar(num_node, data['num_edge_avg'], 
+                yerr=data['num_edge_std'], 
+                marker='o', capsize=5, capthick=2, label='Average ± Std')
+    plt.plot(num_node, data['num_edge_median'], 's-', label='Median', alpha=0.7)
+    plt.xlabel('Number of Nodes')
+    plt.ylabel('Number of Edges')
+    plt.title('Number of Edges vs Number of Nodes')
+    plt.legend()
+    plt.grid(True, alpha=0.3)
+    plt.tight_layout()
+    plt.savefig(os.path.join(output_dir, 'num_edge_vs_num_node.png'), dpi=300, bbox_inches='tight')
+    plt.show()
+    
+    # 10. Evaluation time vs es
+    plt.figure(figsize=fig_size)
+    plt.errorbar(num_node, data['evaluation_time_avg'], 
+                yerr=data['evaluation_time_std'], 
+                marker='o', capsize=5, capthick=2, label='Average ± Std')
+    plt.xlabel('Number of Nodes')
+    plt.ylabel('Evaluation Time (s)')
+    plt.title('Evaluation Time vs Number of Nodes')
+    plt.legend()
+    plt.grid(True, alpha=0.3)
+    plt.tight_layout()
+    plt.savefig(os.path.join(output_dir, 'evaluation_time_vs_num_node.png'), dpi=300, bbox_inches='tight')
+    plt.show()
+    
+    # 11. Graph generation time vs es
+    plt.figure(figsize=fig_size)
+    plt.errorbar(num_node, data['graph_generation_time_avg'], 
+                yerr=data['graph_generation_time_std'], 
+                marker='o', capsize=5, capthick=2, label='Average ± Std')
+    plt.xlabel('Number of Nodes')
+    plt.ylabel('Graph Generation Time (s)')
+    plt.title('Graph Generation Time vs Number of Nodes')
+    plt.legend()
+    plt.grid(True, alpha=0.3)
+    plt.tight_layout()
+    plt.savefig(os.path.join(output_dir, 'graph_generation_time_vs_num_node.png'), dpi=300, bbox_inches='tight')
+    plt.show()
+    
+    # 12. Cumulative edit simpliciality diff vs es
+    plt.figure(figsize=fig_size)
+    plt.plot(num_node, data['cumulative_edit_simpliciality_diff'], 'o-', linewidth=2)
+    plt.xlabel('Number of Nodes')
+    plt.ylabel('Cumulative Edit Simpliciality Difference')
+    plt.title('Cumulative Edit Simpliciality Difference vs Number of Nodes')
+    plt.grid(True, alpha=0.3)
+    plt.tight_layout()
+    plt.savefig(os.path.join(output_dir, 'cumulative_edit_simpliciality_diff_vs_num_node.png'), dpi=300, bbox_inches='tight')
+    plt.show()
+    
+    # 13. Degree assortativity vs es
+    plt.figure(figsize=fig_size)
+    plt.errorbar(num_node, data['degree_assortativity_avg'], 
+                yerr=data['degree_assortativity_std'], 
+                marker='o', capsize=5, capthick=2, label='Average ± Std')
+    plt.xlabel('Number of Nodes')
+    plt.ylabel('Degree Assortativity')
+    plt.title('Degree Assortativity vs Number of Nodes')
+    plt.legend()
+    plt.grid(True, alpha=0.3)
+    plt.tight_layout()
+    plt.savefig(os.path.join(output_dir, 'degree_assortativity_vs_num_node.png'), dpi=300, bbox_inches='tight')
+    plt.show()
+
 
 def create_summary_plot(data, output_dir):
     """Create a summary plot with multiple subplots"""
@@ -335,7 +496,7 @@ if __name__ == "__main__":
     
     # Create individual plots
     print("Creating individual plots...")
-    create_plots(data, output_dir)
+    create_plots_num_node(data, output_dir)
     
     # Create summary plot
     print("Creating summary plot...")
