@@ -129,7 +129,7 @@ Output:
 Helper function for process_dataset
 """
 def run_process (hypergraph, index, rewiring_times, min_size, max_size):
-        G = copy.deepcopy(hypergraph)
+        G = hypergraph
         #TODO: do we need {} for total anymore, I don't think so
         return Construct_New_Graph(index, rewiring_times, min_size, max_size, G)
     
