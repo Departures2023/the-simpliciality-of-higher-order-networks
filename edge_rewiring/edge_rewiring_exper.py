@@ -38,12 +38,12 @@ dir = {
     "disgenenet": "experiment_result/disgenenet.txt",
     "congress-bills": "experiment_result/congress-bills.txt",
     "tags-ask-ubuntu": "experiment_result/tags-ask-ubuntu.txt",
-}  
+}
 
 """
 Construct_New_Graph
 Inputs: 
-    index - index of dataset we want to use
+    graph - graph of dataset we want to use
     iter - number of rewirings we want to occur
     min size - minimum size used in main 
     max size - maximum size used in main
@@ -58,7 +58,7 @@ Output:
 Runs one trial of the edge rewiring algorithm on the given dataset, where iter is the number of
  edge rewirings we want.
 """
-def Construct_New_Graph(index, iter, min_size, max_size, total):
+def Construct_New_Graph(graph, iter, min_size, max_size, total):
     # Initialize variables to keep track of statistics
     success = 0
     failures = 0
@@ -67,21 +67,21 @@ def Construct_New_Graph(index, iter, min_size, max_size, total):
     #For given number of iterations, we do an edge rewiring
     for i in range(iter):
         # Makes a second graph
-        G = graphs[index].copy()
         # Runs rewiring, saving it as H and the statistics in stats
-        H, stats = edge_rewiring_alg.rewire_Alg1_expr(G, min_size, max_size)
         # Removes singletons if there are any
-        H.cleanup(singletons=True)
         # Sets new graph to rewired graph
-        G = H
         # Save the experiment data
-        edge_rewiring_alg.save_expr_data(datasets[index], i, stats, dir[datasets[index]])
+        G = graph.copy()
+        H, stats = edge_rewiring_alg.rewire_Alg1_expr(G, min_size, max_size)
+        H.cleanup(singletons=True)
+        G = H
+        edge_rewiring_alg.save_expr_data(datasets[dataset_index], i, stats, dir[datasets[dataset_index]])
+
         # Updates if there was a sucess or not
         success += stats["success_update"]
         if stats["success_update"] == 0:
             failures += 1
         time += stats["total_time"]
-        print(colored(datasets[index], 'blue'), stats)
 
     # Checks min and max failures, updates total values
     if (failures > total["max_failures"]):
@@ -112,7 +112,7 @@ Output:
 
 For a single dataset, runs Construct_New_Graph the given number of trials
 """     
-def process_dataset (index, trials, rewiring_times, min_size, max_size, latex_list_one, latex_list_two, latex_list_three, og_cc, og_clique_centrality, og_es, og_sf, og_fes, og_da, og_dc):
+def process_dataset (graph, dataset_index, trials, rewiring_times, min_size, max_size, latex_list_one, latex_list_two, latex_list_three, og_cc, og_clique_centrality, og_es, og_sf, og_fes, og_da, og_dc):
     total = {
             'total_success': 0,
             'total_time': 0,
@@ -128,7 +128,7 @@ def process_dataset (index, trials, rewiring_times, min_size, max_size, latex_li
     # Where trials is the number of processes we want to run
     for i in range(trials):     
         # Runs Construct_New_Graph in its own thread      
-        thread = threading.Thread(target=Construct_New_Graph, args=(index, rewiring_times, min_size, max_size, total))
+        thread = threading.Thread(target=Construct_New_Graph, args=(graph, rewiring_times, min_size, max_size, total))
         threads.append(thread)
         thread.start()
 
@@ -140,42 +140,40 @@ def process_dataset (index, trials, rewiring_times, min_size, max_size, latex_li
     total_success = total["total_success"]
     total_time = total["total_time"]
     num_max_hyperedges = total["num_max_hyperedges"]
-    total_cc = sum(list(xgi.clustering_coefficient(graphs[index]).values()))
-    centrality = sum(list(xgi.clique_eigenvector_centrality(graphs[index]).values()))
-    total_es = edit_simpliciality(graphs[index], min_size=min_size)    
-    total_sf = simplicial_fraction(graphs[index], min_size=min_size)    
-    total_fes = face_edit_simpliciality(graphs[index], min_size=min_size)    
-    total_degree_assortativity = xgi.degree_assortativity(graphs[index])
-    deg_list = list(xgi.degree_counts(graphs[index]))
+    total_cc = sum(list(xgi.clustering_coefficient(graph).values()))
+    total_centrality = sum(list(xgi.clique_eigenvector_centrality(graph).values()))
+    total_es = edit_simpliciality(graph, min_size=min_size)    
+    total_sf = simplicial_fraction(graph, min_size=min_size)    
+    total_fes = face_edit_simpliciality(graph, min_size=min_size)    
+    total_degree_assortativity = xgi.degree_assortativity(graph)
+    deg_list = list(xgi.degree_counts(graph))
     degrees = []
     for degree_val, count in enumerate(deg_list):
         degree = count * degree_val
         degrees.append(degree)
-    total_degree_count = (sum(degrees)) / len(degrees),
+    total_degree_count = (sum(degrees)) / len(degrees)
 
-    # Calculates averages and does necessary rounding
     avg_time = round(total_time / trials, 2)
+    avg_cc = round((total_cc / trials) / len(graph.nodes), 5)
     total_failures = rewiring_times * trials - total_success
     avg_failures = total_failures / trials
-    failure_rate = round((avg_failures / rewiring_times), 5)
-    avg_cc = round((total_cc / len(graphs[index].nodes)) / trials, 5)
+    failure_rate = round((avg_failures / rewiring_times), 5)  
     delta_cc = round((avg_cc - og_cc), 5)
-    centrality = round(centrality / len(graphs[index].nodes), 5)
+    centrality = round((total_centrality / trials) / len(graph.nodes), 5)
     delta_clique_centrality = round(og_clique_centrality - centrality, 5)
-    es = total_es
-    delta_es = (og_es - es)
-    sf = total_sf
-    delta_sf = (og_sf - sf)
-    fes = total_fes
-    delta_fes = (og_fes - fes)
+    es = round((total_es / trials), 5)
+    delta_es = round((es - og_es), 5)
+    sf = (total_sf / trials)
+    delta_sf = round((sf - og_sf), 5)
+    fes = (total_fes / trials)
+    delta_fes = round((fes - og_fes), 5)
     degree_assortativity = round((total_degree_assortativity / trials), 5)
-    delta_da = (round(degree_assortativity - og_da, 5))
+    delta_da = round(degree_assortativity - og_da, 5)
     avg_degree = round((total_degree_count / trials), 5)
     delta_avg_degree = round((avg_degree - og_dc), 5)
 
-
      # Prints results of each dataset
-    print( Fore.LIGHTGREEN_EX + str(datasets[index]) + ": \n" +
+    print( Fore.LIGHTGREEN_EX + str(datasets[dataset_index]) + ": \n" +
         " average time = " + str(avg_time) + "\n" + 
         " failure rate = " + str(failure_rate) + "\n" + 
         " edit simpliciality = " + str(es) + "\n" +
@@ -201,7 +199,7 @@ def process_dataset (index, trials, rewiring_times, min_size, max_size, latex_li
                
     # Appends results to the latex lists, these produce printed latex that can be copied into a latex document
     latex_list_one.append(
-        datasets[index] + " & " +
+        datasets[dataset_index] + " & " +
         str(avg_time) + " & " + 
         str(failure_rate) + " & " +
         str(round(es, 5)) + " & " +
@@ -214,7 +212,7 @@ def process_dataset (index, trials, rewiring_times, min_size, max_size, latex_li
     latex_list_one.append("\hline") 
 
     latex_list_two.append(
-        datasets[index] + " & " +
+        datasets[dataset_index] + " & " +
         str(num_max_hyperedges) + " & " +
         str(avg_cc) + " & " +
         str(delta_cc) + " & " +
@@ -224,7 +222,7 @@ def process_dataset (index, trials, rewiring_times, min_size, max_size, latex_li
     latex_list_two.append("\hline") 
 
     latex_list_three.append(
-        datasets[index] + " & " +
+        datasets[dataset_index] + " & " +
         str(degree_assortativity) + " & " +
         str(delta_da) + " & " +
         str(avg_degree) + " & " + 
@@ -246,43 +244,47 @@ Runs Process_Dataset for each dataset in parallel, the given number of times.
 
 if __name__ == "__main__":
     start = time.time()
+
     # Checks if arguments are given, if not prints error and exits
     if len(sys.argv) < 3:
         print("Usage Error: <processes> <rewiring_times>")
         sys.exit()
     print("Starting edge rewiring experiments...")
-    #Initializes graphs and needed values
+
+    #Initializes graphs, latex lists, needed values, and user input
     global graphs
     graphs = []
-    max_size = 11
-    min_size = 2
-    datasets_size = 10
     latex_list_one = []
     latex_list_two = []
     latex_list_three = []
+
+    max_size = 11
+    min_size = 2
+    datasets_size = 10
+
     trials = int(sys.argv[1])
     rewiring_times = int(sys.argv[2])
     begin_dataset = int(sys.argv[3])
     end_dataset = int(sys.argv[4])
 
-    # For all of the datasets
-    for i in range (datasets_size):
-        # Uploads datasets
-        graphs.append(xgi.load_xgi_data(datasets[i], max_order=max_size))
-        # Removes any singletons
-        graphs[i].cleanup(singletons=True)
+    # For all of the datasets selected by the user, uploads them from xgi and appends them to graphs
+    # Prints error if dataset fails to load
+    for i in range(begin_dataset, end_dataset):
+        try:
+            g = xgi.load_xgi_data(datasets[i], max_order=max_size)
+            g.cleanup(singletons=True)
+            graphs.append(g)
+        except Exception as e:
+            print(f"Failed to load {datasets[i]}: {e}")
 
     # Create threads to run the algorithm in parallel
     threads = []
 
-    for i in range(begin_dataset, end_dataset):
-        #appends only the graphs we need
-        graphs.append(xgi.load_xgi_data(datasets[i], max_order=max_size))              
-
-
-    # For all datasets
-    for i in range(len(graphs)):       
-        # Threads process_dataset so each process runs in parallel
+    # For all datasets that have been uploaded to graphs
+    for i in range(len(graphs)):  
+        dataset_index = i + begin_dataset     
+        
+        # Calculates original statistics
         og_cc = sum(list(xgi.clustering_coefficient(graphs[i]).values())) / len(graphs[i].nodes)
         og_clique_centrality = sum(list(xgi.clique_eigenvector_centrality(graphs[i]).values())) / len(graphs[i].nodes)
         og_es = round((edit_simpliciality(graphs[i], min_size)), 5)
@@ -296,7 +298,8 @@ if __name__ == "__main__":
             degrees.append(degree)
         og_dc = (sum(degrees)) / len(degrees)
 
-        thread = threading.Thread(target=process_dataset, args=(i, trials, rewiring_times, min_size, max_size, latex_list_one, latex_list_two, latex_list_three, og_cc, og_clique_centrality, og_es, og_sf, og_fes, og_da, og_dc))
+        # Threads process_dataset so each process runs in parallel
+        thread = threading.Thread(target=process_dataset, args=(graphs[i], dataset_index, trials, rewiring_times, min_size, max_size, latex_list_one, latex_list_two, latex_list_three, og_cc, og_clique_centrality, og_es, og_sf, og_fes, og_da, og_dc))
         threads.append(thread)
         thread.start()              
 
