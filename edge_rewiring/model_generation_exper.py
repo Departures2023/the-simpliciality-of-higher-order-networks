@@ -334,7 +334,7 @@ if __name__ == "__main__":
     H_es = model_generation_es(es, approx_num_C, num_max_hyperedge, num_node, min_size, max_size)
     og_edges = {frozenset(H_es.edges.members(edge_id)) for edge_id in H_es.edges}
     with multiprocessing.Pool(processes= min(32, os.cpu_count())) as pool:
-        for i in range(1000000):
+        for i in range(1000):
             pool.apply_async(jaccard_test, args=(jaccard_index, i, es, approx_num_C, num_max_hyperedge, num_node, og_edges, min_size, max_size))
 
         pool.close()
@@ -345,10 +345,11 @@ if __name__ == "__main__":
         # Prepare data for plotting        
         x_vals = [x for x, _ in jaccard_index]
         y_vals = [y for _, y in jaccard_index]
+        
 
 
         # Plotting
-        plt.figure(figsize=(8, 5))
+        plt.figure()
         plt.plot(x_vals, y_vals, marker='o', linestyle='-')
         plt.title(f'Jaccard Index vs Graph Generation Trial for es={es}, approx_num_C={approx_num_C}, num_max_hyperedge={num_max_hyperedge}, num_node={num_node}')
         plt.xlabel('Graph Generation Trial')
