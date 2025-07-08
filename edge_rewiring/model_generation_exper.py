@@ -17,7 +17,6 @@ from termcolor import colored
 from multiprocessing import Process, Manager, Queue
 import time
 import statistics
-import numpy as np
 import math
 
 dir = {
@@ -323,7 +322,7 @@ def jaccard_test(jaccard_index, i, es, approx_num_C, num_max_hyperedge, num_node
     jaccard_index.append((i, jaccard))
     
 if __name__ == "__main__":
-    manager = multiprocessing.Manager()
+    '''manager = multiprocessing.Manager()
     jaccard_index = manager.list()
     es = float(sys.argv[1]) 
     approx_num_C = int(sys.argv[2])
@@ -357,4 +356,12 @@ if __name__ == "__main__":
         plt.grid(True)
         plt.tight_layout()
         plt.savefig(f'Jaccard Index vs Graph Generation Trial for es={es}.png') 
-        plt.close() 
+        plt.close() '''
+        
+    H_es = model_generation_es(0.5, 500, 140, 2560, 2)
+    H_es.cleanup(isolates=False, singletons=False, multiedges=False, connected=True, relabel=True, in_place=False)
+    pos = xgi.barycenter_spring_layout(H_es, seed=1)
+
+    fig, ax = plt.subplots()
+    xgi.draw(H_es, pos=pos, ax=ax)
+    plt.show(block=True)
