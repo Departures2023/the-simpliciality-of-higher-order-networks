@@ -351,7 +351,7 @@ if __name__ == "__main__":
     # Plotting
     plt.figure(figsize=(8, 5))
     plt.plot(x_vals, y_vals, marker='o', linestyle='-')
-    plt.title(f'Jaccard Index vs Rewiring Iterations for {datasets[6]}')
+    plt.title(f'Jaccard Index vs Rewiring Iterations for {datasets[begin_dataset]}')
     plt.xlabel('Rewiring Iteration')
     plt.ylabel('Jaccard Index')
     plt.grid(True)
