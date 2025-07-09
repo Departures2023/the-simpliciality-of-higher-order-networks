@@ -60,6 +60,7 @@ Runs one trial of the edge rewiring algorithm on the given dataset, where iter i
 """
 def Construct_New_Graph(graph, iter, min_size, max_size, total):
     # Initialize variables to keep track of statistics
+    G = graph.copy()
     success = 0
     failures = 0
     time = 0
@@ -71,7 +72,6 @@ def Construct_New_Graph(graph, iter, min_size, max_size, total):
         # Removes singletons if there are any
         # Sets new graph to rewired graph
         # Save the experiment data
-        G = graph.copy()
         H, stats = edge_rewiring_alg.rewire_Alg1_expr(G, min_size, max_size)
         H.cleanup(singletons=True)
         G = H
