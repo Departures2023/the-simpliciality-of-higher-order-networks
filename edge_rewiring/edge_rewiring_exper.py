@@ -88,20 +88,19 @@ def Construct_New_Graph(graph, iter, min_size, max_size, total):
     total["total_time"] += time
     total["total_num_missing_subfaces"] += num_missing_subfaces
     total["num_max_hyperedges"] = stats["num_maximal_hyperedge"]
-    total["total_cc"] = sum(list(xgi.clustering_coefficient(graph).values()))
-    total["total_centrality"] = sum(list(xgi.clique_eigenvector_centrality(graph).values()))
-    total["total_es"] = edit_simpliciality(graph, min_size=min_size) 
-    total["total_sf"] = simplicial_fraction(graph, min_size=min_size)    
-    total["total_fes"] = face_edit_simpliciality(graph, min_size=min_size)    
-    total["total_degree_assortativity"] = xgi.degree_assortativity(graph)
-    deg_list = list(xgi.degree_counts(graph))
+    total["total_cc"] += sum(list(xgi.clustering_coefficient(G).values()))
+    total["total_centrality"] += sum(list(xgi.clique_eigenvector_centrality(G).values()))
+    total["total_es"] += edit_simpliciality(G, min_size=min_size) 
+    total["total_sf"] += simplicial_fraction(G, min_size=min_size)    
+    total["total_fes"] += face_edit_simpliciality(G, min_size=min_size)    
+    total["total_degree_assortativity"] += xgi.degree_assortativity(G)
+    deg_list = list(xgi.degree_counts(G))
     degrees = []
     for degree_val, count in enumerate(deg_list):
         degree = count * degree_val
         degrees.append(degree)
-    total["total_degree_count"] = (sum(degrees)) / len(degrees)
-
-
+    total["total_degree_count"] += (sum(degrees)) / len(degrees)
+    print(edit_simpliciality(G, min_size=min_size))
 
 """
 Process_Dataset
@@ -135,19 +134,10 @@ def process_dataset (graph, dataset_index, trials, rewiring_times, min_size, max
             'total_degree_count': 0
         }
 
-    # Create threads to run the algorithm in parallel
-    threads = []
-
     # Where trials is the number of processes we want to run
     for i in range(trials):     
-        # Runs Construct_New_Graph in its own thread      
-        thread = threading.Thread(target=Construct_New_Graph, args=(graph, rewiring_times, min_size, max_size, total))
-        threads.append(thread)
-        thread.start()
-
-    # For all threads, joins them to syncronize    
-    for thread in threads:
-        thread.join()
+        # Runs Construct_New_Graph    
+        Construct_New_Graph(graph, rewiring_times, min_size, max_size, total)
 
     # Updates statistics
     avg_time = round(total["total_time"] / trials, 2)
@@ -158,7 +148,7 @@ def process_dataset (graph, dataset_index, trials, rewiring_times, min_size, max
     delta_cc = round((avg_cc - og_cc), 5)
     centrality = round((total["total_centrality"] / trials) / len(graph.nodes), 5)
     delta_clique_centrality = round(og_clique_centrality - centrality, 5)
-    es = round((total_es / trials), 5)
+    es = round((total["total_es"] / trials), 5)
     delta_es = round((es - og_es), 5)
     sf = (total["total_sf"] / trials)
     delta_sf = round((sf - og_sf), 5)
@@ -313,3 +303,4 @@ if __name__ == "__main__":
     print(*latex_list_two, sep="\n")
     print("\n\n\n ***** \n\n\n")
     print(*latex_list_three, sep="\n")
+
