@@ -58,7 +58,7 @@ Output:
 Runs one trial of the edge rewiring algorithm on the given dataset, where iter is the number of
  edge rewirings we want.
 """
-def Construct_New_Graph(graph, iter, min_size, max_size, total):
+def Construct_New_Graph(graph, iter, min_size, max_size, total, dataset_index):
     # Initialize variables to keep track of statistics
     G = graph.copy()
     success = 0
@@ -83,7 +83,6 @@ def Construct_New_Graph(graph, iter, min_size, max_size, total):
             failures += 1
         time += stats["total_time"]
 
-    print(str(edit_simpliciality(G, min_size=min_size) ))
     # Updates statistics        
     total["total_success"] += success
     total["total_time"] += time
@@ -134,7 +133,7 @@ def process_dataset (graph, dataset_index, trials, rewiring_times, min_size, max
             'total_degree_count': 0
         }
     for i in range(trials):
-        Construct_New_Graph(graph, rewiring_times, min_size, max_size, total)
+        Construct_New_Graph(graph, rewiring_times, min_size, max_size, total, dataset_index)
 
     # Create threads to run the algorithm in parallel
     #threads = []
