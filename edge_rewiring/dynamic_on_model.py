@@ -6,17 +6,31 @@ import numpy as np
 import random
 from model_generation import *
 
+datasets = [
+    "contact-primary-school",
+    "contact-high-school",
+    "hospital-lyon",
+    "email-enron",
+    "email-eu",
+    "ndc-substances",
+    "diseasome",
+    "disgenenet",
+    "congress-bills",
+    "tags-ask-ubuntu",
+]
+
 def run_multiple_SIR_with_errorbands(
-    es=0.05, 
-    num_graphs=100, 
-    approx_num_C=4253, 
-    num_max_hyperedge=292, 
-    num_node=516,
-    gamma=0.05,
+    es,  
+    approx_num_C, 
+    num_max_hyperedge, 
+    num_node,
+    gamma,
+    num_graphs=10,
     rho=0.1,
     tmin=0,
     tmax=100,
-    dt=1
+    dt=1,
+    ax=None, 
 ):
     S_all, I_all, R_all = [], [], []
     t_vals = None  # to store time vector from first run
@@ -38,8 +52,6 @@ def run_multiple_SIR_with_errorbands(
 
         mean_degree = sum(dict(H.degree()).values()) / H.num_nodes
         print(mean_degree)
-        # mean_edge_size = sum(len(e) for e in H.edges) / H.num_edges
-        # print(f"Mean edge size: {mean_edge_size:.4f}")
 
         tau = {k: 0.1 for k in xgi.unique_edge_sizes(H)}
         t, S, I, R = hc.discrete_SIR(H, tau, gamma=gamma, rho=rho, tmin=tmin, tmax=tmax, dt=dt)
@@ -47,8 +59,6 @@ def run_multiple_SIR_with_errorbands(
         if t_vals is None:
             t_vals = t  # save the time vector
         
-        print(f"Run {i+1}: Length of I = {len(I)}, S = {len(S)}, R = {len(R)}")
-
         min_len = min(len(S), len(I), len(R))
         S_all.append(S[:min_len] / num_node)
         I_all.append(I[:min_len] / num_node)
@@ -57,7 +67,7 @@ def run_multiple_SIR_with_errorbands(
         if t_vals is None:
             t_vals = t[:min_len]
 
-    print(f"Run {i+1}: Length of I = {len(I)}, S = {len(S)}, R = {len(R)}")
+    #print(f"Run {i+1}: Length of I = {len(I)}, S = {len(S)}, R = {len(R)}")
 
         # After the for loop:
     min_len = min(len(arr) for arr in S_all)  # Find the minimum time series length
@@ -75,56 +85,76 @@ def run_multiple_SIR_with_errorbands(
 
 
     # Plotting
-    plt.figure(figsize=(10, 6))
+    if ax is None:
+        fig, ax = plt.subplots(figsize=(10, 6))
+    else:
+        fig = ax.figure
 
-    # Susceptible
-    plt.plot(t_vals, S_mean, color="green", label="S (mean)")
-    plt.fill_between(t_vals, S_mean - S_std, S_mean + S_std, color="green", alpha=0.3)
+    # Use ax instead of axes for plotting
+    ax.plot(t_vals, S_mean, color="green", label="S (mean)")
+    ax.fill_between(t_vals, S_mean - S_std, S_mean + S_std, color="green", alpha=0.3)
+    ax.plot(t_vals, I_mean, color="red", label="I (mean)")
+    ax.fill_between(t_vals, I_mean - I_std, I_mean + I_std, color="red", alpha=0.3)
+    ax.plot(t_vals, R_mean, color="blue", label="R (mean)")
+    ax.fill_between(t_vals, R_mean - R_std, R_mean + R_std, color="blue", alpha=0.3)
+    ax.set_xlabel("Time")
+    ax.set_ylabel("Fraction of Population")
+    ax.set_title(f"SIR on Generated Code Error Bands")
+    ax.legend()
+    ax.grid(True)
+    fig.tight_layout()
 
-    # Infected
-    plt.plot(t_vals, I_mean, color="red", label="I (mean)")
-    plt.fill_between(t_vals, I_mean - I_std, I_mean + I_std, color="red", alpha=0.3)
+    return fig, ax
 
-    # Recovered
-    plt.plot(t_vals, R_mean, color="blue", label="R (mean)")
-    plt.fill_between(t_vals, R_mean - R_std, R_mean + R_std, color="blue", alpha=0.3)
+def SIR_original_graph(
+    dataset,
+    gamma,
+    ax=None
+):
+    
+    H = xgi.load_xgi_data(dataset)
+    num_node = H.num_nodes
+    tau = {i: 0.1 for i in xgi.unique_edge_sizes(H)}
+    start = time.time()
+    t1, S1, I1, R1 = hc.discrete_SIR(H, tau, gamma, tmin=0, tmax=100, dt=1, rho=0.1)
+    print(time.time() - start)
 
-    plt.xlabel("Time")
-    plt.ylabel("Fraction of Population")
-    plt.title(f"SIR Dynamics with Error Bands (es={es})")
-    plt.legend()
-    plt.grid(True)
-    plt.tight_layout()
-    plt.show()
+    # Plotting
+    if ax is None:
+        fig, ax = plt.subplots(figsize=(10, 6))
+    else:
+        fig = ax.figure
 
+    ax.plot(t1, S1 / num_node, "g--", label="S (discrete)")
+    ax.plot(t1, I1 / num_node, "r--", label="I (discrete)")
+    ax.plot(t1, R1 / num_node, "b--", label="R (discrete)")
+    ax.legend()
+    ax.set_xlabel("Time")
+    ax.set_ylabel("Fraction of population")
+    ax.set_title("SIR on Original Graph")
+    ax.grid(True)
+    fig.tight_layout()
+    return fig, ax
 
 # Example usage:
 if __name__ == "__main__":
-    run_multiple_SIR_with_errorbands()
+    dataset = datasets[int(sys.argv[1])]
+    es = float(sys.argv[2])
+    approx_num_C = int(sys.argv[3])
+    num_max_hyperedge = int(sys.argv[4])
+    num_node = int(sys.argv[5])
+    gamma = 0.05
 
-# output_dir = r'experiment_result\dynamics_on_model\fig'
+    print(f"Running SIR on dataset: {dataset}")
 
-# def dynamics_on_model(es, approx_num_C, num_max_hyperedge, num_node, min_size=2, max_size=None, adjust_es=False, compare_interval_smaller_case=2, compare_interval_bigger_case=2):
-#     # Generate the hypergraph
-#     H = model_generation_es(es, approx_num_C, num_max_hyperedge,num_node, min_size, max_size, adjust_es, compare_interval_smaller_case, compare_interval_bigger_case)
-#     initial_size = 100
-#     gamma = 0.05
-#     tau = {i: 0.1 for i in xgi.unique_edge_sizes(H)}
-#     start = time.time()
-#     t1, S1, I1, R1 = hc.discrete_SIR(H, tau, gamma, tmin=0, tmax=100, dt=1, rho=0.1)
-#     print(time.time() - start)
-    
-#     plt.figure()
-#     plt.plot(t1, S1 / num_node, "g--", label="S (discrete)")
-#     plt.plot(t1, I1 / num_node, "r--", label="I (discrete)")
-#     plt.plot(t1, R1 / num_node, "b--", label="R (discrete)")
-#     plt.legend()
-#     plt.xlabel("Time")
-#     plt.ylabel("Fraction of population")
-#     plt.savefig(os.path.join(output_dir, f"{es}_SIR.png"), dpi=300, bbox_inches='tight')
-#     plt.show()
-    
-# if __name__ == "__main__":
-#     es_list = np.linspace(0.15, 0.95, num=5)
-#     for es in es_list:
-#         dynamics_on_model(es, 9000, 300, 1000, 2, 11, True, 2, 2)
+    fig, axes = plt.subplots(1, 2, figsize=(16, 6))  # 1 row, 2 columns
+
+    run_multiple_SIR_with_errorbands(es, approx_num_C, num_max_hyperedge, num_node, gamma, ax=axes[0])
+    SIR_original_graph(dataset, gamma, ax=axes[1])
+
+    H = xgi.load_xgi_data(dataset)
+    es = round(edit_simpliciality(H), 2)
+    fig.suptitle(dataset + "  -  es = " + str(es))
+
+    plt.tight_layout(rect=[0, 0.03, 1, 0.95])
+    plt.show()
