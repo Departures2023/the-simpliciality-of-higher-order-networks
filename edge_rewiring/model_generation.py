@@ -12,6 +12,7 @@ import time
 import numpy as np
 import xgi
 from fractions import Fraction
+import numpy as np
 
 from sod.simpliciality import edit_simpliciality, face_edit_simpliciality, simplicial_fraction
 from sod.trie import Trie
@@ -69,7 +70,7 @@ def combination_to_size(C):
 
 # Function to generate a list of n random numbers, each at least min_value, such that their sum is target_sum.
 # All input should be integers
-def generate_C_distribution(min_size, max_size, C_avg, num_max_hyperedge, target_sum):
+def generate_C_distribution(min_size, max_size, C_avg, std, num_max_hyperedge, target_sum):
     """
     Generate a list of n random numbers, each at least min_value, such that their sum is target_sum.
 
@@ -81,55 +82,49 @@ def generate_C_distribution(min_size, max_size, C_avg, num_max_hyperedge, target
         target_sum (int): total number of combinations (induced edges) within all maximal hyperedges
 
     Returns:
-        _type_: _description_
+        array: distribution of C values
     """
     
-    # Q1: HOW TO CHOOSE THE VALUE OF STANDARD DEVIATION?
-    std = 0.5 * C_avg
-    # Q2: CHECK IF I USE THE RIGHT EQUATION FOR UPPER AND LOWER BOUND?
-    # Don't override max_size with target_sum - use the actual max_size passed in
-
-    adjusted_lower = (min_size - C_avg) / std
-    adjusted_higher = (max_size - C_avg) / std
+    # Use lognormal distribution which is better for positive values
     
-    # length of the actual edge distribution equals the number of maximal hyperedges
-    C_distribution = scipy.stats.truncnorm.rvs(
-        adjusted_lower, 
-        adjusted_higher, 
-        loc=C_avg, 
-        scale=std,
-        size=num_max_hyperedge
-    )
-    # Round the distribution to integers
+    # For lognormal distribution with desired mean C_avg:
+    # mean_lognormal = exp(mu + sigma^2/2)
+    # So: mu = ln(mean_lognormal) - sigma^2/2
+    mu = np.log(C_avg) - (std**2 / 2)
+    
+    # Generate lognormal distribution
+    C_distribution = np.random.lognormal(mean=mu, sigma=std, size=num_max_hyperedge)
+    
+    # Round to integers and clip to bounds
     C_distribution = np.round(C_distribution).astype(int)
-
-    # Check if the sum of the generated distribution is bigger to the target sum
-    excess = C_distribution.sum() - target_sum
-    if excess > 0:
-        for i in range(int(excess)):
-            # exclude indices where the number is already equal to the corresponding C_distribution value
-            idx_exclude = [i for i in range(num_max_hyperedge) if min_size == C_distribution[i]]
-            lst_choose_from = list(set([x for x in range(0, num_max_hyperedge)]) - set(idx_exclude))
-            if (len(lst_choose_from) == 0):
-                break
-            idx = random.choice(lst_choose_from)
-            C_distribution[idx] -= 1
-        return C_distribution
-    elif excess < 0:
-        excess = abs(excess)
-        for i in range(int(excess)):
-            # exclude indices where the number is already equal to the corresponding C_distribution value
-            idx_exclude = [i for i in range(num_max_hyperedge) if max_size == C_distribution[i]]
-            lst_choose_from = list(set([x for x in range(0, num_max_hyperedge)]) - set(idx_exclude))
-            if (len(lst_choose_from) == 0):
-                break
-            idx = random.choice(lst_choose_from)
-            C_distribution[idx] += 1
-        return C_distribution
-    else:
-        # If the sum is equal to the target sum, return the distribution
-        return C_distribution
+    C_distribution = np.clip(C_distribution, min_size, max_size)
     
+    print("C_distribution:", C_distribution)
+
+    # Adjust the sum to match target_sum
+    excess = C_distribution.sum() - target_sum
+    print("excess:", excess)
+    
+    if excess > 0:
+        # Reduce values that are above minimum
+        for _ in range(int(abs(excess))):
+            reducible_indices = [i for i in range(num_max_hyperedge) if C_distribution[i] > min_size]
+            if len(reducible_indices) == 0:
+                break
+            idx = random.choice(reducible_indices)
+            C_distribution[idx] -= 1
+            
+    elif excess < 0:
+        # Increase values that are below maximum
+        for _ in range(int(abs(excess))):
+            increasable_indices = [i for i in range(num_max_hyperedge) if C_distribution[i] < max_size]
+            if len(increasable_indices) == 0:
+                break
+            idx = random.choice(increasable_indices)
+            C_distribution[idx] += 1
+    
+    return C_distribution
+
 
 
 
@@ -228,7 +223,14 @@ def model_generation_es(es, approx_num_C, num_max_hyperedge, num_node, min_size=
     H.add_nodes_from(nodes)
     # Calculate the average number of induced hyperedges
     C_avg = C_total / num_max_hyperedge
-    
+    if es < 0.15:
+        std = 0.5
+    elif es < 0.5:
+        std = 1
+    elif es < 0.85:
+        std = 2
+    else:
+        std = 3
     # Print statements for debugging
     # print("edge_total:", edge_total)
     # print("C_total:", C_total)
@@ -242,6 +244,7 @@ def model_generation_es(es, approx_num_C, num_max_hyperedge, num_node, min_size=
         min_size=possible_combinations(min_size), 
         max_size=C_total, 
         C_avg=C_avg, 
+        std=std,
         num_max_hyperedge=num_max_hyperedge, 
         target_sum=C_total
     )
