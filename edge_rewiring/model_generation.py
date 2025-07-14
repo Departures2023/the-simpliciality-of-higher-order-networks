@@ -12,6 +12,7 @@ import time
 import numpy as np
 import xgi
 from fractions import Fraction
+import numpy as np
 
 from sod.simpliciality import edit_simpliciality, face_edit_simpliciality, simplicial_fraction
 from sod.trie import Trie
@@ -69,7 +70,7 @@ def combination_to_size(C):
 
 # Function to generate a list of n random numbers, each at least min_value, such that their sum is target_sum.
 # All input should be integers
-def generate_C_distribution(min_size, max_size, C_avg, num_max_hyperedge, target_sum):
+def generate_C_distribution(min_size, max_size, C_avg, std, num_max_hyperedge, target_sum):
     """
     Generate a list of n random numbers, each at least min_value, such that their sum is target_sum.
 
@@ -81,55 +82,49 @@ def generate_C_distribution(min_size, max_size, C_avg, num_max_hyperedge, target
         target_sum (int): total number of combinations (induced edges) within all maximal hyperedges
 
     Returns:
-        _type_: _description_
+        array: distribution of C values
     """
     
-    # Q1: HOW TO CHOOSE THE VALUE OF STANDARD DEVIATION?
-    std = 0.5 * C_avg
-    # Q2: CHECK IF I USE THE RIGHT EQUATION FOR UPPER AND LOWER BOUND?
-    # Don't override max_size with target_sum - use the actual max_size passed in
-
-    adjusted_lower = (min_size - C_avg) / std
-    adjusted_higher = (max_size - C_avg) / std
+    # Use lognormal distribution which is better for positive values
     
-    # length of the actual edge distribution equals the number of maximal hyperedges
-    C_distribution = scipy.stats.truncnorm.rvs(
-        adjusted_lower, 
-        adjusted_higher, 
-        loc=C_avg, 
-        scale=std,
-        size=num_max_hyperedge
-    )
-    # Round the distribution to integers
+    # For lognormal distribution with desired mean C_avg:
+    # mean_lognormal = exp(mu + sigma^2/2)
+    # So: mu = ln(mean_lognormal) - sigma^2/2
+    mu = np.log(C_avg) - (std**2 / 2)
+    
+    # Generate lognormal distribution
+    C_distribution = np.random.lognormal(mean=mu, sigma=std, size=num_max_hyperedge)
+    
+    # Round to integers and clip to bounds
     C_distribution = np.round(C_distribution).astype(int)
-
-    # Check if the sum of the generated distribution is bigger to the target sum
-    excess = C_distribution.sum() - target_sum
-    if excess > 0:
-        for i in range(int(excess)):
-            # exclude indices where the number is already equal to the corresponding C_distribution value
-            idx_exclude = [i for i in range(num_max_hyperedge) if min_size == C_distribution[i]]
-            lst_choose_from = list(set([x for x in range(0, num_max_hyperedge)]) - set(idx_exclude))
-            if (len(lst_choose_from) == 0):
-                break
-            idx = random.choice(lst_choose_from)
-            C_distribution[idx] -= 1
-        return C_distribution
-    elif excess < 0:
-        excess = abs(excess)
-        for i in range(int(excess)):
-            # exclude indices where the number is already equal to the corresponding C_distribution value
-            idx_exclude = [i for i in range(num_max_hyperedge) if max_size == C_distribution[i]]
-            lst_choose_from = list(set([x for x in range(0, num_max_hyperedge)]) - set(idx_exclude))
-            if (len(lst_choose_from) == 0):
-                break
-            idx = random.choice(lst_choose_from)
-            C_distribution[idx] += 1
-        return C_distribution
-    else:
-        # If the sum is equal to the target sum, return the distribution
-        return C_distribution
+    C_distribution = np.clip(C_distribution, min_size, max_size)
     
+    print("C_distribution:", C_distribution)
+
+    # Adjust the sum to match target_sum
+    excess = C_distribution.sum() - target_sum
+    print("excess:", excess)
+    
+    if excess > 0:
+        # Reduce values that are above minimum
+        for _ in range(int(abs(excess))):
+            reducible_indices = [i for i in range(num_max_hyperedge) if C_distribution[i] > min_size]
+            if len(reducible_indices) == 0:
+                break
+            idx = random.choice(reducible_indices)
+            C_distribution[idx] -= 1
+            
+    elif excess < 0:
+        # Increase values that are below maximum
+        for _ in range(int(abs(excess))):
+            increasable_indices = [i for i in range(num_max_hyperedge) if C_distribution[i] < max_size]
+            if len(increasable_indices) == 0:
+                break
+            idx = random.choice(increasable_indices)
+            C_distribution[idx] += 1
+    
+    return C_distribution
+
 
 
 
@@ -228,7 +223,14 @@ def model_generation_es(es, approx_num_C, num_max_hyperedge, num_node, min_size=
     H.add_nodes_from(nodes)
     # Calculate the average number of induced hyperedges
     C_avg = C_total / num_max_hyperedge
-    
+    if es < 0.15:
+        std = 0.5
+    elif es < 0.5:
+        std = 1
+    elif es < 0.85:
+        std = 2
+    else:
+        std = 3
     # Print statements for debugging
     # print("edge_total:", edge_total)
     # print("C_total:", C_total)
@@ -242,6 +244,7 @@ def model_generation_es(es, approx_num_C, num_max_hyperedge, num_node, min_size=
         min_size=possible_combinations(min_size), 
         max_size=C_total, 
         C_avg=C_avg, 
+        std=std,
         num_max_hyperedge=num_max_hyperedge, 
         target_sum=C_total
     )
@@ -250,7 +253,7 @@ def model_generation_es(es, approx_num_C, num_max_hyperedge, num_node, min_size=
     
     # Generate the distribution of numbers of edges actually connected
     edge_distribution  = generate_edge_distribution(
-        min_edge_num=min_size, 
+        min_edge_num=possible_combinations(min_size), 
         C_distribution=C_distribution, 
         target_sum=edge_total
     )
@@ -260,6 +263,7 @@ def model_generation_es(es, approx_num_C, num_max_hyperedge, num_node, min_size=
     
     # Convert the distribution of C values to the number of nodes in maximal hyperedges
     maximal_edge_size_list = [combination_to_size(i) for i in C_distribution]
+    maximal_edge_size_list.sort(reverse=True)
     # Avoid adding repeating edges - use set for consistent comparison
     edge_to_exclude = set()
     # Print statements for debugging
@@ -267,21 +271,108 @@ def model_generation_es(es, approx_num_C, num_max_hyperedge, num_node, min_size=
     
     maximal_edge_set = set()
     final_possible_edge_list = []
+    used_nodes = set()
+    unused_nodes = set(nodes)
+    
     for i in range(num_max_hyperedge):
-        # Randomly select nodes for the maximal hyperedge
-        selected_nodes = random.sample(nodes, maximal_edge_size_list[i])
-        selected_nodes_set = frozenset(selected_nodes)  # Convert to frozenset for consistent comparison
+        # Initialize the range and weights for the random selection of size of maximal hyperedge
+        if i == 0:
+            selected_nodes = random.sample(nodes, maximal_edge_size_list[i])
+            selected_nodes_set = frozenset(selected_nodes)  # Convert to frozenset for consistent comparison
+        else:
+            # Handle the case when unused_nodes becomes empty
+            if len(unused_nodes) == 0:
+                # All nodes are used, just sample from used_nodes
+                selected_nodes = random.sample(list(used_nodes), maximal_edge_size_list[i])
+                selected_nodes_set = frozenset(selected_nodes)
+            else:
+                size_lst = range(1, maximal_edge_size_list[i])
+                weights = []
+                for size in size_lst:
+                    weights.append(1/size)
+                # Determine the number of nodes to chosen from used and not used
+                used_selected_size = random.choices(size_lst, weights=weights, k=1)[0]
+                unused_selected_size = maximal_edge_size_list[i] - used_selected_size
+                
+                # Safety checks to prevent sampling more than available
+                unused_selected_size = min(unused_selected_size, len(unused_nodes))
+                used_selected_size = min(used_selected_size, len(used_nodes))
+                
+                # Ensure we have enough nodes total
+                total_needed = maximal_edge_size_list[i]
+                total_available = unused_selected_size + used_selected_size
+                
+                if total_available < total_needed:
+                    # Adjust by taking more from the larger pool
+                    deficit = total_needed - total_available
+                    if len(unused_nodes) - unused_selected_size >= deficit:
+                        unused_selected_size += deficit
+                    elif len(used_nodes) - used_selected_size >= deficit:
+                        used_selected_size += deficit
+                    else:
+                        # Not enough nodes available, sample what we can
+                        unused_selected_size = len(unused_nodes)
+                        used_selected_size = min(len(used_nodes), total_needed - unused_selected_size)
+                
+                # Randomly select nodes for the maximal hyperedge
+                unused_selected_nodes = random.sample(list(unused_nodes), unused_selected_size)
+                used_selected_nodes = random.sample(list(used_nodes), used_selected_size)
+                selected_nodes = list(unused_selected_nodes) + list(used_selected_nodes)
+                selected_nodes_set = frozenset(selected_nodes)  # Convert to frozenset for consistent comparison
         
         # Avoid adding repeating nodes and make sure the selected nodes are not a subset of any existing maximal hyperedge
         # Fixed logic: use OR instead of AND, and fix subset comparison
         while (selected_nodes_set in edge_to_exclude or any(selected_nodes_set.issubset(existing_edge) for existing_edge in maximal_edge_set)):
-            selected_nodes = random.sample(nodes, maximal_edge_size_list[i])
-            selected_nodes_set = frozenset(selected_nodes)
+            if i == 0:
+                selected_nodes = random.sample(nodes, maximal_edge_size_list[i])
+                selected_nodes_set = frozenset(selected_nodes)  # Convert to frozenset for consistent comparison
+            else:
+                # Handle the case when unused_nodes becomes empty
+                if len(unused_nodes) == 0:
+                    # All nodes are used, just sample from used_nodes
+                    selected_nodes = random.sample(list(used_nodes), maximal_edge_size_list[i])
+                    selected_nodes_set = frozenset(selected_nodes)
+                else:
+                    size_lst = range(1, maximal_edge_size_list[i])
+                    weights = []
+                    for size in size_lst:
+                        weights.append(1/size)
+                    # Determine the number of nodes to chosen from used and not used
+                    used_selected_size = random.choices(size_lst, weights=weights, k=1)[0]
+                    unused_selected_size = maximal_edge_size_list[i] - used_selected_size
+                    
+                    # Safety checks to prevent sampling more than available
+                    unused_selected_size = min(unused_selected_size, len(unused_nodes))
+                    used_selected_size = min(used_selected_size, len(used_nodes))
+                    
+                    # Ensure we have enough nodes total
+                    total_needed = maximal_edge_size_list[i]
+                    total_available = unused_selected_size + used_selected_size
+                    
+                    if total_available < total_needed:
+                        # Adjust by taking more from the larger pool
+                        deficit = total_needed - total_available
+                        if len(unused_nodes) - unused_selected_size >= deficit:
+                            unused_selected_size += deficit
+                        elif len(used_nodes) - used_selected_size >= deficit:
+                            used_selected_size += deficit
+                        else:
+                            # Not enough nodes available, sample what we can
+                            unused_selected_size = len(unused_nodes)
+                            used_selected_size = min(len(used_nodes), total_needed - unused_selected_size)
+                    
+                    # Randomly select nodes for the maximal hyperedge
+                    unused_selected_nodes = random.sample(list(unused_nodes), unused_selected_size)
+                    used_selected_nodes = random.sample(list(used_nodes), used_selected_size)
+                    selected_nodes = list(unused_selected_nodes) + list(used_selected_nodes)
+                    selected_nodes_set = frozenset(selected_nodes)  # Convert to frozenset for consistent comparison
             
         # Add the maximal hyperedge to the hypergraph
         H.add_edge(selected_nodes)
         maximal_edge_set.add(selected_nodes_set)
         edge_to_exclude.add(selected_nodes_set)
+        used_nodes.update(selected_nodes)
+        unused_nodes.difference_update(selected_nodes)
 
         # Generate the powerset of the selected nodes (possible edges to add for adjustment)
         tmp_list = powerset(selected_nodes, 2, len(selected_nodes) - 1)
@@ -800,5 +891,15 @@ def test_no_duplicate_edges():
 
 # Adjust Main function if needed
 if __name__ == "__main__":
-    print("Testing edge rewiring model generation...")
-    test_no_duplicate_edges()
+    # print("Testing edge rewiring model generation...")
+    # test_no_duplicate_edges()
+    H = model_generation_es(
+        es=0.04758,
+        approx_num_C=6936,  # Set high to allow target_num_edges to work
+        num_max_hyperedge=304,
+        num_node=516,
+        min_size=2,
+        max_size=None,
+        adjust_es=False,
+    )
+    print(xgi.number_connected_components(H))

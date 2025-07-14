@@ -44,8 +44,9 @@ def rewire_Alg1(H, min_size=2, max_size=None):
         if (len(set_missing) != 0) and (len(edges_remove) != 0):
             set_missing_list.append(set_missing)
             edge_remove_list.append(edges_remove)
+            # Change from len(set_missing)*len(edges_remove) to len(set_missing) b/c we're only considering missing_subface as condition of the loop
             weight.append(len(set_missing))
-    
+
     # Check if we have any candidates for rewiring
     if len(set_missing_list) == 0:
         print("❌ Warning: No rewiring possible")
