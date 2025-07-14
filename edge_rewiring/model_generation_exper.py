@@ -30,7 +30,6 @@ connected_components_lst = []
 simplicial_fraction_lst = []
 edit_simpliciality_lst = []
 face_edit_simpliciality_lst = []
-density_lst = []
 degree_count_average_lst = []
 degree_assortativity_lst = []
 num_node_lst = []
@@ -51,8 +50,6 @@ cumulative_stats = {
     "cumulative_edit_simpliciality_diff": 0,
     "face_edit_simpliciality_avg": 0,
     "face_edit_simpliciality_std": 0,
-    "density_avg": 0,
-    "density_std": 0,
     "degree_count_avg": 0,
     "degree_count_median": 0,
     "degree_assortativity_avg": 0,
@@ -85,7 +82,6 @@ def save_general_data(trial, es, stats, filename):
         f"simplicial_fraction: {stats['simplicial_fraction']:.5f}",
         f"edit_simpliciality: {stats['edit_simpliciality']:.5f}",
         f"face_edit_simpliciality: {stats['face_edit_simpliciality']:.5f}",
-        f"density: {stats['density']:.5f}",
         f"degree_count_average: {stats['degree_count_average']:.5f}",
         f"degree_assortativity: {stats['degree_assortativity']:.5f}",
         f"num_node: {stats['num_node']}",
@@ -115,8 +111,6 @@ def save_cumulative_data(trial, es, stats, filename):
         f"cumulative_edit_simpliciality_diff: {stats['cumulative_edit_simpliciality_diff']:.5f}",
         f"face_edit_simpliciality_avg: {stats['face_edit_simpliciality_avg']:.5f}",
         f"face_edit_simpliciality_std: {stats['face_edit_simpliciality_std']:.5f}",
-        f"density_avg: {stats['density_avg']:.5f}",
-        f"density_std: {stats['density_std']:.5f}",
         f"degree_count_avg: {stats['degree_count_avg']:.5f}",
         f"degree_count_median: {stats['degree_count_median']:.5f}",
         f"degree_assortativity_avg: {stats['degree_assortativity_avg']:.5f}",
@@ -142,9 +136,9 @@ def save_cumulative_data(trial, es, stats, filename):
         f.write("\n".join(lines) + "\n")
 
 
-def model_generation_es_exper(trial, es, approx_num_C, num_max_hyperedge, num_node, min_size, max_size, adjust_es):
+def model_generation_es_exper(trial, es, approx_num_C, num_max_hyperedge, num_node, min_size, max_size, adjust_es, compare_interval_smaller_case, compare_interval_bigger_case):
     global graph_lst, local_cluster_coefficients_average_lst, connected_components_lst, simplicial_fraction_lst, edit_simpliciality_lst, \
-        face_edit_simpliciality_lst, density_lst, degree_count_average_lst, degree_assortativity_lst, num_node_lst, num_edge_lst, \
+        face_edit_simpliciality_lst, degree_count_average_lst, degree_assortativity_lst, num_node_lst, num_edge_lst, \
         evaluation_time_lst, graph_generation_time_lst, cumulative_stats
     
     # Clear all global lists at the beginning of each experiment
@@ -154,7 +148,6 @@ def model_generation_es_exper(trial, es, approx_num_C, num_max_hyperedge, num_no
     simplicial_fraction_lst.clear()
     edit_simpliciality_lst.clear()
     face_edit_simpliciality_lst.clear()
-    density_lst.clear()
     degree_count_average_lst.clear()
     degree_assortativity_lst.clear()
     num_node_lst.clear()
@@ -178,7 +171,6 @@ def model_generation_es_exper(trial, es, approx_num_C, num_max_hyperedge, num_no
             "simplicial_fraction": 0,
             "edit_simpliciality": 0,
             "face_edit_simpliciality": 0,
-            "density": 0,
             "degree_count_average": 0,
             "degree_assortativity": 0,
             "num_node": 0,
@@ -188,7 +180,7 @@ def model_generation_es_exper(trial, es, approx_num_C, num_max_hyperedge, num_no
         }
         # graph generation time
         start_time = time.time()
-        H_es = model_generation_es(es, approx_num_C, num_max_hyperedge, num_node, min_size, max_size, adjust_es)
+        H_es = model_generation_es(es, approx_num_C, num_max_hyperedge, num_node, min_size, max_size, adjust_es, compare_interval_smaller_case, compare_interval_bigger_case)
         graph_lst.append(H_es)
         end_time = time.time()
         stats["graph_generation_time"] = end_time - start_time
@@ -218,14 +210,6 @@ def model_generation_es_exper(trial, es, approx_num_C, num_max_hyperedge, num_no
         # face edit simpliciality
         stats["face_edit_simpliciality"] = face_edit_simpliciality(H_es)
         face_edit_simpliciality_lst.append(stats["face_edit_simpliciality"])
-        # density
-        try:
-            stats["density"] = xgi.density(H_es, ignore_singletons=True)
-        except OverflowError:
-            # Handle the case where density calculation overflows due to large numbers
-            stats["density"] = float('nan')  # or 0, or some other default value
-            print(f"Warning: Density calculation overflowed for trial {i+1}, setting to NaN")
-        density_lst.append(stats["density"])
         # num node
         stats["num_node"] = H_es.num_nodes
         num_node_lst.append(stats["num_node"])
@@ -260,9 +244,6 @@ def model_generation_es_exper(trial, es, approx_num_C, num_max_hyperedge, num_no
     cumulative_stats["simplicial_fraction_avg"] = sum(simplicial_fraction_lst) / len(simplicial_fraction_lst) if len(simplicial_fraction_lst) > 1 else 0
     cumulative_stats["edit_simpliciality_avg"] = sum(edit_simpliciality_lst) / len(edit_simpliciality_lst) if len(edit_simpliciality_lst) > 1 else 0
     cumulative_stats["face_edit_simpliciality_avg"] = sum(face_edit_simpliciality_lst) / len(face_edit_simpliciality_lst) if len(face_edit_simpliciality_lst) > 1 else 0
-    # Filter out NaN values before calculating density statistics
-    valid_density_lst = [d for d in density_lst if not (isinstance(d, float) and math.isnan(d))]
-    cumulative_stats["density_avg"] = sum(valid_density_lst) / len(valid_density_lst) if len(valid_density_lst) > 0 else 0
     cumulative_stats["degree_count_avg"] = sum(degree_count_average_lst) / len(degree_count_average_lst) if len(degree_count_average_lst) > 1 else 0
     cumulative_stats["degree_assortativity_avg"] = sum(degree_assortativity_lst) / len(degree_assortativity_lst) if len(degree_assortativity_lst) > 1 else 0
     cumulative_stats["num_node_avg"] = sum(num_node_lst) / len(num_node_lst) if len(num_node_lst) > 1 else 0
@@ -276,7 +257,6 @@ def model_generation_es_exper(trial, es, approx_num_C, num_max_hyperedge, num_no
     cumulative_stats["simplicial_fraction_std"] = statistics.stdev(simplicial_fraction_lst) if len(simplicial_fraction_lst) > 1 else 0
     cumulative_stats["edit_simpliciality_std"] = statistics.stdev(edit_simpliciality_lst) if len(edit_simpliciality_lst) > 1 else 0
     cumulative_stats["face_edit_simpliciality_std"] = statistics.stdev(face_edit_simpliciality_lst) if len(face_edit_simpliciality_lst) > 1 else 0
-    cumulative_stats["density_std"] = statistics.stdev(valid_density_lst) if len(valid_density_lst) > 1 else 0
     cumulative_stats["degree_assortativity_std"] = statistics.stdev(degree_assortativity_lst) if len(degree_assortativity_lst) > 1 else 0
     cumulative_stats["num_node_std"] = statistics.stdev(num_node_lst) if len(num_node_lst) > 1 else 0
     cumulative_stats["num_edge_std"] = statistics.stdev(num_edge_lst) if len(num_edge_lst) > 1 else 0
