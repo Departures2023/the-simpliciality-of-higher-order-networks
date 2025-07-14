@@ -5,6 +5,7 @@ import time
 import numpy as np
 import random
 from model_generation import *
+import sys
 
 datasets = [
     "contact-primary-school",
@@ -26,11 +27,12 @@ def run_multiple_SIR_with_errorbands(
     num_node,
     gamma,
     num_graphs=10,
-    rho=0.1,
-    tmin=0,
-    tmax=100,
-    dt=1,
     ax=None, 
+    min_size=2,
+    max_size=None, 
+    adjust_es=False,
+    compare_interval_smaller_case=2,
+    compare_interval_bigger_case=2
 ):
     S_all, I_all, R_all = [], [], []
     t_vals = None  # to store time vector from first run
@@ -40,36 +42,36 @@ def run_multiple_SIR_with_errorbands(
         H = model_generation_es(
             es=es, 
             approx_num_C=approx_num_C, 
-            num_max_hyperedge=num_max_hyperedge,
+            num_max_hyperedge=num_max_hyperedge, 
             num_node=num_node, 
-            min_size=2, 
-            max_size=None, 
-            adjust_es=True
+            min_size=min_size,
+            max_size= max_size, 
+            adjust_es=adjust_es, 
+            compare_interval_smaller_case=compare_interval_smaller_case, 
+            compare_interval_bigger_case=compare_interval_bigger_case, 
         )
-
+        H.cleanup(singletons=True, multiedges=True, connected=True)
         es = edit_simpliciality(H)
-        print(f"es = {es}")
-
-        mean_degree = sum(dict(H.degree()).values()) / H.num_nodes
-        print(mean_degree)
-
-        tau = {k: 0.1 for k in xgi.unique_edge_sizes(H)}
-        t, S, I, R = hc.discrete_SIR(H, tau, gamma=gamma, rho=rho, tmin=tmin, tmax=tmax, dt=dt)
-
-        if t_vals is None:
-            t_vals = t  # save the time vector
         
+        print("es", edit_simpliciality(H))
+        print("num_nodes", H.num_nodes)
+        print("num_edges", H.num_edges)
+        print("num_maximal_edges", len(H.edges.maximal()))
+        print("xgi.number_connected_components(H1)", xgi.number_connected_components(H))
+
+        #max_size = 1.2*max(xgi.unique_edge_sizes(H))
+
+        tau = {i: 1 for i in xgi.unique_edge_sizes(H)}
+        t1, S, I, R = hc.discrete_SIR(H, tau, gamma, tmin=0, tmax=100, dt=1, rho=0.1)
+
         min_len = min(len(S), len(I), len(R))
         S_all.append(S[:min_len] / num_node)
         I_all.append(I[:min_len] / num_node)
         R_all.append(R[:min_len] / num_node)
 
         if t_vals is None:
-            t_vals = t[:min_len]
+            t_vals = t1[:min_len]
 
-    #print(f"Run {i+1}: Length of I = {len(I)}, S = {len(S)}, R = {len(R)}")
-
-        # After the for loop:
     min_len = min(len(arr) for arr in S_all)  # Find the minimum time series length
 
     # Trim all arrays to min_len
@@ -82,7 +84,6 @@ def run_multiple_SIR_with_errorbands(
     S_mean, S_std = np.mean(S_all, axis=0), np.std(S_all, axis=0)
     I_mean, I_std = np.mean(I_all, axis=0), np.std(I_all, axis=0)
     R_mean, R_std = np.mean(R_all, axis=0), np.std(R_all, axis=0)
-
 
     # Plotting
     if ax is None:
@@ -113,6 +114,7 @@ def SIR_original_graph(
 ):
     
     H = xgi.load_xgi_data(dataset)
+    H.cleanup(singletons=True, multiedges=True, connected=True)
     num_node = H.num_nodes
     tau = {i: 0.1 for i in xgi.unique_edge_sizes(H)}
     start = time.time()
