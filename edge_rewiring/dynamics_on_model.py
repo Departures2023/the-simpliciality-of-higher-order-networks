@@ -57,13 +57,13 @@ if __name__ == "__main__":
     # for es in es_list:
     #     dynamics_on_model(es, 9000, 300, 1000, 2, 11, True, 2, 2)
     dynamics_on_model(
-        es=0.827779,
-        approx_num_C=6620,  # Set high to allow target_num_edges to work
-        num_max_hyperedge=4862,
-        num_node=327,
+        es=0.2,
+        approx_num_C=5000,  # Set high to allow target_num_edges to work
+        num_max_hyperedge=200,
+        num_node=1000,
         min_size=2,
         max_size=None,
-        adjust_es=True,
-        compare_interval_smaller_case=40,
-        compare_interval_bigger_case=40,
+        adjust_es=False,
+        compare_interval_smaller_case=2,
+        compare_interval_bigger_case=2,
     )
