@@ -491,14 +491,14 @@ def final_edge_adjustment_es(H, edges, final_possible_edge_list, edge_to_exclude
                     curr_es = edit_simpliciality(H, min_size=2)
                 print("curr_es:", curr_es)
                 # if curr_es >= expected_es:
-                if (curr_es >= expected_es) or (abs(curr_es - expected_es) < 0.002):
+                if (curr_es >= expected_es) or (abs(curr_es - expected_es) < 0.0002):
                     return H
     elif curr_es > expected_es:
         # Remove edges from the hypergraph untul the edit simpliciality is equal to the expected value
         edge_id_map = {}
         for edge_id, edge_members in H.edges.members(dtype=dict).items():
             edge_id_map[frozenset(edge_members)] = edge_id
-        while ((curr_es > expected_es) or (abs(curr_es - expected_es) > 0.002)) and len(edges) > 0:
+        while ((curr_es > expected_es) or (abs(curr_es - expected_es) > 0.0002)) and len(edges) > 0:
             tmp_remove_idx = random.randint(0, len(edges) - 1)
             tmp_remove = edges[tmp_remove_idx]
             H.remove_edge(edge_id_map[frozenset(tmp_remove)])
