@@ -14,7 +14,7 @@ import xgi
 from fractions import Fraction
 import numpy as np
 
-from sod.simpliciality import edit_simpliciality, face_edit_simpliciality, simplicial_fraction
+from sod.simpliciality import edit_simpliciality, face_edit_simpliciality, simplicial_fraction, new_edit_simpliciality
 from sod.trie import Trie
 from sod.simpliciality.utilities import missing_subfaces, powerset
 
@@ -215,13 +215,13 @@ def model_generation_es(es, approx_num_C, num_max_hyperedge, num_node, min_size=
         print(f"Adjusting approx_num_C to {num_max_hyperedge}")
         approx_num_C = num_max_hyperedge
         
-    # Calculate the maximum possible combinations for the given parameters
-    max_possible_C = approximate_C_upperbound(num_node, min_size, max_size, num_max_hyperedge)
+    # # Calculate the maximum possible combinations for the given parameters
+    # max_possible_C = approximate_C_upperbound(num_node, min_size, max_size, num_max_hyperedge)
     
-    if approx_num_C > max_possible_C:
-        print(f"❌ Warning: approx_num_C ({approx_num_C}) is larger than maximum possible combinations ({max_possible_C})")
-        print(f"Adjusting approx_num_C to {max_possible_C}")
-        approx_num_C = max_possible_C
+    # if approx_num_C > max_possible_C:
+    #     print(f"❌ Warning: approx_num_C ({approx_num_C}) is larger than maximum possible combinations ({max_possible_C})")
+    #     print(f"Adjusting approx_num_C to {max_possible_C}")
+    #     approx_num_C = max_possible_C
 
     # |C| of the graph
     C_total = int(approx_num_C)
@@ -450,15 +450,23 @@ def model_generation_es(es, approx_num_C, num_max_hyperedge, num_node, min_size=
         final_possible_edge_list, 
         edge_to_exclude=edge_to_exclude,
         expected_es=es,
+        adjust_es=adjust_es,
         compare_interval_smaller_case=compare_interval_smaller_case,
         compare_interval_bigger_case=compare_interval_bigger_case
     )
+    print("H.num_nodes", H.num_nodes)
+    print("H.num_edges", H.num_edges)
+    print("H.num_edges", len(H.edges.filterby("size", 2, "geq").members()))
+    print("len(H.edges.maximal())", len(H.edges.maximal().filterby("size", 2, "geq").members()))
     return H
     
 # Function to slightly adjust the hypergraph to match the expected edit simpliciality
-def final_edge_adjustment_es(H, edges, final_possible_edge_list, edge_to_exclude, expected_es, compare_interval_smaller_case = 2, compare_interval_bigger_case = 2):
+def final_edge_adjustment_es(H, edges, final_possible_edge_list, edge_to_exclude, expected_es, adjust_es=False, compare_interval_smaller_case = 2, compare_interval_bigger_case = 2):
     # Calculate the current edit simpliciality
-    curr_es = edit_simpliciality(H, min_size=2)
+    if adjust_es:
+        curr_es = new_edit_simpliciality(H, min_size=2)
+    else:
+        curr_es = edit_simpliciality(H, min_size=2)
     # Use count to increase efficiency
     count = 0
     # Split to cases to add or remove edges respectively
@@ -477,7 +485,11 @@ def final_edge_adjustment_es(H, edges, final_possible_edge_list, edge_to_exclude
             # Check if the edit simpliciality is close to the expected value only every 2 iterations
             if count == compare_interval_smaller_case:
                 count = 0
-                curr_es = edit_simpliciality(H, min_size=2)
+                if adjust_es:
+                    curr_es = new_edit_simpliciality(H, min_size=2)
+                else:
+                    curr_es = edit_simpliciality(H, min_size=2)
+                print("curr_es:", curr_es)
                 # if curr_es >= expected_es:
                 if (curr_es >= expected_es) or (abs(curr_es - expected_es) < 0.002):
                     return H
@@ -495,7 +507,11 @@ def final_edge_adjustment_es(H, edges, final_possible_edge_list, edge_to_exclude
             count += 1
             if count == compare_interval_bigger_case:
                 count = 0
-                curr_es = edit_simpliciality(H, min_size=2)
+                if adjust_es:
+                    curr_es = new_edit_simpliciality(H, min_size=2)
+                else:
+                    curr_es = edit_simpliciality(H, min_size=2)
+                print("curr_es:", curr_es)
         return H
     else:
         print(f"❌ Warning: Input parameters are not good, please check the input parameters")

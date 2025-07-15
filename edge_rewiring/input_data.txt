@@ -1,0 +1,30 @@
+contact-primary-school:         
+        es=0.91752,
+        approx_num_C=10420,  # Set high to allow target_num_edges to work
+        num_max_hyperedge=8010,
+        num_node=242,
+        min_size=2,
+        max_size=None,
+        adjust_es=False,
+        compare_interval_smaller_case=40,
+        compare_interval_bigger_case=40,
+
+new_contact-primary-school: 
+        es=0.80432,
+        approx_num_C=11200,  # Set high to allow target_num_edges to work
+        num_max_hyperedge=8010,
+        num_node=242,
+        min_size=2,
+        max_size=None,
+        adjust_es=True,
+        compare_interval_smaller_case=40,
+        compare_interval_bigger_case=40,
+
+diseasome:
+        es=0.04538,
+        approx_num_C=4600,  # Set high to allow target_num_edges to work
+        num_max_hyperedge=292,
+        num_node=516,
+        min_size=2,
+        max_size=None,
+        adjust_es=False,
