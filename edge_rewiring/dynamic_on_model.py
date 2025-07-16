@@ -62,7 +62,10 @@ def run_multiple_SIR_with_errorbands(
         mean_degree = sum(dict(H.degree()).values()) / H.num_nodes
         print(mean_degree)
 
-        tau = {k: 1/k for k in xgi.unique_edge_sizes(H)}
+        tau = {k: 1/(k) * es * 50 for k in xgi.unique_edge_sizes(H)}
+        
+        print(f"tau = {tau}")
+        
         t, S, I, R = hc.discrete_SIR(H, tau, gamma=gamma, rho=rho, tmin=tmin, tmax=tmax, dt=dt)
 
         if t_vals is None:
@@ -113,7 +116,7 @@ def run_multiple_SIR_with_errorbands(
     ax.grid(True)
     fig.tight_layout()
 
-    return fig, ax
+    return fig, ax, tau
 
 def SIR_original_graph(
     dataset,

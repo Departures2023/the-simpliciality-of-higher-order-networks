@@ -100,7 +100,7 @@ def generate_C_distribution(min_size, max_size, C_avg, std, num_max_hyperedge, t
     C_distribution = np.clip(C_distribution, min_size, max_size)
     C_distribution.sort()
     
-    print("C_distribution:", C_distribution)
+    #print("C_distribution:", C_distribution)
 
     # Adjust the sum to match target_sum using lognormal PDF for weighting
     excess = C_distribution.sum() - target_sum
@@ -148,7 +148,7 @@ def generate_C_distribution(min_size, max_size, C_avg, std, num_max_hyperedge, t
                 selected_idx = random.choice(increasable_indices)
             
             C_distribution[selected_idx] += 1
-    print("C_distribution:", C_distribution)
+    #print("C_distribution:", C_distribution)
     return C_distribution
 
 
@@ -489,7 +489,7 @@ def final_edge_adjustment_es(H, edges, final_possible_edge_list, edge_to_exclude
                     curr_es = new_edit_simpliciality(H, min_size=2)
                 else:
                     curr_es = edit_simpliciality(H, min_size=2)
-                print("curr_es:", curr_es)
+                #print("curr_es:", curr_es)
                 # if curr_es >= expected_es:
                 if (curr_es >= expected_es) or (abs(curr_es - expected_es) < 0.0002):
                     return H
@@ -511,7 +511,7 @@ def final_edge_adjustment_es(H, edges, final_possible_edge_list, edge_to_exclude
                     curr_es = new_edit_simpliciality(H, min_size=2)
                 else:
                     curr_es = edit_simpliciality(H, min_size=2)
-                print("curr_es:", curr_es)
+                #print("curr_es:", curr_es)
         return H
     else:
         print(f"❌ Warning: Input parameters are not good, please check the input parameters")
