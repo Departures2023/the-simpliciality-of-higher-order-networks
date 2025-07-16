@@ -25,8 +25,13 @@ def dynamics_on_model(es, approx_num_C, num_max_hyperedge, num_node, min_size=2,
         compare_interval_smaller_case=compare_interval_smaller_case, 
         compare_interval_bigger_case=compare_interval_bigger_case, 
     )
-    H = xgi.load_xgi_data("diseasome")
-    H.cleanup(singletons=True, multiedges=True, connected=True)
+    print("es", edit_simpliciality(H))
+    print("num_nodes", H.num_nodes)
+    print("num_edges", H.num_edges)
+    print("num_maximal_edges", len(H.edges.maximal()))
+    print("xgi.number_connected_components(H1)", xgi.number_connected_components(H))
+    # H = xgi.load_xgi_data("contact-primary-school")
+    H.cleanup(connected=True)
     print("es", edit_simpliciality(H))
     print("num_nodes", H.num_nodes)
     print("num_edges", H.num_edges)
@@ -52,11 +57,13 @@ if __name__ == "__main__":
     # for es in es_list:
     #     dynamics_on_model(es, 9000, 300, 1000, 2, 11, True, 2, 2)
     dynamics_on_model(
-        es=0.04758,
-        approx_num_C=4550,  # Set high to allow target_num_edges to work
-        num_max_hyperedge=304,
-        num_node=516,
+        es=0.2,
+        approx_num_C=5000,  # Set high to allow target_num_edges to work
+        num_max_hyperedge=200,
+        num_node=1000,
         min_size=2,
         max_size=None,
         adjust_es=False,
+        compare_interval_smaller_case=2,
+        compare_interval_bigger_case=2,
     )

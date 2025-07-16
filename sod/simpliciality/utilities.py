@@ -102,15 +102,14 @@ def max_number_of_subfaces(min_size, max_size):
 
 
 def simplicial_assortativity(H, metric, weighted=False):
-    match metric:
-        case "sf":
-            s = H.nodes.local_simplicial_fraction.asnumpy()
-        case "es":
-            s = H.nodes.local_edit_simpliciality.asnumpy()
-        case "fes":
-            s = H.nodes.local_face_edit_simpliciality.asnumpy()
-        case _:
-            raise Exception(f"{metric} is an invalid metric!")
+    if metric == "sf":
+        s = H.nodes.local_simplicial_fraction.asnumpy()
+    elif metric == "es":
+        s = H.nodes.local_edit_simpliciality.asnumpy()
+    elif metric == "fes":
+        s = H.nodes.local_face_edit_simpliciality.asnumpy()
+    else:
+        raise Exception(f"{metric} is an invalid metric!")
 
     A = xgi.adjacency_matrix(H, sparse=False, weighted=True)
     n = A.shape[0]

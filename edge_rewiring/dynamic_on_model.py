@@ -38,22 +38,31 @@ def run_multiple_SIR_with_errorbands(
     for i in range(num_graphs):
         print(f"Simulation {i+1}/{num_graphs}")
         H = model_generation_es(
-            es=es, 
-            approx_num_C=approx_num_C, 
-            num_max_hyperedge=num_max_hyperedge,
-            num_node=num_node, 
-            min_size=2, 
-            max_size=None, 
-            adjust_es=True
+            # es=es, 
+            # approx_num_C=approx_num_C, 
+            # num_max_hyperedge=num_max_hyperedge,
+            # num_node=num_node, 
+            # min_size=2, 
+            # max_size=None, 
+            # adjust_es=True
+            es=0.00331975,
+            approx_num_C=6500,  # Set high to allow target_num_edges to work
+            num_max_hyperedge=292,
+            num_node=516,
+            min_size=2,
+            max_size=None,
+            adjust_es=True,
+            compare_interval_smaller_case=2,
+            compare_interval_bigger_case=2,
         )
-
+        H.cleanup(connected=True)
         es = edit_simpliciality(H)
         print(f"es = {es}")
 
         mean_degree = sum(dict(H.degree()).values()) / H.num_nodes
         print(mean_degree)
 
-        tau = {k: 0.1 for k in xgi.unique_edge_sizes(H)}
+        tau = {k: 1/k for k in xgi.unique_edge_sizes(H)}
         t, S, I, R = hc.discrete_SIR(H, tau, gamma=gamma, rho=rho, tmin=tmin, tmax=tmax, dt=dt)
 
         if t_vals is None:
@@ -113,8 +122,9 @@ def SIR_original_graph(
 ):
     
     H = xgi.load_xgi_data(dataset)
+    H.cleanup(connected=True)
     num_node = H.num_nodes
-    tau = {i: 0.1 for i in xgi.unique_edge_sizes(H)}
+    tau = {i: 1/i for i in xgi.unique_edge_sizes(H)}
     start = time.time()
     t1, S1, I1, R1 = hc.discrete_SIR(H, tau, gamma, tmin=0, tmax=100, dt=1, rho=0.1)
     print(time.time() - start)
@@ -139,10 +149,11 @@ def SIR_original_graph(
 # Example usage:
 if __name__ == "__main__":
     dataset = datasets[int(sys.argv[1])]
-    es = float(sys.argv[2])
+    es = 0.80432 #float(sys.argv[2])
     approx_num_C = int(sys.argv[3])
     num_max_hyperedge = int(sys.argv[4])
     num_node = int(sys.argv[5])
+    dataset = "diseasome"
     gamma = 0.05
 
     print(f"Running SIR on dataset: {dataset}")
@@ -153,7 +164,7 @@ if __name__ == "__main__":
     SIR_original_graph(dataset, gamma, ax=axes[1])
 
     H = xgi.load_xgi_data(dataset)
-    es = round(edit_simpliciality(H), 2)
+    es = 0.00331975
     fig.suptitle(dataset + "  -  es = " + str(es))
 
     plt.tight_layout(rect=[0, 0.03, 1, 0.95])

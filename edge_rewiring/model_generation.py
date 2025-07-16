@@ -14,7 +14,7 @@ import xgi
 from fractions import Fraction
 import numpy as np
 
-from sod.simpliciality import edit_simpliciality, face_edit_simpliciality, simplicial_fraction
+from sod.simpliciality import edit_simpliciality, face_edit_simpliciality, simplicial_fraction, new_edit_simpliciality
 from sod.trie import Trie
 from sod.simpliciality.utilities import missing_subfaces, powerset
 
@@ -88,8 +88,8 @@ def generate_C_distribution(min_size, max_size, C_avg, std, num_max_hyperedge, t
     # Use lognormal distribution which is better for positive values
     
     # For lognormal distribution with desired mean C_avg:
-    # mean_lognormal = exp(mu + sigma^2/2)
-    # So: mu = ln(mean_lognormal) - sigma^2/2
+    # mean_lognormal = exp(mu + std^2/2)
+    # So: mu = ln(mean_lognormal) - std^2/2
     mu = np.log(C_avg) - (std**2 / 2)
     
     # Generate lognormal distribution
@@ -98,10 +98,11 @@ def generate_C_distribution(min_size, max_size, C_avg, std, num_max_hyperedge, t
     # Round to integers and clip to bounds
     C_distribution = np.round(C_distribution).astype(int)
     C_distribution = np.clip(C_distribution, min_size, max_size)
+    C_distribution.sort()
     
     print("C_distribution:", C_distribution)
 
-    # Adjust the sum to match target_sum
+    # Adjust the sum to match target_sum using lognormal PDF for weighting
     excess = C_distribution.sum() - target_sum
     print("excess:", excess)
     
@@ -111,8 +112,21 @@ def generate_C_distribution(min_size, max_size, C_avg, std, num_max_hyperedge, t
             reducible_indices = [i for i in range(num_max_hyperedge) if C_distribution[i] > min_size]
             if len(reducible_indices) == 0:
                 break
-            idx = random.choice(reducible_indices)
-            C_distribution[idx] -= 1
+                
+            # Calculate PDF values for reducible elements
+            reducible_values = C_distribution[reducible_indices]
+            pdf_values = scipy.stats.lognorm.pdf(reducible_values, s=std, scale=np.exp(mu))
+            
+            # lower PDF = higher chance of being selected for reduction
+            if np.sum(pdf_values) > 0:
+                inverse_weights = 1.0 / (pdf_values + 1e-10)  # Add small epsilon to avoid division by zero
+                weights = inverse_weights / np.sum(inverse_weights)
+                selected_idx = np.random.choice(reducible_indices, p=weights)
+            else:
+                # Fallback to random if all PDFs are zero
+                selected_idx = random.choice(reducible_indices)
+            
+            C_distribution[selected_idx] -= 1
             
     elif excess < 0:
         # Increase values that are below maximum
@@ -120,9 +134,21 @@ def generate_C_distribution(min_size, max_size, C_avg, std, num_max_hyperedge, t
             increasable_indices = [i for i in range(num_max_hyperedge) if C_distribution[i] < max_size]
             if len(increasable_indices) == 0:
                 break
-            idx = random.choice(increasable_indices)
-            C_distribution[idx] += 1
-    
+                
+            # Calculate PDF values for increasable elements  
+            increasable_values = C_distribution[increasable_indices] + 1  # +1 because we're considering the increased value
+            pdf_values = scipy.stats.lognorm.pdf(increasable_values, s=std, scale=np.exp(mu))
+            
+            # higher PDF = higher chance of being selected for increase
+            if np.sum(pdf_values) > 0:
+                weights = pdf_values / np.sum(pdf_values)
+                selected_idx = np.random.choice(increasable_indices, p=weights)
+            else:
+                # Fallback to random if all PDFs are zero
+                selected_idx = random.choice(increasable_indices)
+            
+            C_distribution[selected_idx] += 1
+    print("C_distribution:", C_distribution)
     return C_distribution
 
 
@@ -189,13 +215,13 @@ def model_generation_es(es, approx_num_C, num_max_hyperedge, num_node, min_size=
         print(f"Adjusting approx_num_C to {num_max_hyperedge}")
         approx_num_C = num_max_hyperedge
         
-    # Calculate the maximum possible combinations for the given parameters
-    max_possible_C = approximate_C_upperbound(num_node, min_size, max_size, num_max_hyperedge)
+    # # Calculate the maximum possible combinations for the given parameters
+    # max_possible_C = approximate_C_upperbound(num_node, min_size, max_size, num_max_hyperedge)
     
-    if approx_num_C > max_possible_C:
-        print(f"❌ Warning: approx_num_C ({approx_num_C}) is larger than maximum possible combinations ({max_possible_C})")
-        print(f"Adjusting approx_num_C to {max_possible_C}")
-        approx_num_C = max_possible_C
+    # if approx_num_C > max_possible_C:
+    #     print(f"❌ Warning: approx_num_C ({approx_num_C}) is larger than maximum possible combinations ({max_possible_C})")
+    #     print(f"Adjusting approx_num_C to {max_possible_C}")
+    #     approx_num_C = max_possible_C
 
     # |C| of the graph
     C_total = int(approx_num_C)
@@ -224,13 +250,13 @@ def model_generation_es(es, approx_num_C, num_max_hyperedge, num_node, min_size=
     # Calculate the average number of induced hyperedges
     C_avg = C_total / num_max_hyperedge
     if es < 0.15:
-        std = 0.5
-    elif es < 0.5:
-        std = 1
-    elif es < 0.85:
-        std = 2
-    else:
         std = 3
+    elif es < 0.5:
+        std = 2
+    elif es < 0.85:
+        std = 1
+    else:
+        std = 0.5
     # Print statements for debugging
     # print("edge_total:", edge_total)
     # print("C_total:", C_total)
@@ -424,15 +450,23 @@ def model_generation_es(es, approx_num_C, num_max_hyperedge, num_node, min_size=
         final_possible_edge_list, 
         edge_to_exclude=edge_to_exclude,
         expected_es=es,
+        adjust_es=adjust_es,
         compare_interval_smaller_case=compare_interval_smaller_case,
         compare_interval_bigger_case=compare_interval_bigger_case
     )
+    print("H.num_nodes", H.num_nodes)
+    print("H.num_edges", H.num_edges)
+    print("H.num_edges", len(H.edges.filterby("size", 2, "geq").members()))
+    print("len(H.edges.maximal())", len(H.edges.maximal().filterby("size", 2, "geq").members()))
     return H
     
 # Function to slightly adjust the hypergraph to match the expected edit simpliciality
-def final_edge_adjustment_es(H, edges, final_possible_edge_list, edge_to_exclude, expected_es, compare_interval_smaller_case = 2, compare_interval_bigger_case = 2):
+def final_edge_adjustment_es(H, edges, final_possible_edge_list, edge_to_exclude, expected_es, adjust_es=False, compare_interval_smaller_case = 2, compare_interval_bigger_case = 2):
     # Calculate the current edit simpliciality
-    curr_es = edit_simpliciality(H, min_size=2)
+    if adjust_es:
+        curr_es = new_edit_simpliciality(H, min_size=2)
+    else:
+        curr_es = edit_simpliciality(H, min_size=2)
     # Use count to increase efficiency
     count = 0
     # Split to cases to add or remove edges respectively
@@ -451,16 +485,20 @@ def final_edge_adjustment_es(H, edges, final_possible_edge_list, edge_to_exclude
             # Check if the edit simpliciality is close to the expected value only every 2 iterations
             if count == compare_interval_smaller_case:
                 count = 0
-                curr_es = edit_simpliciality(H, min_size=2)
+                if adjust_es:
+                    curr_es = new_edit_simpliciality(H, min_size=2)
+                else:
+                    curr_es = edit_simpliciality(H, min_size=2)
+                print("curr_es:", curr_es)
                 # if curr_es >= expected_es:
-                if (curr_es >= expected_es) or (abs(curr_es - expected_es) < 0.002):
+                if (curr_es >= expected_es) or (abs(curr_es - expected_es) < 0.0002):
                     return H
     elif curr_es > expected_es:
         # Remove edges from the hypergraph untul the edit simpliciality is equal to the expected value
         edge_id_map = {}
         for edge_id, edge_members in H.edges.members(dtype=dict).items():
             edge_id_map[frozenset(edge_members)] = edge_id
-        while ((curr_es > expected_es) or (abs(curr_es - expected_es) > 0.002)) and len(edges) > 0:
+        while ((curr_es > expected_es) or (abs(curr_es - expected_es) > 0.0002)) and len(edges) > 0:
             tmp_remove_idx = random.randint(0, len(edges) - 1)
             tmp_remove = edges[tmp_remove_idx]
             H.remove_edge(edge_id_map[frozenset(tmp_remove)])
@@ -469,7 +507,11 @@ def final_edge_adjustment_es(H, edges, final_possible_edge_list, edge_to_exclude
             count += 1
             if count == compare_interval_bigger_case:
                 count = 0
-                curr_es = edit_simpliciality(H, min_size=2)
+                if adjust_es:
+                    curr_es = new_edit_simpliciality(H, min_size=2)
+                else:
+                    curr_es = edit_simpliciality(H, min_size=2)
+                print("curr_es:", curr_es)
         return H
     else:
         print(f"❌ Warning: Input parameters are not good, please check the input parameters")

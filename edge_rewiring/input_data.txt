@@ -1,0 +1,93 @@
+################################################################################
+contact-primary-school dataset info:
+        H1_old_es 0.9175213057922866
+        H1_new_es 0.8043180260452365
+        H1.num_nodes 242
+        H1.num_edges 12704
+        len(H1.edges.maximal()) 8010
+        xgi.number_connected_components(H1) 1 
+
+
+new_contact-primary-school parameter: 
+        es=0.80432,
+        approx_num_C=11200,  # Set high to allow target_num_edges to work
+        num_max_hyperedge=8010,
+        num_node=242,
+        min_size=2,
+        max_size=None,
+        adjust_es=True,
+        compare_interval_smaller_case=40,
+        compare_interval_bigger_case=40,
+################################################################################
+
+
+
+################################################################################
+contact-high-school dataset info:
+        H1_old_es 0.9270722162931341
+        H1_new_es 0.8277793335200224
+        H1.num_nodes 327
+        H1.num_edges 7818
+        len(H1.edges.maximal()) 4862
+        xgi.number_connected_components(H1) 1
+
+
+new_contact-high-school parameter: 
+        es=0.827779,
+        approx_num_C=6620,  # Set high to allow target_num_edges to work
+        num_max_hyperedge=4862,
+        num_node=327,
+        min_size=2,
+        max_size=None,
+        adjust_es=True,
+        compare_interval_smaller_case=40,
+        compare_interval_bigger_case=40,
+################################################################################
+
+
+
+################################################################################
+hospital-lyon dataset info:
+        H1_old_es 0.9544740973312402
+        H1_new_es 0.89568345323741
+        H1.num_nodes 75
+        H1.num_edges 1824
+        len(H1.edges.maximal()) 1077
+        xgi.number_connected_components(H1) 1
+
+
+new_hospital-lyon parameter: 
+        es=0.895683,
+        approx_num_C=1450,  # Set high to allow target_num_edges to work
+        num_max_hyperedge=1077,
+        num_node=75,
+        min_size=2,
+        max_size=None,
+        adjust_es=True,
+        compare_interval_smaller_case=20,
+        compare_interval_bigger_case=20,
+################################################################################
+
+
+
+################################################################################
+diseasome dataset info:
+        H1_old_es 0.04538228067639832
+        H1_new_es 0.0033197525275388564
+        H1.num_nodes 516
+        H1.num_edges 314
+        len(H1.edges.maximal()) 292
+        xgi.number_connected_components(H1) 1
+
+
+diseasome parameter: 
+        es=0.00331975,
+        approx_num_C=6500,  # Set high to allow target_num_edges to work
+        num_max_hyperedge=292,
+        num_node=516,
+        min_size=2,
+        max_size=None,
+        adjust_es=True,
+        compare_interval_smaller_case=2,
+        compare_interval_bigger_case=2,
+################################################################################
