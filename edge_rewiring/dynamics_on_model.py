@@ -25,14 +25,23 @@ def dynamics_on_model(es, approx_num_C, num_max_hyperedge, num_node, min_size=2,
         compare_interval_smaller_case=compare_interval_smaller_case, 
         compare_interval_bigger_case=compare_interval_bigger_case, 
     )
-    print("es", edit_simpliciality(H))
+    if adjust_es:
+        curr_es = new_edit_simpliciality(H, min_size=2)
+    else:
+        curr_es = edit_simpliciality(H, min_size=2)
+    print("curr_es:", curr_es)
     print("num_nodes", H.num_nodes)
     print("num_edges", H.num_edges)
     print("num_maximal_edges", len(H.edges.maximal()))
     print("xgi.number_connected_components(H1)", xgi.number_connected_components(H))
+    print("H.edges.members()", H.edges.members())
     # H = xgi.load_xgi_data("contact-primary-school")
     H.cleanup(connected=True)
-    print("es", edit_simpliciality(H))
+    if adjust_es:
+        curr_es = new_edit_simpliciality(H, min_size=2)
+    else:
+        curr_es = edit_simpliciality(H, min_size=2)
+    print("curr_es:", curr_es)
     print("num_nodes", H.num_nodes)
     print("num_edges", H.num_edges)
     print("num_maximal_edges", len(H.edges.maximal()))
@@ -58,12 +67,12 @@ if __name__ == "__main__":
     #     dynamics_on_model(es, 9000, 300, 1000, 2, 11, True, 2, 2)
     dynamics_on_model(
         es=0.2,
-        approx_num_C=5000,  # Set high to allow target_num_edges to work
-        num_max_hyperedge=200,
-        num_node=1000,
+        approx_num_C=300,  # Set high to allow target_num_edges to work
+        num_max_hyperedge=25,
+        num_node=2000,
         min_size=2,
         max_size=None,
-        adjust_es=False,
-        compare_interval_smaller_case=2,
-        compare_interval_bigger_case=2,
+        adjust_es=True,
+        compare_interval_smaller_case=1,
+        compare_interval_bigger_case=1,
     )
