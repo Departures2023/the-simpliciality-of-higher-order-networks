@@ -31,7 +31,7 @@ if __name__ == "__main__":
             num_max_hyperedge,  #num_max_hyperedge,
             num_node,  #num_node, 
             0.05, #gamma,
-            num_graphs=100,
+            num_graphs=10,
             rho=0.1,
             tmin=0,
             tmax=100,

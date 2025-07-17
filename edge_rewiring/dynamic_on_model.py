@@ -45,10 +45,10 @@ def run_multiple_SIR_with_errorbands(
             # min_size=2, 
             # max_size=None, 
             # adjust_es=True
-            es=0.00331975,
-            approx_num_C=6500,  # Set high to allow target_num_edges to work
-            num_max_hyperedge=292,
-            num_node=516,
+            es,
+            approx_num_C,  # Set high to allow target_num_edges to work
+            num_max_hyperedge,
+            num_node,
             min_size=2,
             max_size=None,
             adjust_es=True,
@@ -56,13 +56,13 @@ def run_multiple_SIR_with_errorbands(
             compare_interval_bigger_case=2,
         )
         H.cleanup(connected=True)
-        es = edit_simpliciality(H)
-        print(f"es = {es}")
+        es = new_edit_simpliciality(H)
+        print(f"es = {es}， nodes = {H.num_nodes}, edges = {H.num_edges}")
 
         mean_degree = sum(dict(H.degree()).values()) / H.num_nodes
         print(mean_degree)
 
-        tau = {k: 1/(k) * es * 50 for k in xgi.unique_edge_sizes(H)}
+        tau = {k: 1/(k) * es for k in xgi.unique_edge_sizes(H)}
         
         print(f"tau = {tau}")
         
