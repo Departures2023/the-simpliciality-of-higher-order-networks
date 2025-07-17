@@ -100,7 +100,7 @@ def generate_C_distribution(min_size, max_size, C_avg, std, num_max_hyperedge, t
     C_distribution = np.clip(C_distribution, min_size, max_size)
     C_distribution.sort()
     
-    print("C_distribution:", C_distribution)
+    #print("C_distribution:", C_distribution)
 
     # Adjust the sum to match target_sum using lognormal PDF for weighting
     excess = C_distribution.sum() - target_sum
@@ -134,7 +134,6 @@ def generate_C_distribution(min_size, max_size, C_avg, std, num_max_hyperedge, t
             increasable_indices = [i for i in range(num_max_hyperedge) if C_distribution[i] < max_size]
             if len(increasable_indices) == 0:
                 break
-                
             # Calculate PDF values for increasable elements  
             increasable_values = C_distribution[increasable_indices] + 1  # +1 because we're considering the increased value
             pdf_values = scipy.stats.lognorm.pdf(increasable_values, s=std, scale=np.exp(mu))
@@ -148,7 +147,7 @@ def generate_C_distribution(min_size, max_size, C_avg, std, num_max_hyperedge, t
                 selected_idx = random.choice(increasable_indices)
             
             C_distribution[selected_idx] += 1
-    print("C_distribution:", C_distribution)
+    #print("C_distribution:", C_distribution)
     return C_distribution
 
 
@@ -275,7 +274,7 @@ def model_generation_es(es, approx_num_C, num_max_hyperedge, num_node, min_size=
         target_sum=C_total
     )
     # Print statements for debugging
-    print("C_distribution:", C_distribution)
+    #print("C_distribution:", C_distribution)
     
     # Generate the distribution of numbers of edges actually connected
     edge_distribution  = generate_edge_distribution(
