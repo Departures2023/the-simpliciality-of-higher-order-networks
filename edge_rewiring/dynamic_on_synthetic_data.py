@@ -6,36 +6,33 @@ import numpy as np
 import random
 from model_generation import *
 import dynamic_on_model as  dom
-
-
+    
 if __name__ == "__main__":
     fig, axes = plt.subplots(2, 4, figsize=(16, 6))
     axes = axes.flatten()
-    num_max_hyperedge = 100
+    num_max_hyperedge = 2000
     num_node = 1000
-    num_edges = 1000
-    # approx_num_C = 6500  # Set high to allow target_num_edges to work
-    # es = 0.00331975
-    sum = 0
+    num_edges = 3000
+    approx_num_C = 13857  # Set high to allow target_num_edges to work
+    gamma = 0.05
+    '''sum = 0
+    
     for es in [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8]: 
         sum  += (num_edges - num_max_hyperedge + es * num_max_hyperedge) / es 
         
-    approx_num_C = int(sum / 8) 
+    approx_num_C = int(sum / 8) '''
     
     for es in [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8]:      
         idx = int(es * 10 - 1)  
-            
+        num_edges = idx * 1000
         dom.run_multiple_SIR_with_errorbands(
             es,  
-            approx_num_C, #approx_num_C,
-            num_max_hyperedge,  #num_max_hyperedge,
-            num_node,  #num_node, 
-            0.05, #gamma,
+            approx_num_C, 
+            num_max_hyperedge, 
+            num_node,
+            gamma, 
             num_graphs=10,
-            rho=0.1,
-            tmin=0,
-            tmax=100,
-            dt=1,
+            colors = ["#00B388","#DA291C", "#418FDF"],
             ax = axes[idx])
         axes[idx].set_title(f"es = {es}", fontsize=12)
     

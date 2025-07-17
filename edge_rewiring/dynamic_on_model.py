@@ -25,6 +25,7 @@ def run_multiple_SIR_with_errorbands(
     num_max_hyperedge, 
     num_node,
     gamma,
+    colors,
     num_graphs=10,
     rho=0.1,
     tmin=0,
@@ -38,34 +39,22 @@ def run_multiple_SIR_with_errorbands(
     for i in range(num_graphs):
         print(f"Simulation {i+1}/{num_graphs}")
         H = model_generation_es(
-            # es=es, 
-            # approx_num_C=approx_num_C, 
-            # num_max_hyperedge=num_max_hyperedge,
-            # num_node=num_node, 
-            # min_size=2, 
-            # max_size=None, 
-            # adjust_es=True
-            es,
-            approx_num_C,  # Set high to allow target_num_edges to work
-            num_max_hyperedge,
-            num_node,
-            min_size=2,
-            max_size=None,
-            adjust_es=True,
-            compare_interval_smaller_case=2,
-            compare_interval_bigger_case=2,
+            es=es, 
+            approx_num_C=approx_num_C, 
+            num_max_hyperedge=num_max_hyperedge,
+            num_node=num_node, 
+            min_size=2, 
+            max_size=None, 
+            adjust_es=True
         )
-        H.cleanup(connected=True)
-        es = new_edit_simpliciality(H)
-        print(f"es = {es}， nodes = {H.num_nodes}, edges = {H.num_edges}")
+        H.cleanup()  # Clean up the hypergraph to remove any unnecessary data
+        es = edit_simpliciality(H)
+        print(f"es = {es}, node = {H.num_nodes}, edges = {H.num_edges} for {i+1}th graph")
 
         mean_degree = sum(dict(H.degree()).values()) / H.num_nodes
         print(mean_degree)
 
-        tau = {k: 1/(k) * es for k in xgi.unique_edge_sizes(H)}
-        
-        print(f"tau = {tau}")
-        
+        tau = {k: 0.1 for k in xgi.unique_edge_sizes(H)}
         t, S, I, R = hc.discrete_SIR(H, tau, gamma=gamma, rho=rho, tmin=tmin, tmax=tmax, dt=dt)
 
         if t_vals is None:
@@ -103,12 +92,12 @@ def run_multiple_SIR_with_errorbands(
         fig = ax.figure
 
     # Use ax instead of axes for plotting
-    ax.plot(t_vals, S_mean, color="green", label="S (mean)")
-    ax.fill_between(t_vals, S_mean - S_std, S_mean + S_std, color="green", alpha=0.3)
-    ax.plot(t_vals, I_mean, color="red", label="I (mean)")
-    ax.fill_between(t_vals, I_mean - I_std, I_mean + I_std, color="red", alpha=0.3)
-    ax.plot(t_vals, R_mean, color="blue", label="R (mean)")
-    ax.fill_between(t_vals, R_mean - R_std, R_mean + R_std, color="blue", alpha=0.3)
+    ax.plot(t_vals, S_mean, color = colors[0], label="S (mean)")
+    ax.fill_between(t_vals, S_mean - S_std, S_mean + S_std, color = colors[0], alpha=0.3)
+    ax.plot(t_vals, I_mean, color = colors[1], label="I (mean)")
+    ax.fill_between(t_vals, I_mean - I_std, I_mean + I_std, color = colors[1], alpha=0.3)
+    ax.plot(t_vals, R_mean, color = colors[2], label="R (mean)")
+    ax.fill_between(t_vals, R_mean - R_std, R_mean + R_std, color = colors[2], alpha=0.3)
     ax.set_xlabel("Time")
     ax.set_ylabel("Fraction of Population")
     ax.set_title(f"SIR on Generated Code Error Bands")
@@ -116,18 +105,18 @@ def run_multiple_SIR_with_errorbands(
     ax.grid(True)
     fig.tight_layout()
 
-    return fig, ax, tau
+    return fig, ax
 
 def SIR_original_graph(
     dataset,
     gamma,
+    colors,
     ax=None
 ):
     
     H = xgi.load_xgi_data(dataset)
-    H.cleanup(connected=True)
     num_node = H.num_nodes
-    tau = {i: 1/i for i in xgi.unique_edge_sizes(H)}
+    tau = {i: 0.1 for i in xgi.unique_edge_sizes(H)}
     start = time.time()
     t1, S1, I1, R1 = hc.discrete_SIR(H, tau, gamma, tmin=0, tmax=100, dt=1, rho=0.1)
     print(time.time() - start)
@@ -138,9 +127,9 @@ def SIR_original_graph(
     else:
         fig = ax.figure
 
-    ax.plot(t1, S1 / num_node, "g--", label="S (discrete)")
-    ax.plot(t1, I1 / num_node, "r--", label="I (discrete)")
-    ax.plot(t1, R1 / num_node, "b--", label="R (discrete)")
+    ax.plot(t1, S1 / num_node, "g--", color = colors[0], label="S (discrete)")
+    ax.plot(t1, I1 / num_node, "r--", color = colors[1], label="I (discrete)")
+    ax.plot(t1, R1 / num_node, "b--", color = colors[2], label="R (discrete)")
     ax.legend()
     ax.set_xlabel("Time")
     ax.set_ylabel("Fraction of population")
@@ -152,22 +141,22 @@ def SIR_original_graph(
 # Example usage:
 if __name__ == "__main__":
     dataset = datasets[int(sys.argv[1])]
-    es = 0.80432 #float(sys.argv[2])
+    es = float(sys.argv[2])
     approx_num_C = int(sys.argv[3])
     num_max_hyperedge = int(sys.argv[4])
     num_node = int(sys.argv[5])
-    dataset = "diseasome"
     gamma = 0.05
+    colors = ["#00B388","#DA291C", "#418FDF"]
 
     print(f"Running SIR on dataset: {dataset}")
 
     fig, axes = plt.subplots(1, 2, figsize=(16, 6))  # 1 row, 2 columns
 
-    run_multiple_SIR_with_errorbands(es, approx_num_C, num_max_hyperedge, num_node, gamma, ax=axes[0])
-    SIR_original_graph(dataset, gamma, ax=axes[1])
+    run_multiple_SIR_with_errorbands(es, approx_num_C, num_max_hyperedge, num_node, gamma, colors, ax=axes[0])
+    SIR_original_graph(dataset, gamma, colors, ax=axes[1])
 
     H = xgi.load_xgi_data(dataset)
-    es = 0.00331975
+    es = round(edit_simpliciality(H), 2)
     fig.suptitle(dataset + "  -  es = " + str(es))
 
     plt.tight_layout(rect=[0, 0.03, 1, 0.95])
