@@ -463,59 +463,63 @@ def model_generation_es(es, approx_num_C, num_max_hyperedge, num_node, min_size=
 # Function to slightly adjust the hypergraph to match the expected edit simpliciality
 def final_edge_adjustment_es(H, edges, final_possible_edge_list, edge_to_exclude, expected_es, adjust_es=False, compare_interval_smaller_case = 2, compare_interval_bigger_case = 2):
     # Calculate the current edit simpliciality
+    H.cleanup()
     if adjust_es:
         curr_es = new_edit_simpliciality(H, min_size=2)
     else:
         curr_es = edit_simpliciality(H, min_size=2)
     # Use count to increase efficiency
     count = 0
+    edges = H.edges.filterby("size", 2, "geq").members()
+    edge_id_map = {}
+    for edge_id, edge_members in H.edges.members(dtype=dict).items():
+        edge_id_map[frozenset(edge_members)] = edge_id
     # Split to cases to add or remove edges respectively
-    if curr_es < expected_es:
-        # Add edges to the hypergraph
-        for i in range(len(final_possible_edge_list)):
-            tmp_idx = random.randint(0, len(final_possible_edge_list) - 1)
-            tmp_add = final_possible_edge_list.pop(tmp_idx)
-            # tmp_add is a list of frozensets representing possible edges
-            for edge_set in tmp_add:
-                # Check if edge is already excluded to avoid duplicates
-                if edge_set not in edge_to_exclude:
-                    H.add_edge(list(edge_set))
-                    edge_to_exclude.add(edge_set)  # Track the added edge
-            count += 1
-            # Check if the edit simpliciality is close to the expected value only every 2 iterations
-            if count == compare_interval_smaller_case:
-                count = 0
-                if adjust_es:
-                    curr_es = new_edit_simpliciality(H, min_size=2)
-                else:
-                    curr_es = edit_simpliciality(H, min_size=2)
-                #print("curr_es:", curr_es)
-                # if curr_es >= expected_es:
-                if (curr_es >= expected_es) or (abs(curr_es - expected_es) < 0.0002):
-                    return H
-    elif curr_es > expected_es:
-        # Remove edges from the hypergraph untul the edit simpliciality is equal to the expected value
-        edge_id_map = {}
-        for edge_id, edge_members in H.edges.members(dtype=dict).items():
-            edge_id_map[frozenset(edge_members)] = edge_id
-        while ((curr_es > expected_es) or (abs(curr_es - expected_es) > 0.0002)) and len(edges) > 0:
-            tmp_remove_idx = random.randint(0, len(edges) - 1)
-            tmp_remove = edges[tmp_remove_idx]
-            H.remove_edge(edge_id_map[frozenset(tmp_remove)])
-            # Remove the edge from the edges list to avoid trying to remove it again
-            edges.pop(tmp_remove_idx)
-            count += 1
-            if count == compare_interval_bigger_case:
-                count = 0
-                if adjust_es:
-                    curr_es = new_edit_simpliciality(H, min_size=2)
-                else:
-                    curr_es = edit_simpliciality(H, min_size=2)
-                #print("curr_es:", curr_es)
-        return H
-    else:
-        print(f"❌ Warning: Input parameters are not good, please check the input parameters")
-        return H
+    while (abs(curr_es - expected_es) >= 0.002):        
+        if curr_es < expected_es:
+            #print("Current edit simpliciality is smaller than expected, adding edges")
+            # Add edges to the hypergraph
+            if len(final_possible_edge_list) == 1:
+                print("❌ Warning: No more edges to add, stopping the process")
+                return H 
+            else:
+                tmp_idx = random.randint(0, len(final_possible_edge_list) - 1)
+                tmp_add = final_possible_edge_list.pop(tmp_idx)
+                # tmp_add is a list of frozensets representing possible edges
+                for edge_set in tmp_add:
+                    # Check if edge is already excluded to avoid duplicates
+                    if edge_set not in edge_to_exclude:
+                        H.add_edge(list(edge_set))
+                        edges.append(list(edge_set))  # Add the edge to the edges list
+                        edge_id_map[frozenset(edge_set)] = H.edges.members(dtype=dict)[-1]
+                        edge_to_exclude.add(edge_set)  # Track the added edge
+                count += 1
+                # Check if the edit simpliciality is close to the expected value only every 2 iterations
+        elif curr_es > expected_es:
+            #print("Current edit simpliciality is larger than expected, removing edges")
+            # Remove edges from the hypergraph untul the edit simpliciality is equal to the expected value
+            if len(edges) == 0:
+                print("❌ Warning: No more edges to remove, stopping the process")
+                return H
+            else:
+                tmp_remove_idx = random.randint(0, len(edges) - 1)
+                tmp_remove = edges[tmp_remove_idx]
+                H.remove_edge(edge_id_map[frozenset(tmp_remove)])
+                # Remove the edge from the edges list to avoid trying to remove it again
+                edges.pop(tmp_remove_idx)
+                count += 1
+        
+        if count == compare_interval_smaller_case:
+            count = 0
+            H.cleanup()
+            if adjust_es:
+                curr_es = new_edit_simpliciality(H, min_size=2)
+            else:
+                curr_es = edit_simpliciality(H, min_size=2)
+                
+            print(f"Current edit simpliciality: {curr_es}, expected: {expected_es}")
+                        
+    return H
                     
 
 
