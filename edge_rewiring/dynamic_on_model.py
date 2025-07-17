@@ -54,7 +54,7 @@ def run_multiple_SIR_with_errorbands(
         mean_degree = sum(dict(H.degree()).values()) / H.num_nodes
         print(mean_degree)
 
-        tau = {k: 0.1/k for k in xgi.unique_edge_sizes(H)}
+        tau = {k: 0.1/k * es for k in xgi.unique_edge_sizes(H)}
         t, S, I, R = hc.discrete_SIR(H, tau, gamma=gamma, rho=rho, tmin=tmin, tmax=tmax, dt=dt)
 
         if t_vals is None:
