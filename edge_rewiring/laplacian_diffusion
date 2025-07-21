@@ -1,0 +1,92 @@
+import sys
+import numpy as np
+import matplotlib.pyplot as plt
+import xgi
+import random 
+from model_generation import *
+
+datasets = [
+    "contact-primary-school",
+    "contact-high-school",
+    "hospital-lyon",
+    "email-enron",
+    "email-eu",
+    "ndc-substances",
+    "diseasome",
+    "disgenenet",
+    "congress-bills",
+    "tags-ask-ubuntu",
+]
+
+def zhous_laplacian_diffusion(H, initial_values, steps, dt=0.1):
+    node_order = list(H.nodes)
+    n = len(node_order)
+    node_index = {node: i for i, node in enumerate(node_order)}
+
+    # makes the weighted adjacency matrix
+    A = np.zeros((n, n))
+    for i in H.edges:
+        nodes = list(H.edges.members(i))
+        len_nodes = len(nodes)
+        if len_nodes < 2: # < 2 to skip singletons
+            continue
+        for j in range(len_nodes):
+            for k in range(len_nodes):
+                if j != k:
+                    u, v = nodes[j], nodes[k]
+                    A[node_index[u], node_index[v]] += 1 / len_nodes
+
+    # gets the diagonal degree matrix
+    D = np.diag(A.sum(axis=1))
+    # calculates zhou laplacian matrix
+    L = np.identity(n) - np.linalg.inv(D) @ A
+
+    x = np.array([initial_values.get(node, 0.0) for node in node_order])
+    x_hist = [x.copy()]
+
+    # applies the euler update
+    for _ in range(steps):
+        x = x - dt * L @ x
+        x_hist.append(x.copy())
+
+    return np.array(x_hist), node_order
+
+def generate_graph(edges, max_he, es, nodes, ax):
+    c = ((edges - max_he + es * max_he) / es)
+    H = model_generation_es(
+        es=es,
+        approx_num_C=c,
+        num_max_hyperedge=max_he,
+        num_node=nodes,
+        min_size=2,
+        max_size=None,
+        adjust_es=True
+    )
+    # cleans up singletons
+    H.cleanup(connected=True)
+    #starts off all nodes at random values
+    initial_values = {node: random.random() for node in H.nodes}
+
+    # runs diffusion
+    x_hist, node_order = zhous_laplacian_diffusion(H, initial_values, steps=600)
+
+    # ploting each graph
+    for i, node in enumerate(node_order):
+        ax.plot(x_hist[:, i])
+    ax.set_xlabel("Time Step")
+    ax.set_ylabel("Value")
+    ax.set_title(f"es = {es}")
+    ax.grid(True)
+
+if __name__ == "__main__":
+    edges = 5000
+    max_he = 100
+    nodes = 1000
+    gamma = 0.5
+    es_values = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9]
+    fig, axes = plt.subplots(3, 3, figsize=(21, 7))
+    axes = axes.flatten()
+    for ax, es in zip(axes, es_values):  
+        generate_graph(edges, max_he, es, nodes, ax)
+    plt.tight_layout()
+    plt.show()
