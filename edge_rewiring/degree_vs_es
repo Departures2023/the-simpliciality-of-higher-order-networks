@@ -1,0 +1,72 @@
+import xgi
+import numpy as np
+import sys
+import os
+import matplotlib.pyplot as plt
+# __file__ is not defined in Jupyter, use current working directory instead
+sys.path.append(os.path.abspath(os.path.join(os.getcwd(), '..')))
+sys.path.append(os.path.abspath(os.path.join(os.getcwd(), '..', 'edge_rewiring')))
+from sod.simpliciality import new_edit_simpliciality, face_edit_simpliciality, simplicial_fraction
+import model_generation
+from datetime import datetime
+
+
+
+def filter_degrees (H) :
+    degree_dict = H.degree()
+    degree_list = list(degree_dict.values())
+    sorted_degrees = sorted(degree_list)
+    filtered_degrees = [d for d in sorted_degrees if d > 0]
+
+    return filtered_degrees
+
+if __name__ == "__main__":
+    list_of_degrees = []
+    list_of_squared_degrees = []
+    list_of_taus = []
+    es_values = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8]
+    trials = sys.argv[1] if len(sys.argv) > 1 else 10
+    for es in es_values:
+        avg_degree = 0
+        avg_squared_degree = 0
+        for i in range(trials): 
+            H = model_generation.model_generation_es(es=es, approx_num_C=8000, num_max_hyperedge=2000, num_node=1000, adjust_es=True)
+            H.cleanup()
+            degree = sum(filter_degrees(H))/ H.num_nodes
+            squared_degree = sum([d**2 for d in filter_degrees(H)]) / H.num_nodes
+            avg_degree += degree
+            avg_squared_degree += squared_degree
+        avg_degree /= trials
+        avg_squared_degree /= trials
+        list_of_squared_degrees.append(avg_squared_degree)
+        list_of_degrees.append(avg_degree)
+        tau = avg_degree / (avg_squared_degree - avg_degree)
+        list_of_taus.append(tau)
+        
+    fig, axes = plt.subplots(1, 3, figsize=(18, 5))
+
+    axes[0].plot(es_values, list_of_degrees, marker='o')
+    axes[0].set_title("Average Degree vs. es")
+    axes[0].set_xlabel("es")
+    axes[0].set_ylabel("Average Degree")
+
+    axes[1].plot(es_values, list_of_squared_degrees, marker='s', color='orange')
+    axes[1].set_title("Average Squared Degree vs. es")
+    axes[1].set_xlabel("es")
+    axes[1].set_ylabel("Average Squared Degree")
+
+    axes[2].plot(es_values, list_of_taus, marker='^', color='green')
+    axes[2].set_title("Tau vs. es")
+    axes[2].set_xlabel("es")
+    axes[2].set_ylabel("Tau")
+    plt.tight_layout()
+
+    # Generate timestamped filename
+    timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+    filename = f"degree_plots_{timestamp}.png"
+
+    # Save the figure
+    plt.savefig(filename, dpi=300)
+
+    plt.show()
+        
