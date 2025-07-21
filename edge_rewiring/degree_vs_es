@@ -25,7 +25,7 @@ if __name__ == "__main__":
     list_of_squared_degrees = []
     list_of_taus = []
     es_values = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8]
-    trials = sys.argv[1] if len(sys.argv) > 1 else 10
+    trials = int(sys.argv[1]) if len(sys.argv) > 1 else 10
     for es in es_values:
         avg_degree = 0
         avg_squared_degree = 0
@@ -42,6 +42,10 @@ if __name__ == "__main__":
         list_of_degrees.append(avg_degree)
         tau = avg_degree / (avg_squared_degree - avg_degree)
         list_of_taus.append(tau)
+        
+    print("list_of_degrees:", list_of_degrees )
+    print("list_of_squared_degrees:", list_of_squared_degrees)
+    print("list_of_taus:", list_of_taus)
         
     fig, axes = plt.subplots(1, 3, figsize=(18, 5))
 
