@@ -104,7 +104,6 @@ def generate_C_distribution(min_size, max_size, C_avg, std, num_max_hyperedge, t
 
     # Adjust the sum to match target_sum using lognormal PDF for weighting
     excess = C_distribution.sum() - target_sum
-    print("excess:", excess)
     
     if excess > 0:
         # Reduce values that are above minimum
@@ -458,10 +457,10 @@ def model_generation_es(es, approx_num_C, num_max_hyperedge, num_node, min_size=
     if H is None:
         print(f"❌ Warning: The generated hypergraph is None. Input parameters are not good, please check the input parameters")
         model_generation_es(es, approx_num_C, num_max_hyperedge, num_node, min_size=2, max_size=None, adjust_es=False, compare_interval_smaller_case=2, compare_interval_bigger_case=2)     
-    print("H.num_nodes", H.num_nodes)
+    '''print("H.num_nodes", H.num_nodes)
     print("H.num_edges", H.num_edges)
     print("H.num_edges without singletons", len(H.edges.filterby("size", 2, "geq").members()))
-    print("len(H.edges.maximal())", len(H.edges.maximal().filterby("size", 2, "geq").members()))
+    print("len(H.edges.maximal())", len(H.edges.maximal().filterby("size", 2, "geq").members()))'''
     
     if xgi.number_connected_components(H) > 1:
         print(f"❌ Warning: The generated hypergraph has {xgi.number_connected_components(H)} connected components. Input parameters are not good, please check the input parameters")
@@ -500,7 +499,7 @@ def final_edge_adjustment_es(H, min_size, maximal_edge_set, final_possible_edge_
                     curr_es = edit_simpliciality(H, min_size=2)
                 #print("curr_es:", curr_es)
                 # if curr_es >= expected_es:
-                if (abs(curr_es - expected_es) < 0.005):
+                if (abs(curr_es - expected_es) < (expected_es / 100)):
                     return H
                 if (curr_es >= expected_es):
                     break
@@ -512,7 +511,7 @@ def final_edge_adjustment_es(H, min_size, maximal_edge_set, final_possible_edge_
         edge_id_map = {}
         for edge_id, edge_members in H.edges.members(dtype=dict).items():
             edge_id_map[frozenset(edge_members)] = edge_id
-        while ((curr_es > expected_es) or (abs(curr_es - expected_es) > 0.005)) and len(edges) > 0:
+        while ((curr_es > expected_es) or (abs(curr_es - expected_es) > (expected_es / 100))) and len(edges) > 0:
             tmp_remove_idx = random.randint(0, len(edges) - 1)
             tmp_remove = edges[tmp_remove_idx]
             H.remove_edge(edge_id_map[frozenset(tmp_remove)])

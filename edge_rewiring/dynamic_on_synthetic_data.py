@@ -19,6 +19,8 @@ def run_SIR_for_es(es):
     num_max_hyperedge = 2000
     approx_num_C = 8000
     gamma = 0.05
+    num_edges = 3000 + (idx - 1) * 1000
+    #approx_num_C = (num_edges - num_max_hyperedge + es * num_max_hyperedge)/es
 
     fig, ax = plt.subplots(figsize=(4, 3))
     dom.run_multiple_SIR_with_errorbands(

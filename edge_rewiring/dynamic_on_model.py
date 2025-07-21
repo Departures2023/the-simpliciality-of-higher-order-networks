@@ -38,7 +38,7 @@ def run_multiple_SIR_with_errorbands(
 
     error_es = 0
     for i in range(num_graphs):
-        print(f"Simulation {i+1}/{num_graphs}")       
+        #print(f"Simulation {i+1}/{num_graphs}")       
         H = model_generation_es(
             es=es, 
             approx_num_C=approx_num_C, 
@@ -55,10 +55,15 @@ def run_multiple_SIR_with_errorbands(
         mean_degree = sum(dict(H.degree()).values()) / H.num_nodes
         #print(mean_degree)
 
-        tau = {k: 0.1/k for k in xgi.unique_edge_sizes(H)}
+        tau = {k: 0.01/k for k in xgi.unique_edge_sizes(H)}
         
-        print(f"es = {es_new}, node = {H.num_nodes}, edges = {H.num_edges} for {i+1}th graph \n"
-              f"tau = {tau}")
+        edges = 3000 + (int(es * 10 - 1) - 1) * 1000
+        num_max_hyperedge_new = len(H.edges.maximal().filterby("size", 2, "geq").members())
+        approx_num_C_new = (H.num_edges - num_max_hyperedge_new + es_new * num_max_hyperedge)/es_new
+        
+        print(f"es = {es_new}, node = {H.num_nodes}, edges = {H.num_edges}, num_max_hyperedge = {num_max_hyperedge_new}, approx_c = {approx_num_C_new} for {i+1}th graph \n"
+              f"error : es = {es_new - es}, node = {H.num_nodes - num_node}, edges = {H.num_edges - edges}, num_max_hyperedge = {num_max_hyperedge_new - num_max_hyperedge}, approx_c = {approx_num_C_new - approx_num_C} \n")
+              #f"tau = {tau}")
 
         t, S, I, R = hc.discrete_SIR(H, tau, gamma=gamma, rho=rho, tmin=tmin, tmax=tmax, dt=dt)
 
