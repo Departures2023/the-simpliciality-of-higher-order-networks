@@ -9,13 +9,13 @@ import dynamic_on_model as  dom
 
 
 if __name__ == "__main__":
-    fig, axes = plt.subplots(2, 4, figsize=(16, 6))
+    fig, axes = plt.subplots(3, 3, figsize=(10, 10))
     axes = axes.flatten()
-    max_he = 100
+    max_he = 1000
     nodes = 1000
     edges = 2000
     gamma = 0.5
-    for es in [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8]:      
+    for es in [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9]:      
         idx = int(es * 10 - 1) 
         c = ((edges - max_he + es * max_he) / es)    
         dom.run_multiple_SIR_with_errorbands(

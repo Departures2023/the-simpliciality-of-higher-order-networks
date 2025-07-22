@@ -26,7 +26,7 @@ def run_multiple_SIR_with_errorbands(
     num_node,
     gamma,
     colors,
-    num_graphs=10,
+    num_graphs=8,
     rho=0.1,
     tmin=0,
     tmax=100,
@@ -45,16 +45,18 @@ def run_multiple_SIR_with_errorbands(
             num_node=num_node, 
             min_size=2, 
             max_size=None, 
-            adjust_es=True
+            adjust_es=True,
+            compare_interval_smaller_case=5,
+            compare_interval_bigger_case=5
         )
 
-        es = edit_simpliciality(H)
-        print(f"es = {es}")
+        es_new = new_edit_simpliciality(H, min_size=2)
+        print(f"es = {es_new}")
 
         mean_degree = sum(dict(H.degree()).values()) / H.num_nodes
         print(mean_degree)
 
-        tau = {k: 0.1 for k in xgi.unique_edge_sizes(H)}
+        tau = {k: 0.8/k for k in xgi.unique_edge_sizes(H)}
         t, S, I, R = hc.discrete_SIR(H, tau, gamma=gamma, rho=rho, tmin=tmin, tmax=tmax, dt=dt)
 
         if t_vals is None:
