@@ -67,7 +67,7 @@ def generate_graph(edges, max_he, es, nodes, ax):
     #starts off all nodes at random values
     initial_values = {node: random.random() for node in H.nodes}
     # runs diffusion
-    x_hist, node_order = zhous_laplacian_diffusion(H, initial_values, steps=600)
+    x_hist, node_order = zhous_laplacian_diffusion(H, initial_values, steps=150)
 
     # gets and plots mean and standard deviation
     mean = x_hist.mean(axis=1)
@@ -75,7 +75,7 @@ def generate_graph(edges, max_he, es, nodes, ax):
     ax.plot(mean, label='Mean', color="#418FDF")
     ax.fill_between(range(len(mean)), mean - std, mean + std, color="#84bcf5", alpha=0.3, label='Stdandard Deviation')
     
-    threshold = 0.0001
+    threshold = 0.001
     step = None
     for i in range (1, len(x_hist)):
         if np.max(np.abs(x_hist[i] - x_hist[i-1])) < threshold:
@@ -100,14 +100,15 @@ def generate_graph(edges, max_he, es, nodes, ax):
     """
 
 if __name__ == "__main__":
-    edges = 5000
+    edges = 10000
     max_he = 500
-    nodes = 1000
+    nodes = 5000
     gamma = 0.05
     es_values = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9]
     fig, axes = plt.subplots(3, 3, figsize=(21, 7))
     axes = axes.flatten()
     for ax, es in zip(axes, es_values):  
         generate_graph(edges, max_he, es, nodes, ax)
+    fig.suptitle("Laplacian Diffusion Convergence for Different Edit Simpliciality Values", fontsize=20)
     plt.tight_layout()
     plt.show()
