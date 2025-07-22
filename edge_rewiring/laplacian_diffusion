@@ -66,10 +66,30 @@ def generate_graph(edges, max_he, es, nodes, ax):
     H.cleanup(connected=True)
     #starts off all nodes at random values
     initial_values = {node: random.random() for node in H.nodes}
-
     # runs diffusion
     x_hist, node_order = zhous_laplacian_diffusion(H, initial_values, steps=600)
 
+    # gets and plots mean and standard deviation
+    mean = x_hist.mean(axis=1)
+    std = x_hist.std(axis=1)
+    ax.plot(mean, label='Mean', color="#418FDF")
+    ax.fill_between(range(len(mean)), mean - std, mean + std, color="#84bcf5", alpha=0.3, label='Stdandard Deviation')
+    
+    threshold = 0.0001
+    step = None
+    for i in range (1, len(x_hist)):
+        if np.max(np.abs(x_hist[i] - x_hist[i-1])) < threshold:
+            step = i
+            break
+    if step is None:
+        step = len(x_hist) - 1
+
+    ax.set_title(f"es = {es} | Converged: {step} steps")
+    ax.set_xlabel("Time Step")
+    ax.set_ylabel("Node Value")
+    ax.grid(True)
+
+    """
     # ploting each graph
     for i, node in enumerate(node_order):
         ax.plot(x_hist[:, i])
@@ -77,12 +97,13 @@ def generate_graph(edges, max_he, es, nodes, ax):
     ax.set_ylabel("Value")
     ax.set_title(f"es = {es}")
     ax.grid(True)
+    """
 
 if __name__ == "__main__":
     edges = 5000
-    max_he = 100
+    max_he = 500
     nodes = 1000
-    gamma = 0.5
+    gamma = 0.05
     es_values = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9]
     fig, axes = plt.subplots(3, 3, figsize=(21, 7))
     axes = axes.flatten()
