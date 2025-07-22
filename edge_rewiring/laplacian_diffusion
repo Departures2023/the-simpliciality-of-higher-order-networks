@@ -1,3 +1,9 @@
+"""
+Inspiration from: 
+Learning with Hypergraphs: Clustering, Classification, and Embedding - Zhou, Huang, Scholkopf
+Higher-order Laplacian dynamics on hypergraphs with cooperative and antagonistic interactions - Cui, Zhang, Jiang, Jardon-Kojakhmetov, Cao
+"""
+
 import sys
 import numpy as np
 import matplotlib.pyplot as plt
@@ -17,7 +23,18 @@ datasets = [
     "congress-bills",
     "tags-ask-ubuntu",
 ]
+"""
+zhous_laplacian diffusion
+Inputs: 
+    H - hypergraph
+    initial_values - randomly generated based off number of nodes
+    steps 
+    dt = 0.1 - constant for euler update
 
+Output:
+    returns an arrray x_hist, which is the history of the diffusion process
+    returns order of nodes
+"""
 def zhous_laplacian_diffusion(H, initial_values, steps, dt=0.1):
     node_order = list(H.nodes)
     n = len(node_order)
@@ -51,6 +68,19 @@ def zhous_laplacian_diffusion(H, initial_values, steps, dt=0.1):
 
     return np.array(x_hist), node_order
 
+
+"""
+zhous_laplacian diffusion
+Inputs: 
+    edges
+    max_he - maximum hyperedge size
+    es - edit simpliciality
+    nodes - number of nodes
+    ax - matplotlib axis to plot on
+
+Output:
+    Generates the graphic with mean and standard deviation of the diffusion process, as well as convergence step
+"""
 def generate_graph(edges, max_he, es, nodes, ax):
     c = ((edges - max_he + es * max_he) / es)
     H = model_generation_es(
