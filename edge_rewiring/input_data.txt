@@ -91,3 +91,12 @@ diseasome parameter:
         compare_interval_smaller_case=2,
         compare_interval_bigger_case=2,
 ################################################################################
+
+################################################################################
+es = 0.2: approx_num_C = 11710
+es = 0.3: approx_num_C = 8550
+es = 0.4: approx_num_C = 6750
+es = 0.5: approx_num_C = 5450
+es = 0.6: approx_num_C = 4750
+es = 0.7: approx_num_C = 4400
+es = 0.8: approx_num_C = 4010

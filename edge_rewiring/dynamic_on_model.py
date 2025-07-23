@@ -39,15 +39,15 @@ def run_multiple_SIR_with_errorbands(
     for i in range(num_graphs):
         print(f"Simulation {i+1}/{num_graphs}")
         H = model_generation_es(
-            es=es, 
-            approx_num_C=approx_num_C, 
+            es=es,
+            approx_num_C=approx_num_C,  # Set high to allow target_num_edges to work
             num_max_hyperedge=num_max_hyperedge,
-            num_node=num_node, 
-            min_size=2, 
-            max_size=None, 
+            num_node=num_node,
+            min_size=2,
+            max_size=None,
             adjust_es=True,
             compare_interval_smaller_case=5,
-            compare_interval_bigger_case=5
+            compare_interval_bigger_case=5,
         )
 
         es_new = new_edit_simpliciality(H, min_size=2)
@@ -56,12 +56,12 @@ def run_multiple_SIR_with_errorbands(
         mean_degree = sum(dict(H.degree()).values()) / H.num_nodes
         print(mean_degree)
 
-        tau = {k: 0.8/k for k in xgi.unique_edge_sizes(H)}
+        tau = {k: 0.01/k for k in xgi.unique_edge_sizes(H)}
         t, S, I, R = hc.discrete_SIR(H, tau, gamma=gamma, rho=rho, tmin=tmin, tmax=tmax, dt=dt)
 
         if t_vals is None:
             t_vals = t  # save the time vector
-        
+        num_node = H.num_nodes
         min_len = min(len(S), len(I), len(R))
         S_all.append(S[:min_len] / num_node)
         I_all.append(I[:min_len] / num_node)
@@ -118,7 +118,7 @@ def SIR_original_graph(
     
     H = xgi.load_xgi_data(dataset)
     num_node = H.num_nodes
-    tau = {i: 0.1 for i in xgi.unique_edge_sizes(H)}
+    tau = {i: 0.01/i for i in xgi.unique_edge_sizes(H)}
     start = time.time()
     t1, S1, I1, R1 = hc.discrete_SIR(H, tau, gamma, tmin=0, tmax=100, dt=1, rho=0.1)
     print(time.time() - start)
@@ -149,7 +149,7 @@ if __name__ == "__main__":
     num_node = int(sys.argv[5])
     gamma = 0.05
     colors = ["#00B388","#DA291C", "#418FDF"]
-
+    dataset = "contact-high-school"
     print(f"Running SIR on dataset: {dataset}")
 
     fig, axes = plt.subplots(1, 2, figsize=(16, 6))  # 1 row, 2 columns

@@ -15,23 +15,25 @@ if __name__ == "__main__":
     nodes = 1000
     edges = 2000
     gamma = 0.5
-    for es in [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9]:      
-        idx = int(es * 10 - 1) 
-        c = ((edges - max_he + es * max_he) / es)    
+    es_list = [0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8]
+    approx_C_list = [12100, 8550, 6750, 5450, 4750, 4400, 4010]
+    for i in range(len(es_list)):      
+        es = es_list[i]
+        approx_C = approx_C_list[i]  
         dom.run_multiple_SIR_with_errorbands(
             es,  
-            c, 
+            approx_C, 
             max_he, 
             nodes,
             gamma, 
             colors = ["#00B388","#DA291C", "#418FDF"],
-            ax = axes[idx])
-        axes[idx].set_title(f"es = {es}", fontsize=12)
+            ax = axes[i])
+        axes[i].set_title(f"es = {es}", fontsize=12)
     
     fig.suptitle("SIR on Synthetic Data with Error Bands", fontsize=16) 
     plt.tight_layout(rect=[0, 0, 1, 0.95])
     plt.show()
 
     # Save the figure
-    fig.savefig("SIR on Synthetic Data with Error Bands.png", dpi=300, bbox_inches='tight')
+    fig.savefig("SIR with edge number constant with Error Bands.png", dpi=300, bbox_inches='tight')
     
