@@ -14,12 +14,12 @@ from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
 import tempfile
 
 def run_SIR_for_es(es):
-    idx = int(es * 10 - 1)
+    idx = int(es/2*10-1)  # Convert es to an index for subplot
     num_node = 1000
     num_max_hyperedge = 2000
     approx_num_C = 8000
     gamma = 0.05
-    num_edges = 3000 + (idx - 1) * 1000
+    num_edges = 4000 + (int(es * 10 - 1) - 1) * 1000
     #approx_num_C = (num_edges - num_max_hyperedge + es * num_max_hyperedge)/es
 
     fig, ax = plt.subplots(figsize=(4, 3))
@@ -29,7 +29,7 @@ def run_SIR_for_es(es):
         num_max_hyperedge,
         num_node,
         gamma,
-        num_graphs=100,
+        num_graphs=10,
         colors=["#00B388", "#DA291C", "#418FDF"],
         ax=ax
     )
@@ -50,7 +50,7 @@ if __name__ == "__main__":
     
     os.makedirs("experiment_result/dynamics_on_model", exist_ok=True)
 
-    es_list = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8]
+    es_list = [0.2, 0.4, 0.6, 0.8]
 
     # Run in parallel
     with mp.Pool(processes=mp.cpu_count()) as pool:
@@ -60,7 +60,7 @@ if __name__ == "__main__":
     results.sort()
 
     # Combine all plots into a single figurett
-    fig, axes = plt.subplots(2, 4, figsize=(16, 6))
+    fig, axes = plt.subplots(1, 4, figsize=(16, 6))
     axes = axes.flatten()
 
     for idx, path in results:
@@ -72,7 +72,7 @@ if __name__ == "__main__":
 
 
     fig.suptitle(
-        f"SIR on Synthetic Data with Error Bands\nN=1000, Ẽ=2000, varied E",
+        f"SIR on Synthetic Data with Error Bands\nN=1000, Ẽ=2000, Approx_Num_C = 12000, varied E",
         fontsize=16
     )
 

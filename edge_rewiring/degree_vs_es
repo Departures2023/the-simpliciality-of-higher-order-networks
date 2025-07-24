@@ -24,14 +24,22 @@ if __name__ == "__main__":
     list_of_degrees = []
     list_of_squared_degrees = []
     list_of_taus = []
-    es_values = [0.01, 0.02, 0.03, 0.04, 0.05, 0.06, 0.07, 0.08]
+    list_of_approx_num_C = [33000, 21000, 15800, 12700, 10700, 9150, 8010] 
+    es_values = [0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8]
     trials = int(sys.argv[1]) if len(sys.argv) > 1 else 10
     for es in es_values:
+        idx = int(es * 10 - 2)
         avg_degree = 0
         avg_squared_degree = 0
         for i in range(trials): 
-            H = model_generation.model_generation_es(es=es, approx_num_C=8000, num_max_hyperedge=2000, num_node=1000, adjust_es=True)
+            H = model_generation.model_generation_es(es=es, approx_num_C=list_of_approx_num_C[idx], num_max_hyperedge=2000, num_node=1000, adjust_es=True, compare_interval_bigger_case=5, compare_interval_smaller_case=5)
             H.cleanup()
+            es_new = new_edit_simpliciality(H)
+            num_max_hyperedge_new = len(H.edges.maximal().filterby("size", 2, "geq"))
+            approx_num_C_new = (H.num_edges - num_max_hyperedge_new + es_new * num_max_hyperedge_new)/es_new
+            print(f"es = {es_new}, node = {H.num_nodes}, edges = {H.num_edges}, num_max_hyperedge = {num_max_hyperedge_new}, approx_c = {approx_num_C_new} for {i+1}th graph \n"
+              f"error : es = {es_new - es}, node = {H.num_nodes - 1000}, edges = {H.num_edges - 10000}, num_max_hyperedge = {num_max_hyperedge_new - 2000}, approx_c = {approx_num_C_new - list_of_approx_num_C[idx]} \n")
+
             degree = sum(filter_degrees(H))/ H.num_nodes
             squared_degree = sum([d**2 for d in filter_degrees(H)]) / H.num_nodes
             avg_degree += degree
@@ -40,7 +48,7 @@ if __name__ == "__main__":
         avg_squared_degree /= trials
         list_of_squared_degrees.append(avg_squared_degree)
         list_of_degrees.append(avg_degree)
-        tau = avg_degree / (avg_squared_degree - avg_degree)
+        tau = 1 / (avg_squared_degree/avg_degree - 1)
         list_of_taus.append(tau)
         
     print("list_of_degrees:", list_of_degrees )

@@ -5,6 +5,8 @@ import time
 import numpy as np
 import random
 from model_generation import *
+from functools import partial
+import multiprocessing as mp
 
 datasets = [
     "contact-primary-school",
@@ -18,6 +20,49 @@ datasets = [
     "congress-bills",
     "tags-ask-ubuntu",
 ]
+
+def single_SIR_simulation(es, approx_num_C, num_max_hyperedge, num_node, gamma, rho, tmin, tmax, dt, i):
+
+    print(f"Generating graph {i+1} with es = {es}, approx_num_C = {approx_num_C}, num_max_hyperedge = {num_max_hyperedge}, num_node = {num_node}")
+    start = time.time()
+    H = model_generation_es(
+        es=es,
+        approx_num_C=approx_num_C,
+        num_max_hyperedge=num_max_hyperedge,
+        num_node=num_node,
+        min_size=2,
+        max_size=None,
+        adjust_es=True
+    )
+    H.cleanup()
+    es_new = new_edit_simpliciality(H)
+    error_es = abs(es_new - es)
+
+    mean_degree = sum(dict(H.degree()).values()) / H.num_nodes
+    tau = {k: 0.01/k for k in xgi.unique_edge_sizes(H)}
+
+    edges = 4000 + (int(es * 10 - 1) - 1) * 1000
+    num_max_hyperedge_new = len(H.edges.maximal().filterby("size", 2, "geq"))
+    approx_num_C_new = (H.num_edges - num_max_hyperedge_new + es_new * num_max_hyperedge)/es_new
+
+    print(f"es = {es_new}, node = {H.num_nodes}, edges = {H.num_edges}, num_max_hyperedge = {num_max_hyperedge_new}, approx_c = {approx_num_C_new} for {i+1}th graph \n"
+          f"error : es = {es_new - es}, node = {H.num_nodes - num_node}, edges = {H.num_edges - edges}, num_max_hyperedge = {num_max_hyperedge_new - num_max_hyperedge}, approx_c = {approx_num_C_new - 12000} \n")
+
+    t, S, I, R = hc.discrete_SIR(H, tau, gamma=gamma, rho=rho, tmin=tmin, tmax=tmax, dt=dt)
+    end = time.time()
+    print(f"Graph {i+1} simulation completed in {end - start:.2f} seconds")
+
+    min_len = min(len(S), len(I), len(R))
+    return {
+        'S': S[:min_len] / num_node,
+        'I': I[:min_len] / num_node,
+        'R': R[:min_len] / num_node,
+        't': t[:min_len],
+        'error_es': error_es
+    }
+
+
+
 
 def run_multiple_SIR_with_errorbands(
     es,  
@@ -33,69 +78,53 @@ def run_multiple_SIR_with_errorbands(
     dt=1,
     ax=None, 
 ):
+    print(f"Running SIR with error bands for {num_graphs} graphs in parallel...")
+
+    # Prepare multiprocessing pool
+    pool = mp.Pool(processes=mp.cpu_count())
+
+    # Partial function for passing fixed arguments
+    simulation_func = partial(
+        single_SIR_simulation,
+        es,
+        approx_num_C,
+        num_max_hyperedge,
+        num_node,
+        gamma,
+        rho,
+        tmin,
+        tmax,
+        dt
+    )
+
+    # Run simulations in parallel
+    results = pool.map(simulation_func, range(num_graphs))
+    pool.close()
+    pool.join()
+
+    # Aggregate results
     S_all, I_all, R_all = [], [], []
-    t_vals = None  # to store time vector from first run
-
     error_es = 0
-    for i in range(num_graphs):
-        #print(f"Simulation {i+1}/{num_graphs}")       
-        H = model_generation_es(
-            es=es, 
-            approx_num_C=approx_num_C, 
-            num_max_hyperedge=num_max_hyperedge,
-            num_node=num_node, 
-            min_size=2, 
-            max_size=None, 
-            adjust_es=True
-        )
-        H.cleanup()  # Clean up the hypergraph to remove any unnecessary data
-        es_new = new_edit_simpliciality(H)
-        error_es += abs(es_new - es)
-        
-        mean_degree = sum(dict(H.degree()).values()) / H.num_nodes
-        #print(mean_degree)
+    t_vals = None
 
-        tau = {k: 0.01/k for k in xgi.unique_edge_sizes(H)}
-        
-        edges = 3000 + (int(es * 10 - 1) - 1) * 1000
-        num_max_hyperedge_new = len(H.edges.maximal().filterby("size", 2, "geq").members())
-        approx_num_C_new = (H.num_edges - num_max_hyperedge_new + es_new * num_max_hyperedge)/es_new
-        
-        print(f"es = {es_new}, node = {H.num_nodes}, edges = {H.num_edges}, num_max_hyperedge = {num_max_hyperedge_new}, approx_c = {approx_num_C_new} for {i+1}th graph \n"
-              f"error : es = {es_new - es}, node = {H.num_nodes - num_node}, edges = {H.num_edges - edges}, num_max_hyperedge = {num_max_hyperedge_new - num_max_hyperedge}, approx_c = {approx_num_C_new - approx_num_C} \n")
-              #f"tau = {tau}")
-
-        t, S, I, R = hc.discrete_SIR(H, tau, gamma=gamma, rho=rho, tmin=tmin, tmax=tmax, dt=dt)
-
+    min_len = min(len(res['t']) for res in results)
+    for res in results:
+        S_all.append(res['S'][:min_len])
+        I_all.append(res['I'][:min_len])
+        R_all.append(res['R'][:min_len])
+        error_es += res['error_es']
         if t_vals is None:
-            t_vals = t  # save the time vector
-        
-        min_len = min(len(S), len(I), len(R))
-        S_all.append(S[:min_len] / num_node)
-        I_all.append(I[:min_len] / num_node)
-        R_all.append(R[:min_len] / num_node)
+            t_vals = res['t'][:min_len]
 
-        if t_vals is None:
-            t_vals = t[:min_len]
-            
     print(f"Average error in es: {error_es / num_graphs} while es = {es}")
 
-    #print(f"Run {i+1}: Length of I = {len(I)}, S = {len(S)}, R = {len(R)}")
+    S_all = np.array(S_all)
+    I_all = np.array(I_all)
+    R_all = np.array(R_all)
 
-        # After the for loop:
-    min_len = min(len(arr) for arr in S_all)  # Find the minimum time series length
-
-    # Trim all arrays to min_len
-    S_all = np.array([s[:min_len] for s in S_all])
-    I_all = np.array([i[:min_len] for i in I_all])
-    R_all = np.array([r[:min_len] for r in R_all])
-    t_vals = t_vals[:min_len]
-
-    # Compute mean and std
     S_mean, S_std = np.mean(S_all, axis=0), np.std(S_all, axis=0)
     I_mean, I_std = np.mean(I_all, axis=0), np.std(I_all, axis=0)
     R_mean, R_std = np.mean(R_all, axis=0), np.std(R_all, axis=0)
-
 
     # Plotting
     if ax is None:
@@ -103,16 +132,16 @@ def run_multiple_SIR_with_errorbands(
     else:
         fig = ax.figure
 
-    # Use ax instead of axes for plotting
-    ax.plot(t_vals, S_mean, color = colors[0], label="S (mean)")
-    ax.fill_between(t_vals, S_mean - S_std, S_mean + S_std, color = colors[0], alpha=0.3)
-    ax.plot(t_vals, I_mean, color = colors[1], label="I (mean)")
-    ax.fill_between(t_vals, I_mean - I_std, I_mean + I_std, color = colors[1], alpha=0.3)
-    ax.plot(t_vals, R_mean, color = colors[2], label="R (mean)")
-    ax.fill_between(t_vals, R_mean - R_std, R_mean + R_std, color = colors[2], alpha=0.3)
+    ax.plot(t_vals, S_mean, color=colors[0], label="S (mean)")
+    ax.fill_between(t_vals, S_mean - S_std, S_mean + S_std, color=colors[0], alpha=0.3)
+    ax.plot(t_vals, I_mean, color=colors[1], label="I (mean)")
+    ax.fill_between(t_vals, I_mean - I_std, I_mean + I_std, color=colors[1], alpha=0.3)
+    ax.plot(t_vals, R_mean, color=colors[2], label="R (mean)")
+    ax.fill_between(t_vals, R_mean - R_std, R_mean + R_std, color=colors[2], alpha=0.3)
+
     ax.set_xlabel("Time")
     ax.set_ylabel("Fraction of Population")
-    ax.set_title(f"SIR on Generated Code Error Bands")
+    ax.set_title(f"SIR on Generated Graphs (Parallelized)")
     ax.legend()
     ax.grid(True)
     fig.tight_layout()
@@ -153,10 +182,12 @@ def SIR_original_graph(
 # Example usage:
 if __name__ == "__main__":
     dataset = datasets[int(sys.argv[1])]
-    es = float(sys.argv[2])
-    approx_num_C = int(sys.argv[3])
-    num_max_hyperedge = int(sys.argv[4])
-    num_node = int(sys.argv[5])
+    H_og = (xgi.load_xgi_data(dataset, max_order=11))
+    es = new_edit_simpliciality(H_og)
+    num_edges = H_og.num_edges
+    num_max_hyperedge = len(H_og.edges.maximal().filterby("size", 2, "geq"))
+    approx_num_C = (num_edges - num_max_hyperedge + es * num_max_hyperedge) / es
+    num_node = H_og.num_nodes
     gamma = 0.05
     colors = ["#00B388","#DA291C", "#418FDF"]
 
@@ -164,7 +195,7 @@ if __name__ == "__main__":
 
     fig, axes = plt.subplots(1, 2, figsize=(16, 6))  # 1 row, 2 columns
 
-    run_multiple_SIR_with_errorbands(es, approx_num_C, num_max_hyperedge, num_node, gamma, colors, ax=axes[0])
+    run_multiple_SIR_with_errorbands(es, approx_num_C, num_max_hyperedge, num_node, gamma, colors, num_graphs=10, ax=axes[0])
     SIR_original_graph(dataset, gamma, colors, ax=axes[1])
 
     H = xgi.load_xgi_data(dataset)
