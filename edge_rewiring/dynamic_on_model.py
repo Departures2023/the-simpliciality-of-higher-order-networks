@@ -46,8 +46,8 @@ def run_multiple_SIR_with_errorbands(
             min_size=2,
             max_size=None,
             adjust_es=True,
-            compare_interval_smaller_case=5,
-            compare_interval_bigger_case=5,
+            compare_interval_smaller_case=10,
+            compare_interval_bigger_case=10,
         )
 
         es_new = new_edit_simpliciality(H, min_size=2)

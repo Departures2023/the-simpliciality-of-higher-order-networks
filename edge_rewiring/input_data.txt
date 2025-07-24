@@ -93,10 +93,20 @@ diseasome parameter:
 ################################################################################
 
 ################################################################################
-es = 0.2: approx_num_C = 11710
-es = 0.3: approx_num_C = 8550
-es = 0.4: approx_num_C = 6750
-es = 0.5: approx_num_C = 5450
-es = 0.6: approx_num_C = 4750
+Expected num_edge = 5000
+es = 0.2: approx_num_C = 14300
+es = 0.3: approx_num_C = 9700
+es = 0.4: approx_num_C = 7750
+es = 0.5: approx_num_C = 6000
+es = 0.6: approx_num_C = 5100
 es = 0.7: approx_num_C = 4400
 es = 0.8: approx_num_C = 4010
+
+Expected num_edge = 10000
+es = 0.2: approx_num_C = 33000
+es = 0.3: approx_num_C = 21000
+es = 0.4: approx_num_C = 15800
+es = 0.5: approx_num_C = 12700
+es = 0.6: approx_num_C = 10700
+es = 0.7: approx_num_C = 9150
+es = 0.8: approx_num_C = 8010
