@@ -17,7 +17,7 @@ if __name__ == "__main__":
     gamma = 0.5
     for es in [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8]:      
         idx = int(es * 10 - 1) 
-        c = ((edges - max_he + es * max_he) / es)    
+        c = ((edges - max_he + es * max_he) / es)   
         dom.run_multiple_SIR_with_errorbands(
             es,  
             c, 

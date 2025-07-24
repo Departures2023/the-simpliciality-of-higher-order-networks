@@ -48,7 +48,7 @@ def run_multiple_SIR_with_errorbands(
             adjust_es=True
         )
 
-        es = edit_simpliciality(H)
+        es = new_edit_simpliciality(H)
         print(f"es = {es}")
 
         mean_degree = sum(dict(H.degree()).values()) / H.num_nodes
@@ -98,13 +98,14 @@ def run_multiple_SIR_with_errorbands(
     ax.fill_between(t_vals, I_mean - I_std, I_mean + I_std, color = colors[1], alpha=0.3)
     ax.plot(t_vals, R_mean, color = colors[2], label="R (mean)")
     ax.fill_between(t_vals, R_mean - R_std, R_mean + R_std, color = colors[2], alpha=0.3)
-    ax.set_xlabel("Time")
+    ax.set_xlabel("Time - es: " + str(es))
     ax.set_ylabel("Fraction of Population")
     ax.set_title(f"SIR on Generated Code Error Bands")
     ax.legend()
     ax.grid(True)
     fig.tight_layout()
 
+    print(f"dynamic on model es = {es})")
     return fig, ax
 
 def SIR_original_graph(

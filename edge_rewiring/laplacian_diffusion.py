@@ -1,0 +1,144 @@
+"""
+Inspiration from: 
+Learning with Hypergraphs: Clustering, Classification, and Embedding - Zhou, Huang, Scholkopf
+Higher-order Laplacian dynamics on hypergraphs with cooperative and antagonistic interactions - Cui, Zhang, Jiang, Jardon-Kojakhmetov, Cao
+"""
+
+import sys
+import numpy as np
+import matplotlib.pyplot as plt
+import xgi
+import random 
+from model_generation import *
+
+datasets = [
+    "contact-primary-school",
+    "contact-high-school",
+    "hospital-lyon",
+    "email-enron",
+    "email-eu",
+    "ndc-substances",
+    "diseasome",
+    "disgenenet",
+    "congress-bills",
+    "tags-ask-ubuntu",
+]
+"""
+zhous_laplacian diffusion
+Inputs: 
+    H - hypergraph
+    initial_values - randomly generated based off number of nodes
+    steps 
+    dt = 0.1 - constant for euler update
+
+Output:
+    returns an arrray x_hist, which is the history of the diffusion process
+    returns order of nodes
+"""
+def zhous_laplacian_diffusion(H, initial_values, steps, dt=0.1):
+    node_order = list(H.nodes)
+    n = len(node_order)
+    node_index = {node: i for i, node in enumerate(node_order)}
+
+    # makes the weighted adjacency matrix
+    A = np.zeros((n, n))
+    for i in H.edges:
+        nodes = list(H.edges.members(i))
+        len_nodes = len(nodes)
+        if len_nodes < 2: # < 2 to skip singletons
+            continue
+        for j in range(len_nodes):
+            for k in range(len_nodes):
+                if j != k:
+                    u, v = nodes[j], nodes[k]
+                    A[node_index[u], node_index[v]] += 1 / len_nodes
+
+    # gets the diagonal degree matrix
+    D = np.diag(A.sum(axis=1))
+    # calculates zhou laplacian matrix
+    L = np.identity(n) - np.linalg.inv(D) @ A
+
+    x = np.array([initial_values.get(node, 0.0) for node in node_order])
+    x_hist = [x.copy()]
+
+    # applies the euler update
+    for _ in range(steps):
+        x = x - dt * L @ x
+        x_hist.append(x.copy())
+
+    return np.array(x_hist), node_order
+
+
+"""
+zhous_laplacian diffusion
+Inputs: 
+    edges
+    max_he - maximum hyperedge size
+    es - edit simpliciality
+    nodes - number of nodes
+    ax - matplotlib axis to plot on
+
+Output:
+    Generates the graphic with mean and standard deviation of the diffusion process, as well as convergence step
+"""
+def generate_graph(edges, max_he, es, nodes, ax):
+    c = ((edges - max_he + es * max_he) / es)
+    H = model_generation_es(
+        es=es,
+        approx_num_C=c,
+        num_max_hyperedge=max_he,
+        num_node=nodes,
+        min_size=2,
+        max_size=None,
+        adjust_es=True
+    )
+    # cleans up singletons
+    H.cleanup(connected=True)
+    #starts off all nodes at random values
+    initial_values = {node: random.random() for node in H.nodes}
+    # runs diffusion
+    x_hist, node_order = zhous_laplacian_diffusion(H, initial_values, steps=150)
+
+    # gets and plots mean and standard deviation
+    mean = x_hist.mean(axis=1)
+    std = x_hist.std(axis=1)
+    ax.plot(mean, label='Mean', color="#418FDF")
+    ax.fill_between(range(len(mean)), mean - std, mean + std, color="#84bcf5", alpha=0.3, label='Stdandard Deviation')
+    
+    threshold = 0.001
+    step = None
+    for i in range (1, len(x_hist)):
+        if np.max(np.abs(x_hist[i] - x_hist[i-1])) < threshold:
+            step = i
+            break
+    if step is None:
+        step = len(x_hist) - 1
+
+    ax.set_title(f"es = {es} | Converged: {step} steps")
+    ax.set_xlabel("Time Step")
+    ax.set_ylabel("Node Value")
+    ax.grid(True)
+
+    """
+    # ploting each graph
+    for i, node in enumerate(node_order):
+        ax.plot(x_hist[:, i])
+    ax.set_xlabel("Time Step")
+    ax.set_ylabel("Value")
+    ax.set_title(f"es = {es}")
+    ax.grid(True)
+    """
+
+if __name__ == "__main__":
+    edges = 2000
+    max_he = 900
+    nodes = 1000
+    gamma = 0.05
+    es_values = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9]
+    fig, axes = plt.subplots(3, 3, figsize=(21, 7))
+    axes = axes.flatten()
+    for ax, es in zip(axes, es_values):  
+        generate_graph(edges, max_he, es, nodes, ax)
+    fig.suptitle("Laplacian Diffusion Convergence for Different Edit Simpliciality Values", fontsize=20)
+    plt.tight_layout()
+    plt.show()
