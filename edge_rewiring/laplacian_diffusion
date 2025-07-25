@@ -130,9 +130,9 @@ def generate_graph(edges, max_he, es, nodes, ax):
     """
 
 if __name__ == "__main__":
-    edges = 10000
-    max_he = 500
-    nodes = 5000
+    edges = 1000
+    max_he = 1000
+    nodes = 100
     gamma = 0.05
     es_values = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9]
     fig, axes = plt.subplots(3, 3, figsize=(21, 7))
