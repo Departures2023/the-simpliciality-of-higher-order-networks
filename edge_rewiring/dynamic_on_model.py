@@ -7,6 +7,8 @@ import random
 from model_generation import *
 from functools import partial
 import multiprocessing as mp
+import datetime
+run_id = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
 
 datasets = [
     "contact-primary-school",
@@ -46,7 +48,7 @@ def single_SIR_simulation(es, approx_num_C, num_max_hyperedge, num_node, gamma, 
     approx_num_C_new = (H.num_edges - num_max_hyperedge_new + es_new * num_max_hyperedge)/es_new
 
     print(f"es = {es_new}, node = {H.num_nodes}, edges = {H.num_edges}, num_max_hyperedge = {num_max_hyperedge_new}, approx_c = {approx_num_C_new} for {i+1}th graph \n"
-          f"error : es = {es_new - es}, node = {H.num_nodes - num_node}, edges = {H.num_edges - edges}, num_max_hyperedge = {num_max_hyperedge_new - num_max_hyperedge}, approx_c = {approx_num_C_new - 12000} \n")
+          f"error : es = {es_new - es}, node = {H.num_nodes - num_node}, edges = {H.num_edges - edges}, num_max_hyperedge = {num_max_hyperedge_new - num_max_hyperedge}, approx_c = {approx_num_C_new - approx_num_C} \n")
 
     t, S, I, R = hc.discrete_SIR(H, tau, gamma=gamma, rho=rho, tmin=tmin, tmax=tmax, dt=dt)
     end = time.time()
@@ -203,4 +205,7 @@ if __name__ == "__main__":
     fig.suptitle(dataset + "  -  es = " + str(es))
 
     plt.tight_layout(rect=[0, 0.03, 1, 0.95])
+    summary_path = f"experiment_result/dynamics_on_model/SIR_on_Synthetic_Data_Error_Bands_{run_id}.png"
+
+    fig.savefig(summary_path, dpi=300, bbox_inches="tight")
     plt.show()
