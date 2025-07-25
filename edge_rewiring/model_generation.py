@@ -100,12 +100,14 @@ def generate_C_distribution(min_size, max_size, C_avg, std, num_max_hyperedge, t
     C_distribution = np.clip(C_distribution, min_size, max_size)
     C_distribution.sort()
     
-    #print("C_distribution:", C_distribution)
+    print("C_distribution_old:", C_distribution)
 
     # Adjust the sum to match target_sum using lognormal PDF for weighting
     excess = C_distribution.sum() - target_sum
     
-    if excess > 0:
+    print(f"Excess: {excess} (target_sum: {target_sum}, C_distribution.sum(): {C_distribution.sum()})")
+    
+    if excess > 200:
         # Reduce values that are above minimum
         for _ in range(int(abs(excess))):
             reducible_indices = [i for i in range(num_max_hyperedge) if C_distribution[i] > min_size]
@@ -127,7 +129,7 @@ def generate_C_distribution(min_size, max_size, C_avg, std, num_max_hyperedge, t
             
             C_distribution[selected_idx] -= 1
             
-    elif excess < 0:
+    elif excess < -200:
         # Increase values that are below maximum
         for _ in range(int(abs(excess))):
             increasable_indices = [i for i in range(num_max_hyperedge) if C_distribution[i] < max_size]
@@ -146,7 +148,7 @@ def generate_C_distribution(min_size, max_size, C_avg, std, num_max_hyperedge, t
                 selected_idx = random.choice(increasable_indices)
             
             C_distribution[selected_idx] += 1
-    #print("C_distribution:", C_distribution)
+    print("C_distribution:", C_distribution)
     return C_distribution
 
 
@@ -203,7 +205,7 @@ def all_possible_edges(arr_node):
 
 
 # Function to generate a hypergraph with a given edit simpliciality, number of maximal hyperedges, and number of nodes
-def model_generation_es(es, approx_num_C, num_max_hyperedge, num_node, min_size=2, max_size=None, adjust_es=False, compare_interval_smaller_case=2, compare_interval_bigger_case=2):
+def model_generation_es(es, approx_num_C, num_max_hyperedge, num_node, min_size=2, max_size=11, adjust_es=False, compare_interval_smaller_case=2, compare_interval_bigger_case=2):
     # Checking if input parameters are valid
     if max_size is None:
         max_size = num_node
@@ -247,12 +249,12 @@ def model_generation_es(es, approx_num_C, num_max_hyperedge, num_node, min_size=
     H.add_nodes_from(nodes)
     # Calculate the average number of induced hyperedges
     C_avg = C_total / num_max_hyperedge
-    if es < 0.15:
-        std = 4.5
+    if es < 0.1:
+        std = 2.4
     elif es < 0.5:
-        std = 3.5
+        std = 1
     elif es < 0.85:
-        std = 2.5
+        std = 1.5
     else:
         std = 2
     # Print statements for debugging
@@ -288,7 +290,7 @@ def model_generation_es(es, approx_num_C, num_max_hyperedge, num_node, min_size=
     # Convert the distribution of C values to the number of nodes in maximal hyperedges
     maximal_edge_size_list = [combination_to_size(i) for i in C_distribution]
     maximal_edge_size_list.sort(reverse=True)
-    #print("maximal_edge_size_list:", maximal_edge_size_list)
+    print("maximal_edge_size_list:", maximal_edge_size_list)
     # Avoid adding repeating edges - use set for consistent comparison
     edge_to_exclude = set()
     # Print statements for debugging

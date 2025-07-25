@@ -41,7 +41,7 @@ def single_SIR_simulation(es, approx_num_C, num_max_hyperedge, num_node, gamma, 
     error_es = abs(es_new - es)
 
     mean_degree = sum(dict(H.degree()).values()) / H.num_nodes
-    tau = {k: 0.01/k for k in xgi.unique_edge_sizes(H)}
+    tau = {k: 0.1/k for k in xgi.unique_edge_sizes(H)}
 
     edges = 4000 + (int(es * 10 - 1) - 1) * 1000
     num_max_hyperedge_new = len(H.edges.maximal().filterby("size", 2, "geq"))
@@ -143,7 +143,7 @@ def run_multiple_SIR_with_errorbands(
 
     ax.set_xlabel("Time")
     ax.set_ylabel("Fraction of Population")
-    ax.set_title(f"SIR on Generated Graphs (Parallelized)")
+    ax.set_title(f"SIR on Generated Graphs")
     ax.legend()
     ax.grid(True)
     fig.tight_layout()
@@ -159,7 +159,7 @@ def SIR_original_graph(
     
     H = xgi.load_xgi_data(dataset)
     num_node = H.num_nodes
-    tau = {i: 0.1 for i in xgi.unique_edge_sizes(H)}
+    tau = {i: 0.1/i for i in xgi.unique_edge_sizes(H)}
     start = time.time()
     t1, S1, I1, R1 = hc.discrete_SIR(H, tau, gamma, tmin=0, tmax=100, dt=1, rho=0.1)
     print(time.time() - start)
@@ -205,7 +205,7 @@ if __name__ == "__main__":
     fig.suptitle(dataset + "  -  es = " + str(es))
 
     plt.tight_layout(rect=[0, 0.03, 1, 0.95])
-    summary_path = f"experiment_result/dynamics_on_model/SIR_on_Synthetic_Data_Error_Bands_{run_id}.png"
+    summary_path = f"experiment_result/dynamics_on_model/SIR_on_{dataset}_Error_Bands_{run_id}.png"
 
     fig.savefig(summary_path, dpi=300, bbox_inches="tight")
     plt.show()
