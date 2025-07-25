@@ -39,15 +39,24 @@ def run_multiple_SIR_with_errorbands(
     for i in range(num_graphs):
         print(f"Simulation {i+1}/{num_graphs}")
         H = model_generation_es(
-            es=es,
-            approx_num_C=approx_num_C,  # Set high to allow target_num_edges to work
-            num_max_hyperedge=num_max_hyperedge,
-            num_node=num_node,
+            es=0.80432,
+            approx_num_C=11800,  # Set high to allow target_num_edges to work
+            num_max_hyperedge=8010,
+            num_node=242,
             min_size=2,
             max_size=None,
             adjust_es=True,
             compare_interval_smaller_case=10,
             compare_interval_bigger_case=10,
+            # es=es,
+            # approx_num_C=approx_num_C,  # Set high to allow target_num_edges to work
+            # num_max_hyperedge=num_max_hyperedge,
+            # num_node=num_node,
+            # min_size=2,
+            # max_size=None,
+            # adjust_es=True,
+            # compare_interval_smaller_case=10,
+            # compare_interval_bigger_case=10,
         )
 
         es_new = new_edit_simpliciality(H, min_size=2)
@@ -149,7 +158,7 @@ if __name__ == "__main__":
     num_node = int(sys.argv[5])
     gamma = 0.05
     colors = ["#00B388","#DA291C", "#418FDF"]
-    dataset = "contact-high-school"
+    dataset = "contact-primary-school"
     print(f"Running SIR on dataset: {dataset}")
 
     fig, axes = plt.subplots(1, 2, figsize=(16, 6))  # 1 row, 2 columns

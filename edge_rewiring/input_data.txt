@@ -10,14 +10,14 @@ contact-primary-school dataset info:
 
 new_contact-primary-school parameter: 
         es=0.80432,
-        approx_num_C=11200,  # Set high to allow target_num_edges to work
+        approx_num_C=11800,  # Set high to allow target_num_edges to work
         num_max_hyperedge=8010,
         num_node=242,
         min_size=2,
         max_size=None,
         adjust_es=True,
-        compare_interval_smaller_case=40,
-        compare_interval_bigger_case=40,
+        compare_interval_smaller_case=10,
+        compare_interval_bigger_case=10,
 ################################################################################
 
 

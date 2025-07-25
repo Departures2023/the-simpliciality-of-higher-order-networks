@@ -238,13 +238,13 @@ def model_generation_es(es, approx_num_C, num_max_hyperedge, num_node, min_size=
     # Calculate the average number of induced hyperedges
     C_avg = C_total / num_max_hyperedge
     if es < 0.15:
-        std = 3
+        std = 6.5 #3
     elif es < 0.5:
-        std = 2
+        std = 5.5 #2
     elif es < 0.85:
-        std = 1
+        std = 4.5 #1
     else:
-        std = 0.5
+        std = 3.5 #0.5
     # Print statements for debugging
     # print("edge_total:", edge_total)
     # print("C_total:", C_total)
