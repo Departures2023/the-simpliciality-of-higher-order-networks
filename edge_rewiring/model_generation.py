@@ -107,10 +107,10 @@ def generate_C_distribution(min_size, max_size, C_avg, std, num_max_hyperedge, t
     
     print(f"Excess: {excess} (target_sum: {target_sum}, C_distribution.sum(): {C_distribution.sum()})")
     
-    if excess > 200:
+    if excess > 2000:
         # Reduce values that are above minimum
         for _ in range(int(abs(excess))):
-            reducible_indices = [i for i in range(num_max_hyperedge) if C_distribution[i] > min_size]
+            reducible_indices = [i for i in range(num_max_hyperedge) if C_distribution[i] > possible_combinations(min_size)]
             if len(reducible_indices) == 0:
                 break
                 
@@ -129,10 +129,10 @@ def generate_C_distribution(min_size, max_size, C_avg, std, num_max_hyperedge, t
             
             C_distribution[selected_idx] -= 1
             
-    elif excess < -200:
+    elif excess < -2000:
         # Increase values that are below maximum
         for _ in range(int(abs(excess))):
-            increasable_indices = [i for i in range(num_max_hyperedge) if C_distribution[i] < max_size]
+            increasable_indices = [i for i in range(num_max_hyperedge) if C_distribution[i] < possible_combinations(max_size)]
             if len(increasable_indices) == 0:
                 break
             # Calculate PDF values for increasable elements  
@@ -250,7 +250,7 @@ def model_generation_es(es, approx_num_C, num_max_hyperedge, num_node, min_size=
     # Calculate the average number of induced hyperedges
     C_avg = C_total / num_max_hyperedge
     if es < 0.1:
-        std = 2.4
+        std = 3.3
     elif es < 0.5:
         std = 1
     elif es < 0.85:

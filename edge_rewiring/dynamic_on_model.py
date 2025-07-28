@@ -170,9 +170,9 @@ def SIR_original_graph(
     else:
         fig = ax.figure
 
-    ax.plot(t1, S1 / num_node, "g--", color = colors[0], label="S (discrete)")
-    ax.plot(t1, I1 / num_node, "r--", color = colors[1], label="I (discrete)")
-    ax.plot(t1, R1 / num_node, "b--", color = colors[2], label="R (discrete)")
+    ax.plot(t1, S1 / num_node, "--", color = colors[0], label="S (discrete)")
+    ax.plot(t1, I1 / num_node, "--", color = colors[1], label="I (discrete)")
+    ax.plot(t1, R1 / num_node, "--", color = colors[2], label="R (discrete)")
     ax.legend()
     ax.set_xlabel("Time")
     ax.set_ylabel("Fraction of population")
@@ -197,7 +197,7 @@ if __name__ == "__main__":
 
     fig, axes = plt.subplots(1, 2, figsize=(16, 6))  # 1 row, 2 columns
 
-    run_multiple_SIR_with_errorbands(es, approx_num_C, num_max_hyperedge, num_node, gamma, colors, num_graphs=7, ax=axes[0])
+    run_multiple_SIR_with_errorbands(es, approx_num_C, num_max_hyperedge, num_node, gamma, colors, num_graphs=5, ax=axes[0])
     SIR_original_graph(dataset, gamma, colors, ax=axes[1])
 
     H = xgi.load_xgi_data(dataset)
