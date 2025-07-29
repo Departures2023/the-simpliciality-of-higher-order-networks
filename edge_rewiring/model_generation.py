@@ -147,7 +147,7 @@ def generate_C_distribution(min_size, max_size, C_avg, std, num_max_hyperedge, t
                 selected_idx = random.choice(increasable_indices)
             
             C_distribution[selected_idx] += 1
-    #print("C_distribution:", C_distribution)
+    # print("C_distribution:", C_distribution)
     return C_distribution
 
 
@@ -193,7 +193,7 @@ def all_possible_edges(arr_node):
 
 
 # Function to generate a hypergraph with a given edit simpliciality, number of maximal hyperedges, and number of nodes
-def model_generation_es(es, approx_num_C, num_max_hyperedge, num_node, min_size=2, max_size=None, adjust_es=False, compare_interval_smaller_case=2, compare_interval_bigger_case=2):
+def model_generation_es(es, approx_num_C, num_max_hyperedge, num_node, min_size=2, max_size=None, adjust_es=False, compare_interval_smaller_case=2, compare_interval_bigger_case=2, C_distribution=None):
     # Checking if input parameters are valid
     if max_size is None:
         max_size = num_node
@@ -238,13 +238,13 @@ def model_generation_es(es, approx_num_C, num_max_hyperedge, num_node, min_size=
     # Calculate the average number of induced hyperedges
     C_avg = C_total / num_max_hyperedge
     if es < 0.15:
-        std = 6.5 #3
+        std = 5 #3
     elif es < 0.5:
-        std = 5.5 #2
+        std = 5 #2
     elif es < 0.85:
-        std = 4.5 #1
+        std = 7.5 #1
     else:
-        std = 3.5 #0.5
+        std = 5 #0.5
     # Print statements for debugging
     # print("edge_total:", edge_total)
     # print("C_total:", C_total)
@@ -254,16 +254,19 @@ def model_generation_es(es, approx_num_C, num_max_hyperedge, num_node, min_size=
     
     # Q3: NEED IMPROVEMENT - BETTER DISTRIBUTION METHOD?
     # Generate the distribution of C values (Union of powerset(maximal hyperedges))
-    C_distribution = generate_C_distribution(
-        min_size=possible_combinations(min_size), 
-        max_size=C_total, 
-        C_avg=C_avg, 
-        std=std,
-        num_max_hyperedge=num_max_hyperedge, 
-        target_sum=C_total
-    )
+    if C_distribution is None:
+        C_distribution = generate_C_distribution(
+            min_size=possible_combinations(min_size), 
+            max_size=C_total, 
+            C_avg=C_avg, 
+            std=std,
+            num_max_hyperedge=num_max_hyperedge, 
+            target_sum=C_total
+        )
+    else:
+        C_distribution = C_distribution
     # Print statements for debugging
-    #print("C_distribution:", C_distribution)
+    print("C_distribution:", C_distribution)
     
     # Generate the distribution of numbers of edges actually connected
     edge_distribution  = generate_edge_distribution(
@@ -484,7 +487,7 @@ def final_edge_adjustment_es(H, min_size, maximal_edge_set, final_possible_edge_
                     curr_es = new_edit_simpliciality(H, min_size=2)
                 else:
                     curr_es = edit_simpliciality(H, min_size=2)
-                #print("curr_es:", curr_es)
+                print("curr_es:", curr_es)
                 # if curr_es >= expected_es:
                 if (abs(curr_es - expected_es) < 0.002):
                     return H
@@ -511,7 +514,7 @@ def final_edge_adjustment_es(H, min_size, maximal_edge_set, final_possible_edge_
                     curr_es = new_edit_simpliciality(H, min_size=2)
                 else:
                     curr_es = edit_simpliciality(H, min_size=2)
-                #print("curr_es:", curr_es)
+                print("curr_es:", curr_es)
         return H
     print(f"❌ Warning: Input parameters are not good, please check the input parameters")
     return H
