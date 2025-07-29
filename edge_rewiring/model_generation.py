@@ -100,13 +100,13 @@ def generate_C_distribution(min_size, max_size, C_avg, std, num_max_hyperedge, t
     C_distribution = np.clip(C_distribution, min_size, max_size)
     C_distribution.sort()
     
-    print("C_distribution:", C_distribution)
+    #print("C_distribution:", C_distribution)
 
     # Adjust the sum to match target_sum using lognormal PDF for weighting
     excess = C_distribution.sum() - target_sum
     print(f"Excess: {excess} (target_sum: {target_sum}, C_distribution.sum(): {C_distribution.sum()})")
     
-    if excess > 2000:
+    if excess > 0:
         # Reduce values that are above minimum
         for _ in range(int(abs(excess))):
             reducible_indices = [i for i in range(num_max_hyperedge) if C_distribution[i] > min_size]
@@ -128,7 +128,7 @@ def generate_C_distribution(min_size, max_size, C_avg, std, num_max_hyperedge, t
             
             C_distribution[selected_idx] -= 1
             
-    elif excess < -2000:
+    elif excess < 0:
         # Increase values that are below maximum
         for _ in range(int(abs(excess))):
             increasable_indices = [i for i in range(num_max_hyperedge) if C_distribution[i] < max_size]
@@ -147,7 +147,7 @@ def generate_C_distribution(min_size, max_size, C_avg, std, num_max_hyperedge, t
                 selected_idx = random.choice(increasable_indices)
             
             C_distribution[selected_idx] += 1
-    # print("C_distribution:", C_distribution)
+    #print("C_distribution:", sum(C_distribution))
     return C_distribution
 
 
@@ -266,7 +266,7 @@ def model_generation_es(es, approx_num_C, num_max_hyperedge, num_node, min_size=
     else:
         C_distribution = C_distribution
     # Print statements for debugging
-    print("C_distribution:", C_distribution)
+    print("C_distribution:", sum(C_distribution))
     
     # Generate the distribution of numbers of edges actually connected
     edge_distribution  = generate_edge_distribution(
@@ -281,7 +281,7 @@ def model_generation_es(es, approx_num_C, num_max_hyperedge, num_node, min_size=
     # Convert the distribution of C values to the number of nodes in maximal hyperedges
     maximal_edge_size_list = [combination_to_size(i) for i in C_distribution]
     maximal_edge_size_list.sort(reverse=True)
-    print("maximal_edge_size_list:", maximal_edge_size_list)
+    #print("maximal_edge_size_list:", maximal_edge_size_list)
     # Avoid adding repeating edges - use set for consistent comparison
     edge_to_exclude = set()
     # Print statements for debugging
@@ -454,6 +454,9 @@ def model_generation_es(es, approx_num_C, num_max_hyperedge, num_node, min_size=
     
     if xgi.number_connected_components(H) > 1:
         print(f"❌ Warning: The generated hypergraph has {xgi.number_connected_components(H)} connected components. Input parameters are not good, please check the input parameters")
+        return None
+    print(f"current edit simpliciality: {new_edit_simpliciality(H, min_size=2)}")
+    
     return H
     
 # Function to slightly adjust the hypergraph to match the expected edit simpliciality
@@ -482,18 +485,18 @@ def final_edge_adjustment_es(H, min_size, maximal_edge_set, final_possible_edge_
             #print("final_possible_edge_list:", len(final_possible_edge_list))
             # Check if the edit simpliciality is close to the expected value only every 2 iterations
             if count >= compare_interval_smaller_case:
-                count = 0
+                count = 0 
                 if adjust_es:
                     curr_es = new_edit_simpliciality(H, min_size=2)
                 else:
                     curr_es = edit_simpliciality(H, min_size=2)
                 #print("curr_es:", curr_es)
                 # if curr_es >= expected_es:
-                if (abs(curr_es - expected_es) < (expected_es / 100)):
+                if (abs(curr_es - expected_es) < (0.0002)):
                     return H
                 if (curr_es >= expected_es):
                     break
-                
+
     edges = H.edges.filterby("size", min_size, "geq").members()
     edges = [edge for edge in edges if frozenset(edge) not in maximal_edge_set]
     if curr_es > expected_es:
@@ -501,7 +504,7 @@ def final_edge_adjustment_es(H, min_size, maximal_edge_set, final_possible_edge_
         edge_id_map = {}
         for edge_id, edge_members in H.edges.members(dtype=dict).items():
             edge_id_map[frozenset(edge_members)] = edge_id
-        while ((curr_es > expected_es) or (abs(curr_es - expected_es) > (expected_es / 100))) and len(edges) > 0:
+        while ((curr_es > expected_es) or (abs(curr_es - expected_es) > (0.0002))) and len(edges) > 0:
             tmp_remove_idx = random.randint(0, len(edges) - 1)
             tmp_remove = edges[tmp_remove_idx]
             H.remove_edge(edge_id_map[frozenset(tmp_remove)])
@@ -517,9 +520,7 @@ def final_edge_adjustment_es(H, min_size, maximal_edge_set, final_possible_edge_
                 #print("curr_es:", curr_es)
         return H
     print(f"❌ Warning: Input parameters are not good, please check the input parameters")
-    return H
-                    
-
+    return None
 
 # Function to generate a hypergraph with a given simplicial fraction, number of edges, and number of nodes
 def model_generation_sf(sf, approx_num_E, num_node, min_size=2, max_size=None):
