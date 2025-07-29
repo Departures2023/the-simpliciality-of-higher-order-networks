@@ -45,25 +45,25 @@ def run_multiple_SIR_with_errorbands(
     for i in range(num_graphs):
         print(f"Simulation {i+1}/{num_graphs}")
         H = model_generation_es(
-            es=0.95447,
-            approx_num_C=1450,  # Set high to allow target_num_edges to work
-            num_max_hyperedge=1077,
-            num_node=75,
+            #es=0.95447,
+            #approx_num_C=1450,  # Set high to allow target_num_edges to work
+            #num_max_hyperedge=1077,
+            #num_node=75,
+            #min_size=2,
+            #max_size=None,
+            #adjust_es=False,
+            #compare_interval_smaller_case=20,
+            #compare_interval_bigger_case=20,
+            C_distribution=C_distribution,
+            es=es,
+            approx_num_C=approx_num_C,  # Set high to allow target_num_edges to work
+            num_max_hyperedge=num_max_hyperedge,
+            num_node=num_node,
             min_size=2,
             max_size=None,
             adjust_es=False,
             compare_interval_smaller_case=20,
             compare_interval_bigger_case=20,
-            C_distribution=C_distribution,
-            # es=es,
-            # approx_num_C=approx_num_C,  # Set high to allow target_num_edges to work
-            # num_max_hyperedge=num_max_hyperedge,
-            # num_node=num_node,
-            # min_size=2,
-            # max_size=None,
-            # adjust_es=True,
-            # compare_interval_smaller_case=10,
-            # compare_interval_bigger_case=10,
         )
 
         es_new = new_edit_simpliciality(H, min_size=2)
@@ -72,7 +72,7 @@ def run_multiple_SIR_with_errorbands(
         mean_degree = sum(dict(H.degree()).values()) / H.num_nodes
         print(mean_degree)
 
-        tau = {k: 0.01/k for k in xgi.unique_edge_sizes(H)}
+        tau = {k: 0.1/k for k in xgi.unique_edge_sizes(H)}
         t, S, I, R = hc.discrete_SIR(H, tau, gamma=gamma, rho=rho, tmin=tmin, tmax=tmax, dt=dt)
 
         if t_vals is None:
@@ -134,7 +134,7 @@ def SIR_original_graph(
     
     H = xgi.load_xgi_data(dataset)
     num_node = H.num_nodes
-    tau = {i: 0.01/i for i in xgi.unique_edge_sizes(H)}
+    tau = {i: 0.1/i for i in xgi.unique_edge_sizes(H)}
     start = time.time()
     t1, S1, I1, R1 = hc.discrete_SIR(H, tau, gamma, tmin=0, tmax=100, dt=1, rho=0.1)
     print(time.time() - start)
@@ -145,9 +145,9 @@ def SIR_original_graph(
     else:
         fig = ax.figure
 
-    ax.plot(t1, S1 / num_node, "g--", color = colors[0], label="S (discrete)")
-    ax.plot(t1, I1 / num_node, "r--", color = colors[1], label="I (discrete)")
-    ax.plot(t1, R1 / num_node, "b--", color = colors[2], label="R (discrete)")
+    ax.plot(t1, S1 / num_node, color = colors[0], label="S (discrete)")
+    ax.plot(t1, I1 / num_node, color = colors[1], label="I (discrete)")
+    ax.plot(t1, R1 / num_node, color = colors[2], label="R (discrete)")
     ax.legend()
     ax.set_xlabel("Time")
     ax.set_ylabel("Fraction of population")
@@ -159,14 +159,14 @@ def SIR_original_graph(
 # Example usage:
 if __name__ == "__main__":
     dataset = datasets[int(sys.argv[1])]
-    # es = float(sys.argv[2])
-    es = 0.80432
-    approx_num_C = int(sys.argv[3])
+    es = float(sys.argv[2])
+    #es = 0.80432
+    approx_num_C = int(sys.argv[3])  # Set high to allow target_num_edges to work
     num_max_hyperedge = int(sys.argv[4])
     num_node = int(sys.argv[5])
     gamma = 0.05
     colors = ["#00B388","#DA291C", "#418FDF"]
-    dataset = "hospital-lyon"
+    #dataset = "hospital-lyon"
     print(f"Running SIR on dataset: {dataset}")
 
     fig, axes = plt.subplots(1, 2, figsize=(16, 6))  # 1 row, 2 columns
@@ -175,7 +175,7 @@ if __name__ == "__main__":
     SIR_original_graph(dataset, gamma, colors, ax=axes[1])
 
     H = xgi.load_xgi_data(dataset)
-    es = round(edit_simpliciality(H), 2)
+    es = round(edit_simpliciality(H), 5)
     fig.suptitle(dataset + "  -  es = " + str(es))
 
     plt.tight_layout(rect=[0, 0.03, 1, 0.95])
