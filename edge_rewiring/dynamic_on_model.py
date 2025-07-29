@@ -23,7 +23,7 @@ datasets = [
     "tags-ask-ubuntu",
 ]
 
-def single_SIR_simulation(es, approx_num_C, num_max_hyperedge, num_node, gamma, rho, tmin, tmax, dt, i):
+def single_SIR_simulation(es, approx_num_C, num_max_hyperedge, num_node, gamma, rho, tmin, tmax, dt, i, C_distribution=None):
 
     print(f"Generating graph {i+1} with es = {es}, approx_num_C = {approx_num_C}, num_max_hyperedge = {num_max_hyperedge}, num_node = {num_node}")
     start = time.time()
@@ -34,17 +34,20 @@ def single_SIR_simulation(es, approx_num_C, num_max_hyperedge, num_node, gamma, 
         num_node=num_node,
         min_size=2,
         max_size=None,
-        adjust_es=True
+        adjust_es=True,
+        C_distribution=C_distribution
     )
+    
     H.cleanup()
     es_new = new_edit_simpliciality(H)
     error_es = abs(es_new - es)
-
+    print(f"Graph {i+1} generated with es = {es_new}, error = {error_es}")
     mean_degree = sum(dict(H.degree()).values()) / H.num_nodes
     tau = {k: 0.1/k for k in xgi.unique_edge_sizes(H)}
 
     edges = 4000 + (int(es * 10 - 1) - 1) * 1000
     num_max_hyperedge_new = len(H.edges.maximal().filterby("size", 2, "geq"))
+    
     approx_num_C_new = (H.num_edges - num_max_hyperedge_new + es_new * num_max_hyperedge)/es_new
 
     print(f"es = {es_new}, node = {H.num_nodes}, edges = {H.num_edges}, num_max_hyperedge = {num_max_hyperedge_new}, approx_c = {approx_num_C_new} for {i+1}th graph \n"
@@ -73,6 +76,7 @@ def run_multiple_SIR_with_errorbands(
     num_node,
     gamma,
     colors,
+    C_distribution=None,
     num_graphs=10,
     rho=0.1,
     tmin=0,
@@ -83,26 +87,29 @@ def run_multiple_SIR_with_errorbands(
     print(f"Running SIR with error bands for {num_graphs} graphs in parallel...")
 
     # Prepare multiprocessing pool
-    pool = mp.Pool(processes=mp.cpu_count())
+    #pool = mp.Pool(processes=mp.cpu_count())
 
     # Partial function for passing fixed arguments
-    simulation_func = partial(
-        single_SIR_simulation,
-        es,
-        approx_num_C,
-        num_max_hyperedge,
-        num_node,
-        gamma,
-        rho,
-        tmin,
-        tmax,
-        dt
-    )
+    results = []
+    for n in range(num_graphs):
+        results.append(single_SIR_simulation(
+            es,
+            approx_num_C,
+            num_max_hyperedge,
+            num_node,
+            gamma,
+            rho,
+            tmin,
+            tmax,
+            dt,
+            n,
+            C_distribution
+        ))
 
-    # Run simulations in parallel
+    '''# Run simulations in parallel
     results = pool.map(simulation_func, range(num_graphs))
     pool.close()
-    pool.join()
+    pool.join()'''
 
     # Aggregate results
     S_all, I_all, R_all = [], [], []
@@ -182,12 +189,18 @@ def SIR_original_graph(
     return fig, ax
 
 # Example usage:
+
+
 if __name__ == "__main__":
     dataset = datasets[int(sys.argv[1])]
     H_og = (xgi.load_xgi_data(dataset, max_order=11))
     es = new_edit_simpliciality(H_og)
     num_edges = H_og.num_edges
     num_max_hyperedge = len(H_og.edges.maximal().filterby("size", 2, "geq"))
+    maximal_edge_sizes = [len(e) for e in H_og.edges.maximal().filterby("size", 2, "geq").members()]
+    print("maximal_edge_sizes: ", maximal_edge_sizes)
+    C_distribution = np.array([possible_combinations(i) for i in maximal_edge_sizes])
+    print("C_distribution dataset: ", C_distribution)
     approx_num_C = (num_edges - num_max_hyperedge + es * num_max_hyperedge) / es
     num_node = H_og.num_nodes
     gamma = 0.05
@@ -197,7 +210,7 @@ if __name__ == "__main__":
 
     fig, axes = plt.subplots(1, 2, figsize=(16, 6))  # 1 row, 2 columns
 
-    run_multiple_SIR_with_errorbands(es, approx_num_C, num_max_hyperedge, num_node, gamma, colors, num_graphs=10, ax=axes[0])
+    run_multiple_SIR_with_errorbands(es, approx_num_C, num_max_hyperedge, num_node, gamma, colors, C_distribution, num_graphs=1, ax=axes[0])
     SIR_original_graph(dataset, gamma, colors, ax=axes[1])
 
     H = xgi.load_xgi_data(dataset)

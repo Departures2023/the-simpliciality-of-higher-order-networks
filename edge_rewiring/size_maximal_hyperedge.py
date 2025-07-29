@@ -44,6 +44,9 @@ H_og = (xgi.load_xgi_data(dataset, max_order=11))
 es = new_edit_simpliciality(H_og)
 num_edges = H_og.num_edges
 num_max_hyperedge = len(H_og.edges.maximal().filterby("size", 2, "geq"))
+maximal_edge_sizes = [len(e) for e in H_og.edges.maximal().filterby("size", 2, "geq").members()]
+#print("maximal_edge_sizes: ", maximal_edge_sizes)
+C_distribution = np.array([possible_combinations(i) for i in maximal_edge_sizes])
 approx_num_C = (num_edges - num_max_hyperedge + es * num_max_hyperedge) / es
 num_node = H_og.num_nodes
 
@@ -54,7 +57,8 @@ H = model_generation_es(
         num_node=num_node,
         min_size=2,
         max_size=None,
-        adjust_es=True
+        adjust_es=True,
+        C_distribution=C_distribution
     )
 H.cleanup()
 es_new = new_edit_simpliciality(H)

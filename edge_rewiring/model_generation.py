@@ -100,17 +100,16 @@ def generate_C_distribution(min_size, max_size, C_avg, std, num_max_hyperedge, t
     C_distribution = np.clip(C_distribution, min_size, max_size)
     C_distribution.sort()
     
-    print("C_distribution_old:", C_distribution)
+    print("C_distribution:", C_distribution)
 
     # Adjust the sum to match target_sum using lognormal PDF for weighting
     excess = C_distribution.sum() - target_sum
-    
     print(f"Excess: {excess} (target_sum: {target_sum}, C_distribution.sum(): {C_distribution.sum()})")
     
     if excess > 2000:
         # Reduce values that are above minimum
         for _ in range(int(abs(excess))):
-            reducible_indices = [i for i in range(num_max_hyperedge) if C_distribution[i] > possible_combinations(min_size)]
+            reducible_indices = [i for i in range(num_max_hyperedge) if C_distribution[i] > min_size]
             if len(reducible_indices) == 0:
                 break
                 
@@ -132,7 +131,7 @@ def generate_C_distribution(min_size, max_size, C_avg, std, num_max_hyperedge, t
     elif excess < -2000:
         # Increase values that are below maximum
         for _ in range(int(abs(excess))):
-            increasable_indices = [i for i in range(num_max_hyperedge) if C_distribution[i] < possible_combinations(max_size)]
+            increasable_indices = [i for i in range(num_max_hyperedge) if C_distribution[i] < max_size]
             if len(increasable_indices) == 0:
                 break
             # Calculate PDF values for increasable elements  
@@ -148,7 +147,7 @@ def generate_C_distribution(min_size, max_size, C_avg, std, num_max_hyperedge, t
                 selected_idx = random.choice(increasable_indices)
             
             C_distribution[selected_idx] += 1
-    print("C_distribution:", C_distribution)
+    # print("C_distribution:", C_distribution)
     return C_distribution
 
 
@@ -162,10 +161,6 @@ def generate_edge_distribution(min_edge_num, C_distribution, target_sum):
     """
     # length of the actual edge distribution equals the number of maximal hyperedges
     length = len(C_distribution)
-    
-    # CHOICE1: DIRECTLY RETURN ERROR
-    # if target_sum > C_distribution.sum() or target_sum < length * min_edge_num:
-    #     raise ValueError("Impossible to generate numbers: Value Error.")
     
     # CHOICE2: RETURN adjusted list
     if target_sum > C_distribution.sum():
@@ -185,13 +180,6 @@ def generate_edge_distribution(min_edge_num, C_distribution, target_sum):
             idx = random.choice(list(set([x for x in range(0, length)]) - set(idx_exclude)))
             edge_distribution[idx] += 1
 
-    # No need for fractopnal part in this case, as we are generating integers
-    # # If remaining is not integer, distribute the fractional part
-    # frac = remaining - int(remaining)
-    # if frac > 0:
-    #     idx = random.randint(0, length - 1)
-    #     edge_distribution[idx] += frac
-
     return edge_distribution
 
 # Function to generate all possible edges from a list of nodes
@@ -205,7 +193,7 @@ def all_possible_edges(arr_node):
 
 
 # Function to generate a hypergraph with a given edit simpliciality, number of maximal hyperedges, and number of nodes
-def model_generation_es(es, approx_num_C, num_max_hyperedge, num_node, min_size=2, max_size=11, adjust_es=False, compare_interval_smaller_case=2, compare_interval_bigger_case=2):
+def model_generation_es(es, approx_num_C, num_max_hyperedge, num_node, min_size=2, max_size=None, adjust_es=False, compare_interval_smaller_case=2, compare_interval_bigger_case=2, C_distribution=None):
     # Checking if input parameters are valid
     if max_size is None:
         max_size = num_node
@@ -234,7 +222,7 @@ def model_generation_es(es, approx_num_C, num_max_hyperedge, num_node, min_size=
     if adjust_es:
         edge_total = int((C_total - num_max_hyperedge) * es) + num_max_hyperedge
         if not (C_total >= edge_total and edge_total >= num_max_hyperedge):
-            print(f"❌ Warning: C_total ({C_total}) is smaller than edge_total ({edge_total}) or num_max_hyperedge ({num_max_hyperedge})")
+            print(f"❌ Warning: C_total ({C_total}) is smaller than edge_total ({edge_total}) or edge_total ({edge_total}) is smaller than num_max_hyperedge ({num_max_hyperedge})")
             sys.exit()
     
     
@@ -266,16 +254,19 @@ def model_generation_es(es, approx_num_C, num_max_hyperedge, num_node, min_size=
     
     # Q3: NEED IMPROVEMENT - BETTER DISTRIBUTION METHOD?
     # Generate the distribution of C values (Union of powerset(maximal hyperedges))
-    C_distribution = generate_C_distribution(
-        min_size=possible_combinations(min_size), 
-        max_size=C_total, 
-        C_avg=C_avg, 
-        std=std,
-        num_max_hyperedge=num_max_hyperedge, 
-        target_sum=C_total
-    )
+    if C_distribution is None:
+        C_distribution = generate_C_distribution(
+            min_size=possible_combinations(min_size), 
+            max_size=C_total, 
+            C_avg=C_avg, 
+            std=std,
+            num_max_hyperedge=num_max_hyperedge, 
+            target_sum=C_total
+        )
+    else:
+        C_distribution = C_distribution
     # Print statements for debugging
-    #print("C_distribution:", C_distribution)
+    print("C_distribution:", C_distribution)
     
     # Generate the distribution of numbers of edges actually connected
     edge_distribution  = generate_edge_distribution(
@@ -456,9 +447,6 @@ def model_generation_es(es, approx_num_C, num_max_hyperedge, num_node, min_size=
         compare_interval_smaller_case=compare_interval_smaller_case,
         compare_interval_bigger_case=compare_interval_bigger_case
     )
-    if H is None:
-        print(f"❌ Warning: The generated hypergraph is None. Input parameters are not good, please check the input parameters")
-        model_generation_es(es, approx_num_C, num_max_hyperedge, num_node, min_size=2, max_size=None, adjust_es=False, compare_interval_smaller_case=2, compare_interval_bigger_case=2)     
     '''print("H.num_nodes", H.num_nodes)
     print("H.num_edges", H.num_edges)
     print("H.num_edges without singletons", len(H.edges.filterby("size", 2, "geq").members()))
@@ -529,7 +517,7 @@ def final_edge_adjustment_es(H, min_size, maximal_edge_set, final_possible_edge_
                 #print("curr_es:", curr_es)
         return H
     print(f"❌ Warning: Input parameters are not good, please check the input parameters")
-    return None
+    return H
                     
 
 
