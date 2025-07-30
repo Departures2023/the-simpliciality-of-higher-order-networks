@@ -193,7 +193,7 @@ def all_possible_edges(arr_node):
 
 
 # Function to generate a hypergraph with a given edit simpliciality, number of maximal hyperedges, and number of nodes
-def model_generation_es(es, approx_num_C, num_max_hyperedge, num_node, min_size=2, max_size=None, adjust_es=False, compare_interval_smaller_case=2, compare_interval_bigger_case=2, C_distribution=None):
+def model_generation_es(es, approx_num_C, num_max_hyperedge, num_node, min_size=2, max_size=None, adjust_es=False, compare_interval_smaller_case=2, compare_interval_bigger_case=2, C_distribution=None, edge_total=None):
     # Checking if input parameters are valid
     if max_size is None:
         max_size = num_node
@@ -215,7 +215,10 @@ def model_generation_es(es, approx_num_C, num_max_hyperedge, num_node, min_size=
     C_total = int(approx_num_C)
     
     # |H| of the graph
-    edge_total = int(approx_num_C * es)
+    if edge_total is None:
+        edge_total = int(approx_num_C * es)
+    else:
+        edge_total = edge_total
     
     # TODO: Check the performance of model generation with and without adjust_es
     # New implementation of edit simpliciality (es = (|E| - num_max_hyperedge)/(|C| - num_max_hyperedge))
@@ -433,7 +436,6 @@ def model_generation_es(es, approx_num_C, num_max_hyperedge, num_node, min_size=
         
     # Final adjustment of the hypergraph
     
-
     # print("new edges:", len(edges))
     # print("xgi.number_connected_components(H)", xgi.number_connected_components(H))
     H = final_edge_adjustment_es(

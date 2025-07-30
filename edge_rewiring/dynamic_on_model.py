@@ -37,7 +37,7 @@ def run_multiple_SIR_with_errorbands(
     t_vals = None  # to store time vector from first run
     H1 = xgi.load_xgi_data("hospital-lyon")
     H1.cleanup(connected=True,relabel=False)
-    tmp = H1.edges.maximal()
+    tmp = H1.edges.maximal().members()
     maximal_edge_sizes = [len(e) for e in tmp]
     print("maximal_edge_sizes: ", maximal_edge_sizes)
     C_distribution = np.array([possible_combinations(i) for i in maximal_edge_sizes])
@@ -45,16 +45,17 @@ def run_multiple_SIR_with_errorbands(
     for i in range(num_graphs):
         print(f"Simulation {i+1}/{num_graphs}")
         H = model_generation_es(
-            es=0.95447,
+            es=0.895683,
             approx_num_C=1450,  # Set high to allow target_num_edges to work
             num_max_hyperedge=1077,
             num_node=75,
             min_size=2,
             max_size=None,
-            adjust_es=False,
-            compare_interval_smaller_case=20,
-            compare_interval_bigger_case=20,
+            adjust_es=True,
+            compare_interval_smaller_case=3,
+            compare_interval_bigger_case=3,
             C_distribution=C_distribution,
+            edge_total=1824
             # es=es,
             # approx_num_C=approx_num_C,  # Set high to allow target_num_edges to work
             # num_max_hyperedge=num_max_hyperedge,
@@ -160,7 +161,7 @@ def SIR_original_graph(
 if __name__ == "__main__":
     dataset = datasets[int(sys.argv[1])]
     # es = float(sys.argv[2])
-    es = 0.80432
+    es = 0.954474
     approx_num_C = int(sys.argv[3])
     num_max_hyperedge = int(sys.argv[4])
     num_node = int(sys.argv[5])
@@ -175,7 +176,7 @@ if __name__ == "__main__":
     SIR_original_graph(dataset, gamma, colors, ax=axes[1])
 
     H = xgi.load_xgi_data(dataset)
-    es = round(edit_simpliciality(H), 2)
+    # es = round(edit_simpliciality(H), 2)
     fig.suptitle(dataset + "  -  es = " + str(es))
 
     plt.tight_layout(rect=[0, 0.03, 1, 0.95])
