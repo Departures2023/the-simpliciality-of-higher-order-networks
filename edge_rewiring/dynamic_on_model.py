@@ -119,7 +119,8 @@ def run_multiple_SIR_with_errorbands(
             dt,
             n,
             C_distribution
-        ))
+        )
+                       )
 
     '''# Run simulations in parallel
     results = pool.map(simulation_func, range(num_graphs))
@@ -226,7 +227,7 @@ if __name__ == "__main__":
 
     fig, axes = plt.subplots(1, 2, figsize=(16, 6))  # 1 row, 2 columns
 
-    run_multiple_SIR_with_errorbands(es, approx_num_C, num_max_hyperedge, num_node, num_edges, gamma, colors, C_distribution, num_graphs=5, ax=axes[0])
+    run_multiple_SIR_with_errorbands(es, approx_num_C, num_max_hyperedge, num_node, num_edges, gamma, colors, C_distribution, num_graphs=20, ax=axes[0])
     SIR_original_graph(dataset, gamma, colors, ax=axes[1])
 
     H = xgi.load_xgi_data(dataset)

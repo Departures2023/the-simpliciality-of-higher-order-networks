@@ -19,7 +19,7 @@ from sod.trie import Trie
 from sod.simpliciality.utilities import missing_subfaces, powerset
 
 # Function to calculate the number of possible combinations of nodes -> possible edges
-def possible_combinations(num_node, min_size=2, max_size=None):
+def possible_combinations(num_node, min_size=2, max_size=11):
     """
     Calculate the number of possible combinations of nodes -> possible edges
 
@@ -57,14 +57,15 @@ def combination_to_size(C):
         int: Minimum number of nodes needed in the maximal hyperedge
     """
     num_node = 2
+    if C >= possible_combinations(num_node=11, min_size=2, max_size=11):
+        C = possible_combinations(num_node=11, min_size=2, max_size=11)
     while C > possible_combinations(num_node=num_node, min_size=2, max_size=num_node):
-        num_node += 1
-    C_next = possible_combinations(num_node=num_node+1, min_size=2, max_size=num_node)
-    C_current = possible_combinations(num_node=num_node, min_size=2, max_size=num_node)
+        C_next = possible_combinations(num_node=num_node+1, min_size=2, max_size=num_node+1)
+        C_current = possible_combinations(num_node=num_node, min_size=2, max_size=num_node)
     # If the difference berween next combination and expected is smaller than the current and expected, we can add one more node
     # This can compensate the negative effect of calculated combinations being smaller than the expected combinations
-    if (C_next - C)  < (C - C_current):
-        num_node += 1
+        if (C_next - C)  < (C - C_current):
+            num_node += 1
     return num_node
 
 
@@ -266,7 +267,7 @@ def model_generation_es(es, approx_num_C, num_max_hyperedge, num_node, min_size=
     else:
         C_distribution = C_distribution
     # Print statements for debugging
-    print("C_distribution:", sum(C_distribution))
+    #print("C_distribution:", C_distribution)
     
     # Generate the distribution of numbers of edges actually connected
     edge_distribution  = generate_edge_distribution(
@@ -280,8 +281,8 @@ def model_generation_es(es, approx_num_C, num_max_hyperedge, num_node, min_size=
     
     # Convert the distribution of C values to the number of nodes in maximal hyperedges
     maximal_edge_size_list = [combination_to_size(i) for i in C_distribution]
-    maximal_edge_size_list.sort(reverse=True)
-    #print("maximal_edge_size_list:", maximal_edge_size_list)
+    #maximal_edge_size_list.sort(reverse=True)
+    print("maximal_edge_size_list:", maximal_edge_size_list)
     # Avoid adding repeating edges - use set for consistent comparison
     edge_to_exclude = set()
     # Print statements for debugging
@@ -307,7 +308,8 @@ def model_generation_es(es, approx_num_C, num_max_hyperedge, num_node, min_size=
                 size_lst = range(1, maximal_edge_size_list[i])
                 weights = []
                 for size in size_lst:
-                    weights.append(1/size)
+                    weights.append(1/size)             
+                #print("maximal_edge_size_list[i]:", maximal_edge_size_list[i], size_lst)
                 # Determine the number of nodes to chosen from used and not used
                 used_selected_size = random.choices(size_lst, weights=weights, k=1)[0]
                 unused_selected_size = maximal_edge_size_list[i] - used_selected_size
@@ -461,7 +463,7 @@ def model_generation_es(es, approx_num_C, num_max_hyperedge, num_node, min_size=
     
 # Function to slightly adjust the hypergraph to match the expected edit simpliciality
 def final_edge_adjustment_es(H, min_size, maximal_edge_set, final_possible_edge_list, edge_to_exclude, expected_es, adjust_es=False, compare_interval_smaller_case = 2, compare_interval_bigger_case = 2):
-    #print("final_possible_edge_list:", len(final_possible_edge_list))
+    print("final_possible_edge_list:", len(final_possible_edge_list))
     # Calculate the current edit simpliciality
     if adjust_es:
         curr_es = new_edit_simpliciality(H, min_size=2)
@@ -490,9 +492,9 @@ def final_edge_adjustment_es(H, min_size, maximal_edge_set, final_possible_edge_
                     curr_es = new_edit_simpliciality(H, min_size=2)
                 else:
                     curr_es = edit_simpliciality(H, min_size=2)
-                #print("curr_es:", curr_es)
+                print("curr_es:", curr_es)
                 # if curr_es >= expected_es:
-                if (abs(curr_es - expected_es) < (0.0002)):
+                if (abs(curr_es - expected_es) < (0.002)):
                     return H
                 if (curr_es >= expected_es):
                     break
@@ -504,7 +506,7 @@ def final_edge_adjustment_es(H, min_size, maximal_edge_set, final_possible_edge_
         edge_id_map = {}
         for edge_id, edge_members in H.edges.members(dtype=dict).items():
             edge_id_map[frozenset(edge_members)] = edge_id
-        while ((curr_es > expected_es) or (abs(curr_es - expected_es) > (0.0002))) and len(edges) > 0:
+        while ((curr_es > expected_es) or (abs(curr_es - expected_es) > (0.002))) and len(edges) > 0:
             tmp_remove_idx = random.randint(0, len(edges) - 1)
             tmp_remove = edges[tmp_remove_idx]
             H.remove_edge(edge_id_map[frozenset(tmp_remove)])
@@ -517,7 +519,7 @@ def final_edge_adjustment_es(H, min_size, maximal_edge_set, final_possible_edge_
                     curr_es = new_edit_simpliciality(H, min_size=2)
                 else:
                     curr_es = edit_simpliciality(H, min_size=2)
-                #print("curr_es:", curr_es)
+                print("curr_es:", curr_es)
         return H
     print(f"❌ Warning: Input parameters are not good, please check the input parameters")
     return None
