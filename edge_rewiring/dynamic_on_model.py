@@ -5,6 +5,7 @@ import time
 import numpy as np
 import random
 from model_generation import *
+from termcolor import colored
 
 datasets = [
     "contact-primary-school",
@@ -42,6 +43,12 @@ def run_multiple_SIR_with_errorbands(
     print("maximal_edge_sizes: ", maximal_edge_sizes)
     C_distribution = np.array([possible_combinations(i) for i in maximal_edge_sizes])
     print("C_distribution dataset: ", C_distribution)
+    tot_es = 0
+    tot_num_edges = 0
+    tot_cc = 0
+    tot_deg = 0
+    tot_deg_assort = 0
+
     for i in range(num_graphs):
         print(f"Simulation {i+1}/{num_graphs}")
         H = model_generation_es(
@@ -62,8 +69,8 @@ def run_multiple_SIR_with_errorbands(
             min_size=2,
             max_size=None,
             adjust_es=False,
-            compare_interval_smaller_case=20,
-            compare_interval_bigger_case=20,
+            compare_interval_smaller_case=10,
+            compare_interval_bigger_case=10,
         )
 
         es_new = new_edit_simpliciality(H, min_size=2)
@@ -85,6 +92,19 @@ def run_multiple_SIR_with_errorbands(
 
         if t_vals is None:
             t_vals = t[:min_len]
+
+        tot_es += es_new
+        tot_num_edges += H.num_edges
+        tot_cc += (sum(xgi.clustering_coefficient(H).values())) / len(H.nodes)
+
+        deg_list = list(xgi.degree_counts(H))
+        degrees = []
+        for degree_val, count in enumerate(deg_list):
+            degree = count * degree_val
+            degrees.append(degree)
+        tot_deg = (sum(degrees)) / len(degrees)
+
+        tot_deg_assort = xgi.degree_assortativity(H)
 
     #print(f"Run {i+1}: Length of I = {len(I)}, S = {len(S)}, R = {len(R)}")
 
@@ -123,17 +143,37 @@ def run_multiple_SIR_with_errorbands(
     ax.grid(True)
     fig.tight_layout()
 
+    edges = tot_num_edges / num_graphs
+    cc = tot_cc / num_graphs
+    deg = tot_deg / num_graphs
+    es = tot_es / num_graphs
+    deg_assort = tot_deg_assort / num_graphs
+
+    print(colored(
+    "synthetic & " +
+    str(round(es, 5)) + " & " +
+    str(num_node) + " & " +
+    str(edges) + " & " +
+    str(num_max_hyperedge) + " & " +
+    str(round(cc, 5)) + " & " +
+    str(round(deg, 5)) + " & " +
+    str(round(deg_assort, 5)) + " \\\\",
+    "red"
+    ))
     return fig, ax
 
 def SIR_original_graph(
     dataset,
+    num_max_hyperedge,
     gamma,
     colors,
     ax=None
-):
-    
+): 
     H = xgi.load_xgi_data(dataset)
+    es = new_edit_simpliciality(H, min_size=2)
     num_node = H.num_nodes
+    num_edges = H.num_edges
+    cc = (sum(xgi.clustering_coefficient(H).values())) / len(H.nodes)
     tau = {i: 0.1/i for i in xgi.unique_edge_sizes(H)}
     start = time.time()
     t1, S1, I1, R1 = hc.discrete_SIR(H, tau, gamma, tmin=0, tmax=100, dt=1, rho=0.1)
@@ -154,6 +194,26 @@ def SIR_original_graph(
     ax.set_title("SIR on Original Graph")
     ax.grid(True)
     fig.tight_layout()
+
+    deg_list = list(xgi.degree_counts(H))
+    degrees = []
+    for degree_val, count in enumerate(deg_list):
+        degree = count * degree_val
+        degrees.append(degree)
+    deg = (sum(degrees)) / len(degrees)
+
+    print(colored(
+    dataset + " & " +
+    str(round(es, 5)) + " & " +
+    str(num_node) + " & " +
+    str(num_edges) + " & " +
+    str(num_max_hyperedge) + " & " +
+    str(round(cc, 5)) + " & " +
+    str(round(deg, 5)) + " & " +
+    str(round(xgi.degree_assortativity(H), 5)) + " \\\\",
+    "green"
+    ))
+
     return fig, ax
 
 # Example usage:
@@ -172,11 +232,11 @@ if __name__ == "__main__":
     fig, axes = plt.subplots(1, 2, figsize=(16, 6))  # 1 row, 2 columns
 
     run_multiple_SIR_with_errorbands(es, approx_num_C, num_max_hyperedge, num_node, gamma, colors, ax=axes[0])
-    SIR_original_graph(dataset, gamma, colors, ax=axes[1])
+    SIR_original_graph(dataset, num_max_hyperedge, gamma, colors, ax=axes[1])
 
     H = xgi.load_xgi_data(dataset)
     es = round(edit_simpliciality(H), 5)
-    fig.suptitle(dataset + "  -  es = " + str(es))
+    fig.suptitle("Synthetic vs. Real World Data, Dataset: " + dataset)
 
     plt.tight_layout(rect=[0, 0.03, 1, 0.95])
     plt.show()
