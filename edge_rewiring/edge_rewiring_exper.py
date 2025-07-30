@@ -4,6 +4,8 @@ import os
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'edge_rewiring')))
 from edge_rewiring import edge_rewiring_alg
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'edge_rewiring')))
+from edge_rewiring import edge_rewiring_alg
 from sod import *
 from sod.simpliciality import edit_simpliciality
 import threading
