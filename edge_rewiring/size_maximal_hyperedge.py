@@ -41,13 +41,14 @@ dataset = datasets[int(sys.argv[1])]
 print(f"Running max_hyperedge test on dataset: {dataset}")
 
 H_og = (xgi.load_xgi_data(dataset, max_order=11))
+H_og.cleanup()
 es = new_edit_simpliciality(H_og)
 num_edges = H_og.num_edges
 num_max_hyperedge = len(H_og.edges.maximal().filterby("size", 2, "geq"))
 maximal_edge_sizes = [len(e) for e in H_og.edges.maximal().filterby("size", 2, "geq").members()]
 #print("maximal_edge_sizes: ", maximal_edge_sizes)
 C_distribution = np.array([possible_combinations(i) for i in maximal_edge_sizes])
-approx_num_C = (num_edges - num_max_hyperedge + es * num_max_hyperedge) / es
+approx_num_C = sum(C_distribution)
 num_node = H_og.num_nodes
 
 H = model_generation_es(

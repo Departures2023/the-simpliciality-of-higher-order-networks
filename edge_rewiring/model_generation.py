@@ -194,7 +194,7 @@ def all_possible_edges(arr_node):
 
 
 # Function to generate a hypergraph with a given edit simpliciality, number of maximal hyperedges, and number of nodes
-def model_generation_es(es, approx_num_C, num_max_hyperedge, num_node, min_size=2, max_size=None, adjust_es=False, compare_interval_smaller_case=2, compare_interval_bigger_case=2, C_distribution=None):
+def model_generation_es(es, approx_num_C, num_max_hyperedge, num_node, min_size=2, max_size=None, adjust_es=False, compare_interval_smaller_case=2, compare_interval_bigger_case=2, C_distribution=None, edge_total=None):
     # Checking if input parameters are valid
     if max_size is None:
         max_size = num_node
@@ -216,15 +216,20 @@ def model_generation_es(es, approx_num_C, num_max_hyperedge, num_node, min_size=
     C_total = int(approx_num_C)
     
     # |H| of the graph
-    edge_total = int(approx_num_C * es)
+    if edge_total is None:
+        if adjust_es:
+            edge_total = int((C_total - num_max_hyperedge) * es) + num_max_hyperedge
+            if not (C_total >= edge_total and edge_total >= num_max_hyperedge):
+                print(f"❌ Warning: C_total ({C_total}) is smaller than edge_total ({edge_total}) or edge_total ({edge_total}) is smaller than num_max_hyperedge ({num_max_hyperedge})")
+                sys.exit()
+        else:
+            edge_total = int(approx_num_C * es)
+    else:
+        edge_total = edge_total
     
     # TODO: Check the performance of model generation with and without adjust_es
     # New implementation of edit simpliciality (es = (|E| - num_max_hyperedge)/(|C| - num_max_hyperedge))
-    if adjust_es:
-        edge_total = int((C_total - num_max_hyperedge) * es) + num_max_hyperedge
-        if not (C_total >= edge_total and edge_total >= num_max_hyperedge):
-            print(f"❌ Warning: C_total ({C_total}) is smaller than edge_total ({edge_total}) or edge_total ({edge_total}) is smaller than num_max_hyperedge ({num_max_hyperedge})")
-            sys.exit()
+    
     
     
     # Generate empty hypergraph

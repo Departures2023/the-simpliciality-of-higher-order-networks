@@ -17,21 +17,27 @@ def run_SIR_for_es(es):
     idx = int(es/2*10-1)  # Convert es to an index for subplot
     num_node = 1000
     num_max_hyperedge = 2000
-    approx_num_C = 8000
+    approx_num_C = 12000
     gamma = 0.05
-    num_edges = 4000 + (int(es * 10 - 1) - 1) * 1000
+    num_edges = 8000
     #approx_num_C = (num_edges - num_max_hyperedge + es * num_max_hyperedge)/es
 
     fig, ax = plt.subplots(figsize=(4, 3))
     dom.run_multiple_SIR_with_errorbands(
-        es,
-        approx_num_C,
-        num_max_hyperedge,
+        es,  
+        approx_num_C, 
+        num_max_hyperedge, 
         num_node,
+        num_edges,
         gamma,
-        num_graphs=10,
         colors=["#00B388", "#DA291C", "#418FDF"],
-        ax=ax
+        C_distribution=None,
+        num_graphs=1,
+        rho=0.1,
+        tmin=0,
+        tmax=100,
+        dt=1,
+        ax=None, 
     )
     ax.set_title(f"es = {es}", fontsize=12)
 
@@ -50,7 +56,7 @@ if __name__ == "__main__":
     
     os.makedirs("experiment_result/dynamics_on_model", exist_ok=True)
 
-    es_list = [0.2, 0.4, 0.6, 0.8]
+    es_list = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8]
 
     # Run in parallel
     with mp.Pool(processes=mp.cpu_count()) as pool:
@@ -60,7 +66,7 @@ if __name__ == "__main__":
     results.sort()
 
     # Combine all plots into a single figurett
-    fig, axes = plt.subplots(1, 4, figsize=(16, 6))
+    fig, axes = plt.subplots(4, 1, figsize=(6, 16))
     axes = axes.flatten()
 
     for idx, path in results:
