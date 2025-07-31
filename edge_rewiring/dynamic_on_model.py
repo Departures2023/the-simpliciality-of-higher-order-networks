@@ -77,13 +77,13 @@ def run_multiple_SIR_with_errorbands(
         error_es = abs(es_new - es)
         print(f"Graph {i+1} generated with es = {es_new}, error = {error_es}")
         mean_degree = sum(dict(H.degree()).values()) / H.num_nodes
-        tau = {k: 0.2/k for k in xgi.unique_edge_sizes(H)}
+        tau = {k: 0.001/k for k in xgi.unique_edge_sizes(H)}
 
 
         num_max_hyperedge_new = len(H.edges.maximal().filterby("size", 2, "geq"))
         
         #approx_num_C_new = (H.num_edges - num_max_hyperedge_new + es_new * num_max_hyperedge)/es_new
-        maximal_edge_sizes = [len(e) for e in H_og.edges.maximal().filterby("size", 2, "geq").members()]
+        maximal_edge_sizes = [len(e) for e in H.edges.maximal().filterby("size", 2, "geq").members()]
         #print("maximal_edge_sizes: ", maximal_edge_sizes)
         C_distribution = np.array([possible_combinations(i) for i in maximal_edge_sizes])
         approx_num_C_new = sum(C_distribution)
@@ -184,7 +184,7 @@ def SIR_original_graph(
     num_node = H.num_nodes
     num_edges = H.num_edges
     cc = (sum(xgi.clustering_coefficient(H).values())) / len(H.nodes)
-    tau = {i: 0.1/i for i in xgi.unique_edge_sizes(H)}
+    tau = {i: 0.001/i for i in xgi.unique_edge_sizes(H)}
     start = time.time()
     t1, S1, I1, R1 = hc.discrete_SIR(H, tau, gamma, tmin=0, tmax=100, dt=1, rho=0.1)
     print(time.time() - start)

@@ -14,13 +14,13 @@ from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
 import tempfile
 
 def run_SIR_for_es(es):
-    idx = int(es/2*10-1)  # Convert es to an index for subplot
+    idx = int(es*10-1)  # Convert es to an index for subplot
     num_node = 1000
-    num_max_hyperedge = 2000
-    approx_num_C = 12000
+    num_max_hyperedge = 4000
+    #approx_num_C = 18000
     gamma = 0.05
-    num_edges = 8000
-    #approx_num_C = (num_edges - num_max_hyperedge + es * num_max_hyperedge)/es
+    num_edges = 10000
+    approx_num_C = (num_edges - num_max_hyperedge + es * num_max_hyperedge)/es
 
     fig, ax = plt.subplots(figsize=(4, 3))
     dom.run_multiple_SIR_with_errorbands(
@@ -37,7 +37,7 @@ def run_SIR_for_es(es):
         tmin=0,
         tmax=100,
         dt=1,
-        ax=None, 
+        ax = ax, 
     )
     ax.set_title(f"es = {es}", fontsize=12)
 
@@ -66,7 +66,7 @@ if __name__ == "__main__":
     results.sort()
 
     # Combine all plots into a single figurett
-    fig, axes = plt.subplots(4, 1, figsize=(6, 16))
+    fig, axes = plt.subplots(4, 2, figsize=(6, 18))
     axes = axes.flatten()
 
     for idx, path in results:

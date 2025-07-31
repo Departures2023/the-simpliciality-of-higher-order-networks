@@ -57,15 +57,14 @@ def combination_to_size(C):
         int: Minimum number of nodes needed in the maximal hyperedge
     """
     num_node = 2
-    if C >= possible_combinations(num_node=11, min_size=2, max_size=11):
-        C = possible_combinations(num_node=11, min_size=2, max_size=11)
     while C > possible_combinations(num_node=num_node, min_size=2, max_size=num_node):
-        C_next = possible_combinations(num_node=num_node+1, min_size=2, max_size=num_node+1)
-        C_current = possible_combinations(num_node=num_node, min_size=2, max_size=num_node)
-    # If the difference berween next combination and expected is smaller than the current and expected, we can add one more node
+        num_node += 1
+    C_previous = possible_combinations(num_node=num_node+1, min_size=2, max_size=num_node - 1)
+    C_current = possible_combinations(num_node=num_node, min_size=2, max_size=num_node)
+    # If the difference berween next combexination and expected is smaller than the current and expected, we can add one more node
     # This can compensate the negative effect of calculated combinations being smaller than the expected combinations
-        if (C_next - C)  < (C - C_current):
-            num_node += 1
+    if abs(C_previous - C)  < abs(C - C_current):
+        num_node -= 1
     return num_node
 
 
@@ -107,7 +106,7 @@ def generate_C_distribution(min_size, max_size, C_avg, std, num_max_hyperedge, t
     excess = C_distribution.sum() - target_sum
     print(f"Excess: {excess} (target_sum: {target_sum}, C_distribution.sum(): {C_distribution.sum()})")
     
-    if excess > 0:
+    if excess > 0.1*target_sum:  # If excess is small, we can ignore it
         # Reduce values that are above minimum
         for _ in range(int(abs(excess))):
             reducible_indices = [i for i in range(num_max_hyperedge) if C_distribution[i] > min_size]
@@ -129,7 +128,7 @@ def generate_C_distribution(min_size, max_size, C_avg, std, num_max_hyperedge, t
             
             C_distribution[selected_idx] -= 1
             
-    elif excess < 0:
+    elif excess < -0.1*target_sum:
         # Increase values that are below maximum
         for _ in range(int(abs(excess))):
             increasable_indices = [i for i in range(num_max_hyperedge) if C_distribution[i] < max_size]
@@ -219,13 +218,14 @@ def model_generation_es(es, approx_num_C, num_max_hyperedge, num_node, min_size=
     if edge_total is None:
         if adjust_es:
             edge_total = int((C_total - num_max_hyperedge) * es) + num_max_hyperedge
-            if not (C_total >= edge_total and edge_total >= num_max_hyperedge):
-                print(f"❌ Warning: C_total ({C_total}) is smaller than edge_total ({edge_total}) or edge_total ({edge_total}) is smaller than num_max_hyperedge ({num_max_hyperedge})")
-                sys.exit()
         else:
             edge_total = int(approx_num_C * es)
     else:
         edge_total = edge_total
+        
+    if not (C_total >= edge_total and edge_total >= num_max_hyperedge):
+        print(f"❌ Warning: C_total ({C_total}) is smaller than edge_total ({edge_total}) or edge_total ({edge_total}) is smaller than num_max_hyperedge ({num_max_hyperedge})")
+        sys.exit()
     
     # TODO: Check the performance of model generation with and without adjust_es
     # New implementation of edit simpliciality (es = (|E| - num_max_hyperedge)/(|C| - num_max_hyperedge))
@@ -282,12 +282,12 @@ def model_generation_es(es, approx_num_C, num_max_hyperedge, num_node, min_size=
     )
     
     # Print statements for debugging
-    # print("edge_distribution:", edge_distribution)
+    #print("edge_distribution:", edge_distribution)
     
     # Convert the distribution of C values to the number of nodes in maximal hyperedges
     maximal_edge_size_list = [combination_to_size(i) for i in C_distribution]
     #maximal_edge_size_list.sort(reverse=True)
-    print("maximal_edge_size_list:", maximal_edge_size_list)
+    #print("maximal_edge_size_list:", maximal_edge_size_list)
     # Avoid adding repeating edges - use set for consistent comparison
     edge_to_exclude = set()
     # Print statements for debugging
@@ -497,7 +497,7 @@ def final_edge_adjustment_es(H, min_size, maximal_edge_set, final_possible_edge_
                     curr_es = new_edit_simpliciality(H, min_size=2)
                 else:
                     curr_es = edit_simpliciality(H, min_size=2)
-                print("curr_es:", curr_es)
+                #print("curr_es:", curr_es)
                 # if curr_es >= expected_es:
                 if (abs(curr_es - expected_es) < (0.002)):
                     return H
@@ -524,7 +524,7 @@ def final_edge_adjustment_es(H, min_size, maximal_edge_set, final_possible_edge_
                     curr_es = new_edit_simpliciality(H, min_size=2)
                 else:
                     curr_es = edit_simpliciality(H, min_size=2)
-                print("curr_es:", curr_es)
+                #print("curr_es:", curr_es)
         return H
     print(f"❌ Warning: Input parameters are not good, please check the input parameters")
     return None
