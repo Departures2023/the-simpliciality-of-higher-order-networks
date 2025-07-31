@@ -32,7 +32,7 @@ def run_SIR_for_es(es):
         gamma,
         colors=["#00B388", "#DA291C", "#418FDF"],
         C_distribution=None,
-        num_graphs=1,
+        num_graphs=100,
         rho=0.1,
         tmin=0,
         tmax=100,
