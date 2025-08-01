@@ -27,7 +27,7 @@ def run_multiple_SIR_with_errorbands(
     num_node,
     gamma,
     colors,
-    num_graphs=8,
+    num_graphs=100,
     rho=0.1,
     tmin=0,
     tmax=100,
@@ -98,11 +98,8 @@ def run_multiple_SIR_with_errorbands(
         tot_cc += (sum(xgi.clustering_coefficient(H).values())) / len(H.nodes)
 
         deg_list = list(xgi.degree_counts(H))
-        degrees = []
-        for degree_val, count in enumerate(deg_list):
-            degree = count * degree_val
-            degrees.append(degree)
-        tot_deg = (sum(degrees)) / len(degrees)
+        total_degree = sum(degree_val * count for degree_val, count in enumerate(deg_list))
+        avg_degree = total_degree / H.num_nodes
 
         tot_deg_assort = xgi.degree_assortativity(H)
 
@@ -122,7 +119,7 @@ def run_multiple_SIR_with_errorbands(
     I_mean, I_std = np.mean(I_all, axis=0), np.std(I_all, axis=0)
     R_mean, R_std = np.mean(R_all, axis=0), np.std(R_all, axis=0)
 
-
+    ax.set_xlim(0, 50)
     # Plotting
     if ax is None:
         fig, ax = plt.subplots(figsize=(10, 6))
@@ -145,7 +142,7 @@ def run_multiple_SIR_with_errorbands(
 
     edges = tot_num_edges / num_graphs
     cc = tot_cc / num_graphs
-    deg = tot_deg / num_graphs
+    deg = avg_degree / num_graphs
     es = tot_es / num_graphs
     deg_assort = tot_deg_assort / num_graphs
 
@@ -169,6 +166,7 @@ def SIR_original_graph(
     colors,
     ax=None
 ): 
+    ax.set_xlim(0, 50)
     H = xgi.load_xgi_data(dataset)
     es = new_edit_simpliciality(H, min_size=2)
     num_node = H.num_nodes
@@ -196,11 +194,8 @@ def SIR_original_graph(
     fig.tight_layout()
 
     deg_list = list(xgi.degree_counts(H))
-    degrees = []
-    for degree_val, count in enumerate(deg_list):
-        degree = count * degree_val
-        degrees.append(degree)
-    deg = (sum(degrees)) / len(degrees)
+    total_degree = sum(degree_val * count for degree_val, count in enumerate(deg_list))
+    avg_degree = total_degree / H.num_nodes
 
     print(colored(
     dataset + " & " +
@@ -209,7 +204,7 @@ def SIR_original_graph(
     str(num_edges) + " & " +
     str(num_max_hyperedge) + " & " +
     str(round(cc, 5)) + " & " +
-    str(round(deg, 5)) + " & " +
+    str(round(avg_degree, 5)) + " & " +
     str(round(xgi.degree_assortativity(H), 5)) + " \\\\",
     "green"
     ))
