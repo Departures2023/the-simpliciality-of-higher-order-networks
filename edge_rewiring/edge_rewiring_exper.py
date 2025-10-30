@@ -90,7 +90,7 @@ def Construct_New_Graph(graph, iter, min_size, max_size, total, dataset_index):
     total["num_max_hyperedges"] = stats["num_maximal_hyperedge"]
     total["total_cc"] += sum(list(xgi.clustering_coefficient(G).values()))
     total["total_centrality"] += sum(list(xgi.clique_eigenvector_centrality(G).values()))
-    total["total_es"] += edit_simpliciality(G, min_size=min_size) 
+    total["total_es"] += new_edit_simpliciality(G, min_size=min_size) 
     total["total_sf"] += simplicial_fraction(G, min_size=min_size)    
     total["total_fes"] += face_edit_simpliciality(G, min_size=min_size)    
     total["total_degree_assortativity"] += xgi.degree_assortativity(G)
@@ -99,7 +99,7 @@ def Construct_New_Graph(graph, iter, min_size, max_size, total, dataset_index):
     for degree_val, count in enumerate(deg_list):
         degree = count * degree_val
         degrees.append(degree)
-    total["total_degree_count"] += (sum(degrees)) / len(degrees)
+    total["total_degree_count"] += (sum(degrees)) / G.num_nodes
 
 """
 Process_Dataset
@@ -226,6 +226,18 @@ def process_dataset (graph, dataset_index, trials, rewiring_times, min_size, max
         str(delta_avg_degree) +
         " \\\\")
     latex_list_three.append("\hline")
+
+    total_nodes = len(graph.nodes)
+    total_edges = len(graph.edges)
+
+    print(colored( "synthetic " + str(datasets[dataset_index]) +  "& " +
+                    str(round(es, 5)) + "&" +
+                    str(total_nodes) + "&" +
+                    str(total_edges) + "&" +
+                    str(total["num_max_hyperedges"]) + "&" +
+                    str(avg_cc) + "&" +
+                    str(avg_degree) + "&" +
+                    str(degree_assortativity) + "\\\\", "red"))
    
 """
 main
@@ -290,7 +302,7 @@ if __name__ == "__main__":
         for degree_val, count in enumerate(deg_list):
             degree = count * degree_val
             degrees.append(degree)
-        og_dc = (sum(degrees)) / len(degrees)
+        og_dc = (sum(degrees)) / graphs[i].num_nodes
 
         process_dataset(graphs[i], dataset_index, trials, rewiring_times, min_size, max_size, latex_list_one, latex_list_two, latex_list_three, og_cc, og_clique_centrality, og_es, og_sf, og_fes, og_da, og_dc)
     
