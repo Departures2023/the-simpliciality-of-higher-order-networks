@@ -839,6 +839,8 @@ def final_edge_adjustment_sf(H, maximal_edge_is_simplex, maximal_edge_not_simple
     else:
         return H
     
+
+
 # NOTE THAT THE UPPER BOUND THIS FUNCTION RETURN IS POSSIBLE TO BE A LITTLE SMALLER THAN THE ACTUAL UPPER BOUND (IT DIDN'T CONSIDER OVERLAPPING MAXIMAL HYPEREDGES)
 # Function to approximate the upper bound of |C| of a hypergraph with a given edit simpliciality, number of maximal hyperedges, and number of nodes
 def approximate_C_upperbound(num_node, min_size, max_size, num_max_hyperedge):
@@ -870,6 +872,275 @@ def approximate_C_upperbound(num_node, min_size, max_size, num_max_hyperedge):
         C_upperbound += possible_combinations(min(num_node, max_size), min_size)
         return C_upperbound
 
+# Function to generate a hypergraph with a given edit simpliciality using SR-based improved approach
+def model_generation_es_sr_improved(target_es, num_nodes, num_edges, min_size=2, max_size=None, maximal_edge_sizes=None):
+    
+    if max_size is None:
+        max_size = num_nodes
+    
+    # Initialize hypergraph
+    H = xgi.Hypergraph()
+    nodes = list(range(num_nodes))
+    H.add_nodes_from(nodes)
+    
+    # Calculate expected missing subfaces
+    # ES = |E| / (|E| + missing_subfaces)
+    expected_missing = num_edges * (1 - target_es) / target_es if target_es > 0 else num_edges * 2
+    
+    # Handle case when maximal_edge_sizes is not provided
+    if maximal_edge_sizes is None:
+        # Default average simplex size based on target ES
+        if target_es > 0.8:
+            simplex_size = min(4, max_size)
+        elif target_es > 0.5:
+            simplex_size = min(3, max_size)
+        elif target_es > 0.1:
+            simplex_size = min(3, max_size)
+        else:
+            # For very low ES, use smaller simplices
+            simplex_size = min(3, max_size)
+    else:
+        simplex_size = int(sum(maximal_edge_sizes)/len(maximal_edge_sizes))
+    # Step 1: Estimate how many complete simplices we need
+    if target_es > 0.8:
+        edges_per_simplex = possible_combinations(simplex_size)
+        num_simplices = max(1, int(num_edges / edges_per_simplex * 1.2))
+    elif target_es > 0.5:
+        edges_per_simplex = possible_combinations(simplex_size)
+        num_simplices = max(1, int(num_edges / edges_per_simplex * 0.8))
+    elif target_es > 0.3:
+        edges_per_simplex = possible_combinations(simplex_size)
+        num_simplices = max(1, int(num_edges / edges_per_simplex * 0.5))
+    elif target_es > 0.1:
+        edges_per_simplex = possible_combinations(simplex_size)
+        num_simplices = max(1, int(num_edges / edges_per_simplex * 0.2))
+    elif target_es > 0.05:
+        edges_per_simplex = possible_combinations(simplex_size)
+        num_simplices = max(1, int(num_edges / edges_per_simplex * 0.1))
+    else:
+        edges_per_simplex = possible_combinations(simplex_size)
+        num_simplices = max(1, int(num_edges / edges_per_simplex * max(0.05, target_es * 0.5)))
+    
+    # Step 2: Create complete simplices
+    edges_added = 0
+    all_simplices = []
+    
+    # Track used and unused nodes to ensure connectivity
+    used_nodes = set()
+    unused_nodes = set(nodes)
+    
+    # For very low ES, don't create complete simplices at all
+    if target_es < 0.1:
+        num_simplices = 0
+    
+    for i in range(num_simplices):
+        if edges_added >= num_edges:
+            break
+        
+        # Lower and Upper bounds just for some variation around the calculated simplex_size
+        lower_bound = max(min_size, min(simplex_size - 1, max_size))
+        upper_bound = min(max_size, simplex_size + 1)
+        # Ensure valid range
+        if lower_bound > upper_bound:
+            lower_bound = upper_bound
+        curr_simplex_size = random.randint(lower_bound, upper_bound)
+        
+        # Choose nodes for this simplex ensuring connectivity
+        if i == 0:
+            selected_nodes = random.sample(nodes, curr_simplex_size)
+        else:
+            # Handle the case when unused_nodes becomes empty
+            if len(unused_nodes) == 0:
+                # All nodes are used, just sample from used_nodes
+                selected_nodes = random.sample(list(used_nodes), curr_simplex_size)
+            else:
+                size_lst = range(1, curr_simplex_size)
+                weights = []
+                for size in size_lst:
+                    weights.append(1/size)
+                # Determine the number of nodes to chosen from used and not used
+                used_selected_size = random.choices(size_lst, weights=weights, k=1)[0]
+                unused_selected_size = curr_simplex_size - used_selected_size
+                
+                # Safety checks to prevent sampling more than available
+                unused_selected_size = min(unused_selected_size, len(unused_nodes))
+                used_selected_size = min(used_selected_size, len(used_nodes))
+                
+                # Ensure we have enough nodes total
+                total_needed = curr_simplex_size
+                total_available = unused_selected_size + used_selected_size
+
+                if total_available < total_needed:
+                    # Adjust by taking more from the larger pool
+                    deficit = total_needed - total_available
+                    if len(unused_nodes) - unused_selected_size >= deficit:
+                        unused_selected_size += deficit
+                    elif len(used_nodes) - used_selected_size >= deficit:
+                        used_selected_size += deficit
+                    else:
+                        # Not enough nodes available, sample what we can
+                        unused_selected_size = len(unused_nodes)
+                        used_selected_size = min(len(used_nodes), total_needed - unused_selected_size)
+                
+                # Randomly select nodes for the maximal hyperedge
+                unused_selected_nodes = random.sample(list(unused_nodes), unused_selected_size)
+                used_selected_nodes = random.sample(list(used_nodes), used_selected_size)
+                selected_nodes = list(unused_selected_nodes) + list(used_selected_nodes)
+        
+        all_simplices.append(selected_nodes)
+        
+        # Update used/unused node sets
+        used_nodes.update(selected_nodes)
+        unused_nodes.difference_update(selected_nodes)
+        
+        # Add ALL subfaces of this simplex (creates COMPLETE simplex)
+        for r in range(min_size, curr_simplex_size + 1):
+            for subset in combinations(selected_nodes, r):
+                if edges_added < num_edges:
+                    H.add_edge(list(subset))
+                    edges_added += 1
+    
+    # Step 3: Calculate current ES
+    current_es = edit_simpliciality(H, min_size=2) if H.num_edges > 0 else 0
+    print(f"Current ES: {current_es:.3f}, Target: {target_es:.3f}")
+    
+    # Step 4: Adjust by selectively keeping faces (or build from scratch for low ES)
+    if target_es < 0.1 or current_es > target_es or edges_added < num_edges:
+        # Strategy: For each simplex, keep only a fraction of faces
+        edges_to_keep = set()
+        
+        for simplex_nodes in all_simplices:
+            # Generate all possible subfaces
+            all_subfaces = []
+            for r in range(min_size, len(simplex_nodes) + 1):
+                for subset in combinations(simplex_nodes, r):
+                    all_subfaces.append(frozenset(subset))
+            
+            # Adaptive keep_ratio based on target ES
+            if target_es > 0.8:
+                keep_ratio = random.uniform(0.9, 1.0)
+            elif target_es > 0.5:
+                keep_ratio = random.uniform(0.6, 0.75)
+            elif target_es > 0.3:
+                keep_ratio = random.uniform(0.4, 0.55)
+            elif target_es > 0.1:
+                keep_ratio = random.uniform(0.15, 0.30)
+            elif target_es > 0.05:
+                keep_ratio = random.uniform(0.05, 0.12)
+            else:
+                # For very low ES, use target_es as a guide
+                keep_ratio = random.uniform(target_es * 0.3, target_es * 0.8)
+            
+            num_to_keep = int(len(all_subfaces) * keep_ratio)
+            # Ensure we keep at least 1 edge per simplex
+            num_to_keep = max(1, num_to_keep)
+            # Make sure we don't try to sample more than available
+            num_to_keep = min(num_to_keep, len(all_subfaces))
+            kept_faces = random.sample(all_subfaces, num_to_keep)
+            edges_to_keep.update(kept_faces)
+        
+        # Rebuild hypergraph with kept edges
+        H = xgi.Hypergraph()
+        H.add_nodes_from(nodes)
+        for edge in edges_to_keep:
+            H.add_edge(list(edge))
+        
+        edges_added = H.num_edges
+        
+        # Recalculate used/unused nodes based on edges in the rebuilt hypergraph
+        used_nodes = set()
+        for edge in edges_to_keep:
+            used_nodes.update(edge)
+        unused_nodes = set(nodes) - used_nodes
+        
+        # Add more simplices if needed
+        while edges_added < num_edges:
+            # For very low ES, use smaller simplices
+            if target_es < 0.1:
+                simplex_size = random.randint(min_size, min(max_size, 3))
+            else:
+                simplex_size = random.randint(min_size, min(max_size, 4))
+            
+            # Choose nodes ensuring connectivity
+            if len(unused_nodes) == 0:
+                # All nodes are used, just sample from used_nodes
+                selected_nodes = random.sample(list(used_nodes), simplex_size)
+            else:
+                size_lst = range(1, simplex_size)
+                weights = []
+                for size in size_lst:
+                    weights.append(1/size)
+                # Determine the number of nodes to chosen from used and not used
+                used_selected_size = random.choices(size_lst, weights=weights, k=1)[0]
+                unused_selected_size = simplex_size - used_selected_size
+                
+                # Safety checks to prevent sampling more than available
+                unused_selected_size = min(unused_selected_size, len(unused_nodes))
+                used_selected_size = min(used_selected_size, len(used_nodes))
+                
+                # Ensure we have enough nodes total
+                total_needed = simplex_size
+                total_available = unused_selected_size + used_selected_size
+                
+                if total_available < total_needed:
+                    # Adjust by taking more from the larger pool
+                    deficit = total_needed - total_available
+                    if len(unused_nodes) - unused_selected_size >= deficit:
+                        unused_selected_size += deficit
+                    elif len(used_nodes) - used_selected_size >= deficit:
+                        used_selected_size += deficit
+                    else:
+                        # Not enough nodes available, sample what we can
+                        unused_selected_size = len(unused_nodes)
+                        used_selected_size = min(len(used_nodes), total_needed - unused_selected_size)
+                
+                # Randomly select nodes for the maximal hyperedge
+                unused_selected_nodes = random.sample(list(unused_nodes), unused_selected_size)
+                used_selected_nodes = random.sample(list(used_nodes), used_selected_size)
+                selected_nodes = list(unused_selected_nodes) + list(used_selected_nodes)
+            
+            # Update used/unused node sets
+            used_nodes.update(selected_nodes)
+            unused_nodes.difference_update(selected_nodes)
+            
+            # Generate subfaces
+            all_subfaces = []
+            for r in range(min_size, simplex_size + 1):
+                for subset in combinations(selected_nodes, r):
+                    all_subfaces.append(list(subset))
+            
+            # Keep fraction of faces
+            if target_es > 0.8:
+                keep_ratio = random.uniform(0.9, 1.0)
+            elif target_es > 0.5:
+                keep_ratio = random.uniform(0.6, 0.75)
+            elif target_es > 0.3:
+                keep_ratio = random.uniform(0.4, 0.55)
+            elif target_es > 0.1:
+                keep_ratio = random.uniform(0.15, 0.30)
+            elif target_es > 0.05:
+                keep_ratio = random.uniform(0.05, 0.12)
+            else:
+                # For very low ES, use target_es as a guide
+                keep_ratio = random.uniform(target_es * 0.3, target_es * 0.8)
+            
+            num_to_add = min(int(len(all_subfaces) * keep_ratio), num_edges - edges_added)
+            # Ensure we always add at least 1 edge to avoid infinite loop
+            num_to_add = max(1, num_to_add)
+            # Make sure we don't try to sample more than available
+            num_to_add = min(num_to_add, len(all_subfaces))
+            faces_to_add = random.sample(all_subfaces, num_to_add)
+            
+            # Add new faces
+            current_edges = {frozenset(e) for e in H.edges.members()}
+            for face in faces_to_add:
+                if frozenset(face) not in current_edges and edges_added < num_edges:
+                    H.add_edge(face)
+                    edges_added += 1
+    
+    return H
+
+
 # Test function to verify no duplicate edges are generated
 def test_no_duplicate_edges():
     """Test both model_generation_es and model_generation_sf for duplicate edges"""
@@ -886,7 +1157,7 @@ def test_no_duplicate_edges():
     print(f"ES - Duplicates found: {len(edge_sets_es) - len(unique_edges_es)}")
     
     if len(edge_sets_es) == len(unique_edges_es):
-        print("✅ No duplicate edges found in model_generation_es!")
+        print("No duplicate edges found in model_generation_es!")
         sf_es = simplicial_fraction(H_es, min_size=2)
         es_es = edit_simpliciality(H_es, min_size=2)
         fes_es = face_edit_simpliciality(H_es, min_size=2)
@@ -895,7 +1166,7 @@ def test_no_duplicate_edges():
         print(f"ES - Face edit simpliciality: {fes_es}")
         es_success = True
     else:
-        print("❌ Duplicate edges detected in model_generation_es!")
+        print("Duplicate edges detected in model_generation_es!")
         es_success = False
     
     print("\n" + "="*50)
@@ -914,7 +1185,7 @@ def test_no_duplicate_edges():
     print(f"SF - Duplicates found: {len(edge_sets_sf) - len(unique_edges_sf)}")
     
     if len(edge_sets_sf) == len(unique_edges_sf):
-        print("✅ No duplicate edges found in model_generation_sf!")
+        print("No duplicate edges found in model_generation_sf!")
         sf_sf = simplicial_fraction(H_sf, min_size=2)
         es_sf = edit_simpliciality(H_sf, min_size=2)
         fes_sf = face_edit_simpliciality(H_sf, min_size=2)
@@ -923,7 +1194,7 @@ def test_no_duplicate_edges():
         print(f"SF - Face edit simpliciality: {fes_sf}")
         sf_success = True
     else:
-        print("❌ Duplicate edges detected in model_generation_sf!")
+        print("Duplicate edges detected in model_generation_sf!")
         # Print duplicates for debugging
         edge_counts = {}
         for edge in edge_sets_sf:
